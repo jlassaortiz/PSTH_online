@@ -1,28 +1,36 @@
 % Script que hace todo de una
-clear all
-close all
+
+directorio = 'D:\Experimentos\zf-JL007_VeNa\Registros\Penetracion 3\4_170915_155938\TEST psth online\data';
+directorio = horzcat(directorio , '\');
 
 % Genero songs.mat a partir de las canciones
-carga_songs
+carga_songs;
+
+% % figure();
+% % plot(estimulo(1).song);
+% % title(estimulo(1).name, 'Interpreter', 'none');
+% % 
+% % figure();
+% % plot(estimulo(2).song);
+% % title(estimulo(2).name, 'Interpreter', 'none');
+% % 
+% % figure();
+% % plot(estimulo(3).song);
+% % title(estimulo(3).name, 'Interpreter', 'none');
+
+% Leer info INTAN
+read_Intan_RHD2000_file(horzcat(directorio, 'info.rhd'));
+num_channels = length(amplifier_channels);
+clear notes spike_triggers supply_voltage_channels % no tienen info de interes
 
 % Filtra un canal de INTAN
-Filtrar_raw_data_un_canal_ht
+Filtrar_raw_data_un_canal_ht;
 
 % Carga datos filtrados y hace un threshold cutting
 plot_view_spikes_ht
 
-% Pregunta el tipo de protocolo
-protocolo = input('Tipo de protocolo (1): solo BOS, (2): BOS, CON, REV:  ');
-
-if protocolo==1;
-    
-    loader_raster_BOS_raw_ht
-
-else
-    
-    loader_raster_raw_ht
-    
-end
+% Grafica raster
+loader_raster_raw_ht
 
 set(figure(1),'Visible','on')
 movegui(figure(1),'east')

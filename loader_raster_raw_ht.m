@@ -15,13 +15,13 @@ ntrials = input('Numero de trials: ');
 
 tiempo_file = input('Tiempo entre estimulos (en s): ');
 
-timer=(5E-3)*sampling_freq; % 10 ms
+timer = (5E-3)*frequency_parameters.amplifier_sample_rate; % 10 ms
 
 % CARGA DATOS
 % Levanto el timestamp de la raw data (sacado de manual Intan)
-fileinfo_time = dir('time.dat');
+fileinfo_time = dir(horzcat(directorio,'time.dat'));
 num_samples_time = fileinfo_time.bytes/4; % int32 = 4 bytes
-fid = fopen('time.dat', 'r');
+fid = fopen(horzcat(directorio,'time.dat'), 'r');
 t= fread(fid, num_samples_time, 'int32');
 fclose(fid);
 t = t/frequency_parameters.amplifier_sample_rate; % sample rate from header file
@@ -29,34 +29,38 @@ clear fileinfo_time num_samples_time
 
 % Levanto la data de los canales analogicos (sacado del manual Intan)
 num_channels_analog = length(board_adc_channels); % ADC input info from header file
-fileinfo_analog = dir('analogin.dat');
+fileinfo_analog = dir(horzcat(directorio,'analogin.dat'));
 num_samples_analog = fileinfo_analog.bytes/(num_channels_analog * 2); % uint16 = 2 bytes
-fid = fopen('analogin.dat', 'r');
+fid = fopen(horzcat(directorio,'analogin.dat'), 'r');
 analog = fread(fid, [num_channels_analog, num_samples_analog], 'uint16');
 fclose(fid);
 analog = analog * 0.000050354; % convert to volts
 analog = analog';
-clear fileinfo_analog num_samples_analog num_channels_analog
-
-% Levanto los spike times y cluster numbers
-clear fid
+clear fileinfo_analog num_samples_analog num_channels_analog fid
 
 % IDENTIFICA TIEMPOS EN QUE COMENZO CADA ESTIMULO
 % Armo el vector de los t_0 en los que se presento cada estimulo.
-% Pre-acondiciono la seÃ±al analogica
-bpf=designfilt('bandpassiir','designmethod','butter','halfpowerfrequency1'...
-    ,1000,'halfpowerfrequency2',3500,'filterorder',4,'samplerate',sampling_freq);
+% Pre-acondiciono la señal analogica
+bpf = designfilt('bandpassiir','designmethod','butter','halfpowerfrequency1'...
+    ,1000,'halfpowerfrequency2',3500,'filterorder',4,'samplerate',frequency_parameters.board_adc_sample_rate);
 
-[pks,lcs]=findpeaks(filtfilt(bpf,analog));
-test=diff(pks);
-found=find(test>0.5);
-pksf=pks(found);
-t0s=lcs(found); % ESTO ES LO QUE ME IMPORTA (me quedo con # de datos)
-a = find(diff(t0s)< 6*sampling_freq) + 1;
+[pks,lcs] = findpeaks(filtfilt(bpf,analog));
+test = diff(pks);
+found = find(test>0.5);
+t0s = lcs(found); % ESTO ES LO QUE ME IMPORTA (me quedo con # de datos)
+a = find(diff(t0s)< 6*frequency_parameters.board_adc_sample_rate) + 1;
 t0s(a) = [];
 
 
-if (length(t0s)>(ntrials*3));
+[pks,lcs] = findpeaks(filtfilt(bpf,analog));
+test = diff(lcs);
+found = find(test > 0.5);
+t0s = lcs(found); % ESTO ES LO QUE ME IMPORTA (me quedo con # de datos)
+a = find(diff(t0s)< 6*sampling_freq) + 1;
+t0s(a) = [];
+a = find(diff(t0s)< 1.1*tiempo_file*sampling_freq) + 1;
+
+if (length(t0s) ~= (ntrials*3));
     disp('ERROR EN CANTIDAD DE T0s.')
     return
 end
