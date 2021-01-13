@@ -7,8 +7,9 @@ n = length(files);
 estimulo = struct;
 
 for i = 1:n
-   estimulo(i).name = horzcat(directorio, files(i).name);
-   estimulo(i).song = audioread(estimulo(i).name);
+   estimulo(i).name = files(i).name;
+   estimulo(i).dir = horzcat(directorio, files(i).name);
+   estimulo(i).song = audioread(estimulo(i).dir);
 end
 
 clear files n i
