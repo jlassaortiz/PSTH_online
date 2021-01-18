@@ -7,7 +7,7 @@ deadtime = (1E-3)*frequency_parameters.amplifier_sample_rate; % 1 ms deadtime
 
 % Busca elementos que crucen el umbral
 spike_times = find(raw_filtered < thr);
-if isempty(spike_times);
+if isempty(spike_times)
     disp('NO HAY EVENTOS QUE SUPEREN ESE UMBRAL')
     return
 end
@@ -19,9 +19,9 @@ spike_times = spike_times(prueba > deadtime);
 % Calcula los ISI entre spikes
 ISI = diff(spike_times);
 
-% Extrae los spikes de la raw data
+% Extrae los spikes shapes de la raw data
 for i = 1:length(spike_times)
-    if spike_times(i)<(5E-3)*frequency_parameters.amplifier_sample_rate;
+    if spike_times(i)<(5E-3)*frequency_parameters.amplifier_sample_rate
         continue
     end
     spike_samples(:,i) = raw_filtered((spike_times(i)-(0.8E-3)*frequency_parameters.amplifier_sample_rate):(spike_times(i)+(0.8E-3)*frequency_parameters.amplifier_sample_rate));
@@ -44,6 +44,8 @@ ylim([1.5*min(raw_filtered) 1.5*max(raw_filtered)])
 ylabel('V ($\mu$V)','Interpreter','Latex')
 xlabel('seg')
 
+title(datestr(now));
+
 % Spikes
 h(2)=subplot(2,2,3);
 t = (0:1:length(spike_samples(:,1)) -1)/frequency_parameters.amplifier_sample_rate * 1000;
@@ -65,6 +67,6 @@ ylabel('bin count')
 xlabel('Time (ms)')
 xlim([-5 105])
 
-suptitle(datestr(now));
+
 
 clear ISI time_scale prueba i deadtime t spike_samples

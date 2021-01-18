@@ -9,7 +9,9 @@ estimulos = struct;
 for i = 1:n
    estimulos(i).name = files(i).name;
    estimulos(i).dir = horzcat(directorio, files(i).name);
-   estimulos(i).song = audioread(estimulos(i).dir);
+   [y, Fs] = audioread(estimulos(i).dir);
+   estimulos(i).song = y;
+   estimulos(i).freq = Fs;
 end
 
-clear files n i
+clear files n i y Fs
