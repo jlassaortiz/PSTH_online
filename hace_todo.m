@@ -1,6 +1,6 @@
 % Script que hace todo de una
 
-directorio = 'E:\Javi - finch durmiendo\zf-JL016_NaVe\Datos\12-01-21\3 penetracion\zf-JL016-NaVe_p3_id_1_210112_170231';
+directorio = '/Users/javi_lassaortiz/Documents/LSD/Finch dormido/PSTH_online/zf-JL016-NaVe_p3_id_1_210112_170231';
 directorio = horzcat(directorio , '/');
 
 % Genero songs.mat a partir de las canciones

@@ -19,28 +19,56 @@ clear fileinfo_analog num_samples_analog num_channels_analog fid
 bpf = designfilt('bandpassiir','designmethod','butter','halfpowerfrequency1'...
     ,1000,'halfpowerfrequency2',3500,'filterorder',4,'samplerate',frequency_parameters.board_adc_sample_rate);
 
+analog_filt = filtfilt(bpf,analog);
+
 % No tengo idea como pero funciona bien
-[pks,lcs] = findpeaks(filtfilt(bpf,analog));
+[pks,lcs] = findpeaks(analog_filt);
 test = diff(pks);
-found = find(test > 0.5);
+found = find(test > 0.08);
 t0s = lcs(found); % ESTO ES LO QUE ME IMPORTA (me quedo con # de datos)
 a = find(diff(t0s) < 6*frequency_parameters.board_adc_sample_rate) + 1;
 t0s(a) = [];
+
+% Identifico con un umbral los timestamps de analog_filt donde ocurren los
+% estimulos
+t0s_beta = zeros(ntrials * length(estimulos), 1);
+t0s_picos = find(analog_filt > 0.05);
+
+for i = (0:1: ntrials * length(estimulos) -1)
+    
+    % Identifico el primer evento que supera el umbral y lo uso de guía
+    % Luego me quedo con el primer timestamp que cumple con la condicion:
+    % es mayor a = (numero_estimulo * tiempo_file) * 0.9
+    condicion = t0s_picos > (t0s_beta(1,1) + i * tiempo_file * frequency_parameters.amplifier_sample_rate) - 0.5 * frequency_parameters.amplifier_sample_rate ;
+    t_umbral = t0s_picos(logical(condicion));
+   
+    % Conservo solo el primer elemento que supera el umbral
+    t0s_beta(i+1,1) = t_umbral(1,1);
+    
+end
+
+% t0s_beta = findchangepts(analog_filt, ...
+%     'MaxNumChanges', length(estimulos) * ntrials, ...
+%     'MinDistance', 0.9 * tiempo_file * frequency_parameters.board_adc_sample_rate);
 
 % Verifica que cantidad de t0s sea la correcta
 if (length(t0s) ~= (ntrials * length(estimulos)))
     
     figure()
     t_analog = (0:1:length(analog)-1) / frequency_parameters.amplifier_sample_rate;
-    plot(t_analog, analog)
+    plot(t_analog, analog_filt)
     hold on
-    plot(t0s / frequency_parameters.amplifier_sample_rate, ones(length(t0s),1)*1, 'or')
+    plot(t0s / frequency_parameters.amplifier_sample_rate, ones(length(t0s),1)*0.1, 'or')
+    hold on
+    plot(t0s_beta / frequency_parameters.amplifier_sample_rate, ones(length(t0s_beta),1)*0.2, 'or')
+
+    title('analog filtrada');
     
     error('ERROR EN CANTIDAD DE T0s.')
     
 end
 
-clear pks lcs test found pksf a ans bpf;
+clear pks lcs test found a ans bpf;
 
 % CARGA EL VECTOR CON EL ORDEN DE LOS ESTIMULOS
 estimulos_log_info = dir(horzcat(directorio, '*estimulos*.txt'));
