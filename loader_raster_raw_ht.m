@@ -1,17 +1,6 @@
 % PARAMETROS GLOBALES
 ntrials = input('Numero de trials: ');
-
 tiempo_file = input('Tiempo entre estimulos (en s): ');
-
-% CARGA DATOS
-% % Levanto el timestamp de la raw data (sacado de manual Intan y modificado levemente)
-% fileinfo_time = dir(horzcat(directorio,'time.dat'));
-% num_samples_time = fileinfo_time.bytes/4; % int32 = 4 bytes
-% fid = fopen(horzcat(directorio,'time.dat'), 'r');
-% t= fread(fid, num_samples_time, 'int32');
-% fclose(fid);
-% t = t/frequency_parameters.amplifier_sample_rate; % sample rate from header file
-% clear fileinfo_time num_samples_time
 
 % Levanto la data de los canales analogicos (sacado del manual Intan y modificado levemente)
 num_channels_analog = length(board_adc_channels); % ADC input info from header file
@@ -38,7 +27,7 @@ t0s = lcs(found); % ESTO ES LO QUE ME IMPORTA (me quedo con # de datos)
 a = find(diff(t0s) < 6*frequency_parameters.board_adc_sample_rate) + 1;
 t0s(a) = [];
 
-if (length(t0s) ~= (ntrials * n_estimulos))
+if (length(t0s) ~= (ntrials * length(estimulos)))
     disp('ERROR EN CANTIDAD DE T0s.')
     return
 end
@@ -78,7 +67,6 @@ clear i j orden estimulo t0s
 
 % Guardo los spikes separados por estimulo y por trial en un struct
 raster = struct();
-% raster.trials = struct();
 
 % Para cada estimulo
 for i = (1:1:length(t0s_dictionary))
@@ -94,9 +82,6 @@ for i = (1:1:length(t0s_dictionary))
     
     % Para cada trial
     for j = (1:1: ntrials)
-        
-%         % Guardo el numero de cada trial
-%         raster(i).trials(j).ntrial = j;
         
         % Defino tiempo inicial y final del trial
         t_inicial = t0s_dictionary(i).t0s(j);
@@ -130,8 +115,6 @@ for i = (1:1:length(t0s_dictionary))
 end
 
 clear estimulo t_inicial t_final spikes_trial trial trial_id spikes_norm i j
-
-
 
 
 % PLOTEO
@@ -174,13 +157,10 @@ for i = (1:1: length(raster))
     ylim([0 ntrials + 1])
 end
 
-% Linkeo eje x
-% linkaxes([h((1:3:length(h)))], 'y');
-% linkaxes([h((2:3:length(h)))], 'y');
-% linkaxes([h((3:3:length(h)))], 'y');
+% Linkeo eje x (no se pueden hacer varios links independientes juntos)
 linkaxes(h, 'x');
 
 % tTitulo general
 sgtitle(strcat(string(puerto_canal), " " , string(thr), "uV"))
 
-clear i j m n p
+clear i j m n p h

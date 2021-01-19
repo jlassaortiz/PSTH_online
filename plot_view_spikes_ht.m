@@ -60,13 +60,11 @@ ylabel('V ($\mu$V)','Interpreter','Latex')
 xlabel('mseg')
 xlim([0 1.6])
 
-%Distribucion de ISIs
+% Distribucion de ISIs
 h(3)=subplot(2,2,4);
 histogram(ISI/(frequency_parameters.amplifier_sample_rate /1000),0:1:100)
 ylabel('bin count')
 xlabel('Time (ms)')
 xlim([-5 105])
-
-
 
 clear ISI time_scale prueba i deadtime t spike_samples
