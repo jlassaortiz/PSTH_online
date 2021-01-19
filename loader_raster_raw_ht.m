@@ -27,9 +27,17 @@ t0s = lcs(found); % ESTO ES LO QUE ME IMPORTA (me quedo con # de datos)
 a = find(diff(t0s) < 6*frequency_parameters.board_adc_sample_rate) + 1;
 t0s(a) = [];
 
+% Verifica que cantidad de t0s sea la correcta
 if (length(t0s) ~= (ntrials * length(estimulos)))
-    disp('ERROR EN CANTIDAD DE T0s.')
-    return
+    
+    figure()
+    t_analog = (0:1:length(analog)-1) / frequency_parameters.amplifier_sample_rate;
+    plot(t_analog, analog)
+    hold on
+    plot(t0s / frequency_parameters.amplifier_sample_rate, ones(length(t0s),1)*1, 'or')
+    
+    error('ERROR EN CANTIDAD DE T0s.')
+    
 end
 
 clear pks lcs test found pksf a ans bpf;
@@ -160,7 +168,7 @@ end
 % Linkeo eje x (no se pueden hacer varios links independientes juntos)
 linkaxes(h, 'x');
 
-% tTitulo general
+% Titulo general
 sgtitle(strcat(string(puerto_canal), " " , string(thr), "uV"))
 
 clear i j m n p h
