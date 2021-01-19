@@ -131,153 +131,56 @@ end
 
 clear estimulo t_inicial t_final spikes_trial trial trial_id spikes_norm i j
 
-figure()
-title(raster(1).estimulo , 'Interpreter','None')
+
+
 
 % PLOTEO
 
 figure()
 n = 5 * round(length(estimulos)/2);
 m = 2;
+j = 0;
 
 for i = (1:1: length(raster))
     
+    if mod(i, 2) == 1
+        p = (i - 1)/2 * 10 + 1;
+    else
+        p = ((i / 2) - 1) * 10 + 2;
+    end
+        
     % sonido
-    subplot(n, m , i);
+    j = j + 1;
+    h(j) = subplot(n, m , p);
     plot(1000/estimulos(i).freq * (0:1:(length(estimulos(i).song) -1)), estimulos(i).song,'black')
     hold on;
     line([0 tiempo_file*1000],[0 0],'color',[0 0 0]);
+    xlim([0 tiempo_file * 1000])
     title(estimulos(i).name, 'Interpreter','None')
     
     % psth
-    subplot(n, m, [n_estimulos + 2, n_estimulos + 4])
-    histogram(raster(i).spikes_norm, 0.015 * frequency_parameters.amplifier_sample_rate);
+    j = j + 1;
+    h(j) = subplot(n, m, [p + 2, p + 4]);
+    histogram(raster(i).spikes_norm * 1000/frequency_parameters.amplifier_sample_rate , ...
+        (1000/frequency_parameters.amplifier_sample_rate) * (-1000:(0.015*frequency_parameters.amplifier_sample_rate):(tiempo_file*frequency_parameters.amplifier_sample_rate)) );
+    ylim([0 ntrials + 10]);
+    xlim([0 tiempo_file * 1000]);
     
     % raster
-    subplot(n, m, [n_estimulo + 6, n_estimulos + 8])
-    plot(raster(i).spikes_norm, raster(i).trials_id, '.')
-   
-    % titulo general
-    sgtitle(strcat(string(puerto_canal), " " , string(thr), "uV"))
-    
+    j = j + 1;
+    h(j) = subplot(n, m, [p + 6, p + 8]);
+    plot((1000/frequency_parameters.amplifier_sample_rate) * raster(i).spikes_norm, raster(i).trials_id, '.')  
+    xlim([0 tiempo_file * 1000])
+    ylim([0 ntrials + 1])
 end
 
+% Linkeo eje x
+% linkaxes([h((1:3:length(h)))], 'y');
+% linkaxes([h((2:3:length(h)))], 'y');
+% linkaxes([h((3:3:length(h)))], 'y');
+linkaxes(h, 'x');
 
-% % RASTER + HISTOGRAMAS (alinea con t0s obtenidos). Un poco nesteado, pero sale!
-% % BOS,CON y REV (trials)
-% for i=1:ntrials
-%   trialBOS{i}=cluster(cluster(cluster<=t0BOS(i)+tiempo_file*sampling_freq)>(t0BOS(i)))-t0BOS(i);
-%     trialCON{i}=cluster(cluster(cluster<=t0CON(i)+tiempo_file*sampling_freq)>(t0CON(i)))-t0CON(i);
-%       trialREV{i}=cluster(cluster(cluster<=t0REV(i)+tiempo_file*sampling_freq)>(t0REV(i)))-t0REV(i);
-% end
-% 
-% % BOS,CON y REV (histogramas);
-% % Esto calcula los histogramas 'suavizados' a partir del raster
-% psth.t=0:1:(tiempo_file*sampling_freq-1);
-% BOS_spikes=cell2mat(trialBOS(:));
-% CON_spikes=cell2mat(trialCON(:));
-% REV_spikes=cell2mat(trialREV(:));
-% % for i=1:length(psth.t)
-% %     if i>timer && i<=(length(psth.t)-timer)
-% %         psth.BOS(i)=length(find(BOS_spikes(BOS_spikes>psth.t(i-timer))<=psth.t(i+timer)));
-% %         psth.CON(i)=length(find(CON_spikes(CON_spikes>psth.t(i-timer))<=psth.t(i+timer)));
-% %         psth.REV(i)=length(find(REV_spikes(REV_spikes>psth.t(i-timer))<=psth.t(i+timer)));
-% %     end
-% %     if i<=timer
-% %         psth.BOS(i)=length(find(BOS_spikes(BOS_spikes>psth.t(1))<=psth.t(i+timer)));
-% %         psth.CON(i)=length(find(CON_spikes(CON_spikes>psth.t(1))<=psth.t(i+timer)));
-% %         psth.REV(i)=length(find(REV_spikes(REV_spikes>psth.t(1))<=psth.t(i+timer)));
-% %     end
-% %     if i>length(psth.t)-timer
-% %         psth.BOS(i)=length(find(BOS_spikes(BOS_spikes>psth.t(i-timer))<=psth.t(end)));
-% %         psth.CON(i)=length(find(CON_spikes(CON_spikes>psth.t(i-timer))<=psth.t(end)));
-% %         psth.REV(i)=length(find(REV_spikes(REV_spikes>psth.t(i-timer))<=psth.t(end)));
-% %     end
-% % end
-% 
-% % PSTH discretos (subsampling del PSTH 'suave')
-% % j=1;
-% % for i=timer:(2*timer):length(psth.BOS);
-% % psth_BOS(j)=psth.BOS(i);
-% % psth_CON(j)=psth.CON(i);
-% % psth_REV(j)=psth.REV(i);
-% % j=j+1;
-% % end
-% % psth_t=timer:(2*timer):length(psth.BOS);
-% % clear j
-% 
-% % % % % % % % % FIGURA % % % % % % % % %
-% figure(2)
-% %load songs.mat
-% %%%%%%%
-% % BOS %
-% %%%%%%%
-% h(1)=subplot(10,2,1); % Senal BOS
-% plot((1000/(sound_fs))*(0:1:(length(BOS)-1)),BOS,'black')
-% hold on
-% line([0 tiempo_file*1000],[0 0],'color',[0 0 0])
-% 
-% h(2)=subplot(10,2,[3,5]); % PSTH BOS
-% histogram((1000/sampling_freq)*cell2mat(trialBOS(:)),(1000/sampling_freq)*(-1000:(0.015*sampling_freq):(tiempo_file*sampling_freq)),'FaceColor','blue')
-% 
-% h(3)=subplot(10,2,[7,9]); % RASTER
-% for i=1:ntrials
-%     if(isempty(trialBOS{:,i})==1)
-%         continue
-%     end
-% line([trialBOS{:,i} trialBOS{:,i}]/(sampling_freq/1000),[i-0.45 i+0.45],'color',[1 0 0])
-% hold on
-% end
-% 
-% %%%%%%%
-% % CON %
-% %%%%%%%
-% h(4)=subplot(10,2,2); % Senal CON
-% plot((1000/44100)*(0:1:length(CON)-1),CON,'black')
-% hold on
-% line([0 tiempo_file*1000],[0 0],'color',[0 0 0])
-% 
-% h(5)=subplot(10,2,[4,6]); % PSTH CON
-% histogram((1000/sampling_freq)*cell2mat(trialCON(:)),(1000/sampling_freq)*(-1000:(0.015*sampling_freq):(tiempo_file*sampling_freq)),'FaceColor','blue')
-% 
-% h(6)=subplot(10,2,[8,10]); % RASTER CON
-% for i=1:ntrials
-%     if(isempty(trialCON{:,i})==1)
-%         continue
-%     end
-% line([trialCON{:,i} trialCON{:,i}]/(sampling_freq/1000),[i-0.45 i+0.45],'color',[1 0 0])
-% end
-% 
-% %%%%%%%
-% % REV %
-% %%%%%%%
-% h(7)=subplot(10,2,12); % Senal REV
-% plot((1000/sound_fs)*(0:1:length(REV)-1),REV,'black')
-% hold on
-% line([0 tiempo_file*1000],[0 0],'color',[0 0 0])
-% 
-% h(8)=subplot(10,2,[14,16]); % PSTH REV
-% histogram((1000/sampling_freq)*cell2mat(trialREV(:)),(1000/sampling_freq)*(-1000:(0.015*sampling_freq):(tiempo_file*sampling_freq)),'FaceColor','blue')
-% 
-% h(9)=subplot(10,2,[18,20]); % RASTER REV
-% for i=1:ntrials
-%     if(isempty(trialREV{:,i})==1)
-%         continue
-%     end
-% line([trialREV{:,i} trialREV{:,i}]/(sampling_freq/1000),[i-0.45 i+0.45],'color',[1 0 0])
-% hold on
-% end
-% 
-% % PROPIEDADES DEL GRAFICO
-% linkaxes(h,'x')
-% linkaxes([h(2),h(5),h(8)],'y')
-% xlim([0 tiempo_file*1000])
-% ylim([0 ntrials+120])
-% set([h(1),h(4),h(7)],'XTick',[],'YTick',[])
-% %set([h(2),h(5),h(8)],'YLim',[0 1.5*max(psth_BOS)])
-% set([h(3),h(6),h(9)],'YLim',[0 ntrials+1])
-% %set([h(2),h(5),h(8)],'YLim',[0 30])
-% set(h,'FontSize',8)
-% %saveas(figure(2),'Protocolo_raster+histo.eps','epsc')
-% 
-% clear a ans i timer bpf st_vec t0s
+% tTitulo general
+sgtitle(strcat(string(puerto_canal), " " , string(thr), "uV"))
+
+clear i j m n p
