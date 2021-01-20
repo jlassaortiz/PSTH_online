@@ -67,4 +67,7 @@ ylabel('bin count')
 xlabel('Time (ms)')
 xlim([-5 105])
 
+sgtitle({datestr(now, 'yyyy-mm-dd'); ...
+    string(directorio) }, 'Interpreter','None')
+
 clear ISI time_scale prueba i deadtime t spike_samples
