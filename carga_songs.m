@@ -1,4 +1,4 @@
-
+function estimulos = carga_songs(directorio)
 % Crea el archivo 'songs.mat' con los .wav que encuentra en el directorio
 files = dir(horzcat(directorio,'*.wav'));
 n = length(files);
@@ -14,4 +14,5 @@ for i = 1:n
    estimulos(i).freq = Fs;
 end
 
-clear files n i y Fs
+end
+%clear files n i y Fs

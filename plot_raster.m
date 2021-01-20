@@ -1,4 +1,4 @@
-function plot_raster(i, estimulos, rasters, frequency_parameters, tiempo_file, ntrials, puerto_canal, thr)
+function plot_raster(i, estimulos, rasters, frequency_parameters, tiempo_file, ntrials, puerto_canal, thr, directorio)
 % 
 % plot_raster plotea el raster y psth del número de estímulo indicado
 %   Detailed explanation goes here
@@ -30,7 +30,9 @@ ylim([0 ntrials + 1])
 linkaxes(h, 'x');
 
 % Titulo general
-sgtitle(strcat(string(puerto_canal), " " , string(thr), "uV"))
+sgtitle({datestr(now); ...
+    string(directorio) ; ...
+    strcat(string(puerto_canal), "  " , string(thr), "uV", "  ntrials:", string(ntrials), "  t_inter_estimulo:", string(tiempo_file)) }, 'Interpreter','None')
 
 end
 
