@@ -21,46 +21,58 @@ bpf = designfilt('bandpassiir','designmethod','butter','halfpowerfrequency1'...
 
 analog_filt = filtfilt(bpf,analog);
 
-% No tengo idea como pero funciona bien
-[pks,lcs] = findpeaks(analog_filt);
-test = diff(pks);
-found = find(test > 0.08);
-t0s = lcs(found); % ESTO ES LO QUE ME IMPORTA (me quedo con # de datos)
-a = find(diff(t0s) < 6*frequency_parameters.board_adc_sample_rate) + 1;
-t0s(a) = [];
+clear analog
+
+% % No tengo idea como pero funciona bien
+% [pks,lcs] = findpeaks(analog_filt);
+% test = diff(pks);
+% found = find(test > 0.08);
+% t0s = lcs(found); % ESTO ES LO QUE ME IMPORTA (me quedo con # de datos)
+% a = find(diff(t0s) < 6*frequency_parameters.board_adc_sample_rate) + 1;
+% t0s(a) = [];
 
 % Identifico con un umbral los timestamps de analog_filt donde ocurren los
 % estimulos
-t0s_beta = zeros(ntrials * length(estimulos), 1);
-t0s_picos = find(analog_filt > 0.05);
+umbral = 0.05;
+locs_estimulos = find(analog_filt > umbral);
 
-for i = (0:1: ntrials * length(estimulos) -1)
+% Inicializo vector donde voy a guardar t0s
+t0s = zeros(ntrials * length(estimulos), 1);
+
+% Para cada presentacion de estimulo
+for i = (1:1: ntrials * length(estimulos))
     
-    % Identifico el primer evento que supera el umbral y lo uso de guía
-    % Luego me quedo con el primer timestamp que cumple con la condicion:
-    % es mayor a = (numero_estimulo * tiempo_file) * 0.9
-    condicion = t0s_picos > (t0s_beta(1,1) + i * tiempo_file * frequency_parameters.amplifier_sample_rate) - 0.5 * frequency_parameters.amplifier_sample_rate ;
-    t_umbral = t0s_picos(logical(condicion));
-   
-    % Conservo solo el primer elemento que supera el umbral
-    t0s_beta(i+1,1) = t_umbral(1,1);
+    % Identifico el primer evento que supera el umbral
+    if i == 1
+        condicion = locs_estimulos > 0 ;
+        t_umbral = locs_estimulos(logical(condicion));
+        
+        t0s(1,1) = t_umbral(1,1);
+        
+    else
+    
+        % Uso el t0s anterior como referencia para buscar el siguiente
+        condicion = locs_estimulos > (t0s(i-1,1) + tiempo_file * frequency_parameters.board_adc_sample_rate) - 1.0 * frequency_parameters.board_adc_sample_rate ;
+        t_umbral = locs_estimulos(logical(condicion));
+
+        % Conservo solo el primer elemento que supera el umbral
+        t0s(i,1) = t_umbral(1,1);
+        
+    end
     
 end
 
-% t0s_beta = findchangepts(analog_filt, ...
-%     'MaxNumChanges', length(estimulos) * ntrials, ...
-%     'MinDistance', 0.9 * tiempo_file * frequency_parameters.board_adc_sample_rate);
+clear condicion t_umbral locs_estimulos
+
 
 % Verifica que cantidad de t0s sea la correcta
 if (length(t0s) ~= (ntrials * length(estimulos)))
     
     figure()
-    t_analog = (0:1:length(analog)-1) / frequency_parameters.amplifier_sample_rate;
+    t_analog = (0:1:length(analog_filt)-1) / frequency_parameters.board_adc_sample_rate;
     plot(t_analog, analog_filt)
     hold on
-    plot(t0s / frequency_parameters.amplifier_sample_rate, ones(length(t0s),1)*0.1, 'or')
-    hold on
-    plot(t0s_beta / frequency_parameters.amplifier_sample_rate, ones(length(t0s_beta),1)*0.2, 'or')
+    plot(t0s / frequency_parameters.board_adc_sample_rate, ones(length(t0s),1)* umbral, 'or')
 
     title('analog filtrada');
     
@@ -68,7 +80,8 @@ if (length(t0s) ~= (ntrials * length(estimulos)))
     
 end
 
-clear pks lcs test found a ans bpf;
+clear pks lcs test found a ans bpf umbral;
+
 
 % CARGA EL VECTOR CON EL ORDEN DE LOS ESTIMULOS
 estimulos_log_info = dir(horzcat(directorio, '*estimulos*.txt'));
@@ -101,15 +114,18 @@ end
 
 clear i j orden estimulo t0s
 
+
+
+
 % Guardo los spikes separados por estimulo y por trial en un struct
-raster = struct();
+rasters = struct();
 
 % Para cada estimulo
 for i = (1:1:length(t0s_dictionary))
     
     % Guardo el nombre de cada estimulo
     estimulo = string(t0s_dictionary(i).id_estimulo);
-    raster(i).estimulo = estimulo;
+    rasters(i).estimulo = estimulo;
     
     % Inicializo la lista donde guardo los spikestimes normalizados de cada
     % estimulo y el id del trial
@@ -145,8 +161,8 @@ for i = (1:1:length(t0s_dictionary))
     end
     
     % Guardo los spikes y los trial_id de este estimulo
-    raster(i).spikes_norm = spikes_norm(2:end); % elimino el primer cero
-    raster(i).trials_id = trial_id(2:end); % elimino el primer cero
+    rasters(i).spikes_norm = spikes_norm(2:end); % elimino el primer cero
+    rasters(i).trials_id = trial_id(2:end); % elimino el primer cero
     
 end
 
@@ -160,7 +176,8 @@ n = 5 * round(length(estimulos)/2);
 m = 2;
 j = 0;
 
-for i = (1:1: length(raster))
+% Para cada estimulo
+for i = (1:1: length(rasters))
     
     if mod(i, 2) == 1
         p = (i - 1)/2 * 10 + 1;
@@ -175,20 +192,22 @@ for i = (1:1: length(raster))
     hold on;
     line([0 tiempo_file*1000],[0 0],'color',[0 0 0]);
     xlim([0 tiempo_file * 1000])
-    title(estimulos(i).name, 'Interpreter','None')
+    title(strcat(string(i), " - ",estimulos(i).name), 'Interpreter','None')
+    xticks([]);
     
     % psth
     j = j + 1;
     h(j) = subplot(n, m, [p + 2, p + 4]);
-    histogram(raster(i).spikes_norm * 1000/frequency_parameters.amplifier_sample_rate , ...
+    histogram(rasters(i).spikes_norm * 1000/frequency_parameters.amplifier_sample_rate , ...
         (1000/frequency_parameters.amplifier_sample_rate) * (-1000:(0.015*frequency_parameters.amplifier_sample_rate):(tiempo_file*frequency_parameters.amplifier_sample_rate)) );
     ylim([0 ntrials + 10]);
     xlim([0 tiempo_file * 1000]);
+    xticks([]);
     
     % raster
     j = j + 1;
     h(j) = subplot(n, m, [p + 6, p + 8]);
-    plot((1000/frequency_parameters.amplifier_sample_rate) * raster(i).spikes_norm, raster(i).trials_id, '.')  
+    plot((1000/frequency_parameters.amplifier_sample_rate) * rasters(i).spikes_norm, rasters(i).trials_id, '.')  
     xlim([0 tiempo_file * 1000])
     ylim([0 ntrials + 1])
 end
