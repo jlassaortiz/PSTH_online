@@ -1,4 +1,6 @@
 % Script que hace todo de una
+close all
+clear all
 
 directorio = input('Directorio: ','s');
 directorio = horzcat(directorio , '/');
