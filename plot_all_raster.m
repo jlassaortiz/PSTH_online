@@ -1,5 +1,7 @@
 function plot_all_raster(estimulos, rasters, frequency_parameters, tiempo_file, ntrials, puerto_canal, thr, directorio)
 
+psth_max = ntrials +10;
+
 figure()
 n = 5 * round(length(estimulos)/2);
 m = 2;
@@ -29,7 +31,7 @@ for i = (1:1: length(rasters))
     h(j) = subplot(n, m, [p + 2, p + 4]);
     histogram(rasters(i).spikes_norm * 1000/frequency_parameters.amplifier_sample_rate , ...
         (1000/frequency_parameters.amplifier_sample_rate) * (-1000:(0.015*frequency_parameters.amplifier_sample_rate):(tiempo_file*frequency_parameters.amplifier_sample_rate)) );
-    ylim([0 ntrials + 10]);
+    ylim([0 psth_max]);
     xlim([0 tiempo_file * 1000]);
     xticks([]);
     
