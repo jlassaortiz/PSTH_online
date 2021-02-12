@@ -6,7 +6,12 @@ thr = input('Threshold para el threshold cutting (en muV):  ');
 deadtime = (1E-3)*frequency_parameters.amplifier_sample_rate; % 1 ms deadtime
 
 % Busca elementos que crucen el umbral
-spike_times = find(raw_filtered < thr);
+if thr < 0
+    spike_times = find(raw_filtered < thr);
+else
+    spike_times = find(raw_filtered > thr);
+end
+
 if isempty(spike_times)
     disp('NO HAY EVENTOS QUE SUPEREN ESE UMBRAL')
     return
