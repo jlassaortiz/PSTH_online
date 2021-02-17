@@ -28,8 +28,16 @@ filt_spikes = designfilt('highpassiir','DesignMethod','butter','FilterOrder',...
 raw_filtered = filtfilt(filt_spikes, raw);
 clear puerto canal filt_spikes
 
+% Definimos un umbral para threshold cutting (en uV)
+thr = input('Threshold para el threshold cutting (en uV):  ');
+
+% Buscamos spike por threshold cutting
+spike_times = find_spike_times(raw_filtered, thr, frequency_parameters);
+
 % Carga datos filtrados y hace un threshold cutting
-plot_view_spikes_ht
+plot_spikes_shapes(raw_filtered, spike_times, thr, frequency_parameters, directorio)
+
+clear ISI time_scale prueba i deadtime t spike_samples
 
 % Grafica raster
 loader_raster_raw_ht

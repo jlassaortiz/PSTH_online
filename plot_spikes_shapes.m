@@ -1,25 +1,12 @@
-% Script para detectar spikes en la raw  data y plotearlos
-% Sirve para analizar la calidad de los datos obtenidos con threshold cutting
+function plot_spikes_shapes(raw_filtered, spike_times, thr, frequency_parameters, directorio)
 
-% Definimos un umbral y un deadtime de 1 ms
-thr = input('Threshold para el threshold cutting (en muV):  ');
-deadtime = (1E-3)*frequency_parameters.amplifier_sample_rate; % 1 ms deadtime
-
-% Busca elementos que crucen el umbral
-if thr < 0
-    spike_times = find(raw_filtered < thr);
-else
-    spike_times = find(raw_filtered > thr);
-end
-
-if isempty(spike_times)
-    disp('NO HAY EVENTOS QUE SUPEREN ESE UMBRAL')
-    return
-end
-
-% Se fija cuales estan separados mas de 1 ms
-prueba = diff(spike_times);
-spike_times = spike_times(prueba > deadtime);
+% Plotea spike shapes, ISI y raw data filtrada
+% Necesita:
+% 1) la señal neuronal filtrada
+% 2) los time stamps (en samples NO en unidades de tiempo) donde estan los spikes 
+% 3) el umbral en uV
+% 4) el objeto frequency_parameters generado por read_Intan_RHD2000_file.m
+% 5) directorio donde estan los archivos de datos analizados
 
 % Calcula los ISI entre spikes
 ISI = diff(spike_times);
@@ -49,8 +36,6 @@ ylim([1.5*min(raw_filtered) 1.5*max(raw_filtered)])
 ylabel('V ($\mu$V)','Interpreter','Latex')
 xlabel('seg')
 
-title(datestr(now));
-
 % Spikes
 h(2)=subplot(2,2,3);
 t = (0:1:length(spike_samples(:,1)) -1)/frequency_parameters.amplifier_sample_rate * 1000;
@@ -75,4 +60,4 @@ xlim([-5 105])
 sgtitle({datestr(now, 'yyyy-mm-dd'); ...
     string(directorio) }, 'Interpreter','None')
 
-clear ISI time_scale prueba i deadtime t spike_samples
+end
