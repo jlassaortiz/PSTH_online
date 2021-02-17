@@ -1,6 +1,9 @@
-% PARAMETROS GLOBALES
-ntrials = input('Numero de trials: ');
-tiempo_file = input('Tiempo entre estimulos (en s): ');
+function t0s_dictionary = find_t0s(estimulos, ntrials, tiempo_file, board_adc_channels, frequency_parameters, directorio) 
+
+% Genero diccionario con nombre de archivos de auido y tiempos en que se presentaron 
+% Los tiempos estan en samples, NO en unidades de tiempo
+% Cada entrada del dict es el nombre de un archivo de audio
+
 
 % Levanto la data de los canales analogicos (sacado del manual Intan y modificado levemente)
 num_channels_analog = length(board_adc_channels); % ADC input info from header file
@@ -11,7 +14,6 @@ analog = fread(fid, [num_channels_analog, num_samples_analog], 'uint16');
 fclose(fid);
 analog = analog * 0.000050354; % convert to volts
 analog = analog';
-clear fileinfo_analog num_samples_analog num_channels_analog fid
 
 % IDENTIFICA TIEMPOS EN QUE COMENZO CADA ESTIMULO
 % Armo el vector de los t_0 en los que se presento cada estimulo.
@@ -23,16 +25,7 @@ analog_filt = filtfilt(bpf,analog);
 
 clear analog
 
-% % No tengo idea como pero funciona bien
-% [pks,lcs] = findpeaks(analog_filt);
-% test = diff(pks);
-% found = find(test > 0.08);
-% t0s = lcs(found); % ESTO ES LO QUE ME IMPORTA (me quedo con # de datos)
-% a = find(diff(t0s) < 6*frequency_parameters.board_adc_sample_rate) + 1;
-% t0s(a) = [];
-
-% Identifico con un umbral los timestamps de analog_filt donde ocurren los
-% estimulos
+% Identifico con un umbral los timestamps de analog_filt donde ocurren los estimulos
 umbral = 0.05;
 locs_estimulos = find(analog_filt > umbral);
 
@@ -56,10 +49,8 @@ for i = (1:1: ntrials * length(estimulos))
         t_umbral = locs_estimulos(logical(condicion));
 
         % Conservo solo el primer elemento que supera el umbral
-        t0s(i,1) = t_umbral(1,1);
-        
-    end
-    
+        t0s(i,1) = t_umbral(1,1);  
+    end  
 end
 
 clear condicion t_umbral locs_estimulos
@@ -76,8 +67,7 @@ if (length(t0s) ~= (ntrials * length(estimulos)))
 
     title('analog filtrada');
     
-    error('ERROR EN CANTIDAD DE T0s.')
-    
+    error('ERROR EN CANTIDAD DE T0s.')   
 end
 
 clear pks lcs test found a ans bpf umbral;
@@ -112,61 +102,5 @@ for i = (1:1:length(estimulos))
     
 end 
 
-clear i j orden estimulo t0s
-
-
-
-
-% Guardo los spikes separados por estimulo y por trial en un struct
-rasters = struct();
-
-% Para cada estimulo
-for i = (1:1:length(t0s_dictionary))
-    
-    % Guardo el nombre de cada estimulo
-    estimulo = string(t0s_dictionary(i).id_estimulo);
-    rasters(i).estimulo = estimulo;
-    
-    % Inicializo la lista donde guardo los spikestimes normalizados de cada
-    % estimulo y el id del trial
-    spikes_norm = ones(1,1);
-    trial_id = ones(1,1);
-    
-    % Para cada trial
-    for j = (1:1: ntrials)
-        
-        % Defino tiempo inicial y final del trial
-        t_inicial = t0s_dictionary(i).t0s(j);
-        t_final = t_inicial + tiempo_file * frequency_parameters.amplifier_sample_rate;
-        
-        % Busco los spikes que ocurrieron durante el trial
-        spikes_trial = spike_times(spike_times > t_inicial & spike_times < t_final);
-        
-        % Normalizo los spikes times de cada trial
-        spikes_trial = spikes_trial - t_inicial;
-        
-        % Genero vector con la informacion del numero de trial
-        trial = ones(length(spikes_trial), 1) * j;
-        
-        % Apendeo los spiketimes de este trial a la lista de spike times
-        % del estimuolo
-        spikes_norm = vertcat(spikes_norm, spikes_trial);
-        
-        % Apendeo el numero de trial a la lista de trial_id del estimulo
-        trial_id = vertcat(trial_id, trial);
-        
-        % Guardo los spikes y los trial_id de este estimulo
-        % raster(i).trials(j).spikes = spikes_trial;
-        
-    end
-    
-    % Guardo los spikes y los trial_id de este estimulo
-    rasters(i).spikes_norm = spikes_norm(2:end); % elimino el primer cero
-    rasters(i).trials_id = trial_id(2:end); % elimino el primer cero
-    
 end
 
-clear estimulo t_inicial t_final spikes_trial trial trial_id spikes_norm i j
-
-
-plot_all_raster(estimulos, rasters, frequency_parameters, tiempo_file, ntrials, puerto_canal, thr, directorio)

@@ -37,7 +37,18 @@ spike_times = find_spike_times(raw_filtered, thr, frequency_parameters);
 % Carga datos filtrados y hace un threshold cutting
 plot_spikes_shapes(raw_filtered, spike_times, thr, frequency_parameters, directorio)
 
-clear ISI time_scale prueba i deadtime t spike_samples
+% clear ISI time_scale prueba i deadtime t spike_samples
+
+% Cargamos cantidad de trials y tiempo que dura cada uno
+ntrials = input('Numero de trials: ');
+tiempo_file = input('Tiempo entre estimulos (en s): ');
+
+% Genero diccionario con nombre de los estimulos y el momento de presentacion
+t0s_dictionary = find_t0s(estimulos, ntrials, tiempo_file, board_adc_channels, frequency_parameters, directorio);
+
+% Genero objeto con raster de todos los estimulos
+rasters = generate_raster(spike_times, t0s_dictionary, tiempo_file, ntrials, frequency_parameters);
 
 % Grafica raster
-loader_raster_raw_ht
+plot_all_raster(estimulos, rasters, frequency_parameters, tiempo_file, ntrials, puerto_canal, thr, directorio)
+
