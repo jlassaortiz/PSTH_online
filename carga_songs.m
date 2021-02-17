@@ -1,5 +1,12 @@
 function estimulos = carga_songs(directorio)
-% Crea el archivo 'songs.mat' con los .wav que encuentra en el directorio
+
+% Crea struct 'estimulos' con los .wav que encuentra en 'directorio'
+% Los atributos de la struct son:
+% name: nombre del archivo de audio
+% dir: directorio completo del archivo de audio
+% song: señal de sonido en formato matriz de matlab
+% freq: frecuencia de sampleo del archivo de audio
+
 files = dir(horzcat(directorio,'*.wav'));
 n = length(files);
 
@@ -15,4 +22,3 @@ for i = 1:n
 end
 
 end
-%clear files n i y Fs

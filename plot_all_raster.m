@@ -1,6 +1,6 @@
 function plot_all_raster(estimulos, rasters, frequency_parameters, tiempo_file, ntrials, puerto_canal, thr, directorio)
 
-psth_max = ntrials +10;
+psth_max = ntrials ;
 
 figure()
 n = 5 * round(length(estimulos)/2);

@@ -3,7 +3,7 @@ function plot_some_raster(id_estimulos, estimulos, rasters, frequency_parameters
 % plot_raster plotea el raster y psth del número de estímulo indicado
 %   Detailed explanation goes here
 
-psth_max = ntrials +10;
+psth_max = ntrials ;
 
 figure()
 n = 5 * round(length(id_estimulos)/2);

@@ -1,9 +1,11 @@
-% Script que filtra la raw data de un canal (ideal para protocolos largos)
+function raw = read_INTAN_channel(directorio, puerto_canal, amplifier_channels)
 
-% Eligo un canal de un puerto en especifico
-puerto = input('Puerto a levantar: ','s');
-canal = input('Canal de INTAN a filtrar (X-0XX):  ');
-puerto_canal = [puerto '-0' num2str(canal,'%.2d')];
+% Levanta un canal del amplificador INTAN
+% Se debe especificar: 
+% 1) el directorio donde esta el archivo amplifier.dat
+% 2) el canal a levantar en formato "PUERTO-NUMERO_CANAL" por ej: A-019
+% ATENCION: el nombre del canal se asume que es el NATIVO
+% 3) objeto amplifier_channerls generado por read_INTAN_RHD2000_file.m
 
 % Comparo "puerto_canal" vs la lista de canales en amplifier_channels
 aux = strcmp(puerto_canal,{amplifier_channels(:).native_channel_name});
@@ -23,12 +25,4 @@ raw = fread(fid, 'int16', 2*(length(amplifier_channels) -1));
 fclose(fid);
 raw = raw*0.195; % convierte en microvots
 
-% Define el filtro
-filt_spikes = designfilt('highpassiir','DesignMethod','butter','FilterOrder',...
-    4,'HalfPowerFrequency',500,'SampleRate',frequency_parameters.amplifier_sample_rate);
-
-% Aplica filtro
-raw_filtered = filtfilt(filt_spikes, raw);
-
-% BORRO variables inservibles
-clear puerto canal aux fid raw filt_spikes ans filtrar
+end
