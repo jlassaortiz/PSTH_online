@@ -49,6 +49,7 @@ plot(t, mean(spike_samples,2)-std(spike_samples,0,2),'color',1/100*[0 1 1])
 ylabel('V ($\mu$V)','Interpreter','Latex')
 xlabel('mseg')
 xlim([0 1.6])
+title(thr)
 
 % Distribucion de ISIs
 h(3)=subplot(2,2,4);

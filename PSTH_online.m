@@ -37,8 +37,6 @@ spike_times = find_spike_times(raw_filtered, thr, frequency_parameters);
 % Carga datos filtrados y hace un threshold cutting
 plot_spikes_shapes(raw_filtered, spike_times, thr, frequency_parameters, directorio)
 
-% clear ISI time_scale prueba i deadtime t spike_samples
-
 % Cargamos cantidad de trials y tiempo que dura cada uno
 ntrials = input('Numero de trials: ');
 tiempo_file = input('Tiempo entre estimulos (en s): ');
