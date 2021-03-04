@@ -8,7 +8,7 @@ function rasters = generate_raster(spike_times, t0s_dictionary, tiempo_file, ntr
 % 4) objeto frequency_parameters generado por read_Intan_RHD2000_file.m
 %
 % Devuelve un struct donde las entradas son los nombres de los estimulos, 
-% el tiempo en que ocurren los spikes "normalizados" al comienzo del
+% el tiempo (en samples) en que ocurren los spikes "normalizados" al comienzo del
 % estimulo y para cada spike se guarda el numero de trial en el que ocurrio
 
 % Guardo los spikes separados por estimulo y por trial en un struct
@@ -48,9 +48,6 @@ for i = (1:1:length(t0s_dictionary))
         
         % Apendeo el numero de trial a la lista de trial_id del estimulo
         trial_id = vertcat(trial_id, trial);
-        
-        % Guardo los spikes y los trial_id de este estimulo
-        % raster(i).trials(j).spikes = spikes_trial;
         
     end
     
