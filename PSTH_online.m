@@ -16,6 +16,9 @@ tiempo_file = input('Tiempo entre estimulos (en s): ');
 % Definimos un umbral para threshold cutting (en uV)
 thr = input('Threshold para el threshold cutting (en uV):  ');
 
+% Especifico numero de id del BOS
+id_BOS = input('id BOS': );
+
 % Genero songs.mat a partir de las canciones
 estimulos = carga_songs(directorio);
 
@@ -47,5 +50,5 @@ t0s_dictionary = find_t0s(estimulos, ntrials, tiempo_file, board_adc_channels, f
 rasters = generate_raster(spike_times, t0s_dictionary, tiempo_file, ntrials, frequency_parameters);
 
 % Grafica raster
-plot_all_raster(estimulos, rasters, frequency_parameters, tiempo_file, ntrials, puerto_canal, thr, directorio)
+plot_all_raster(estimulos, id_BOS, rasters, frequency_parameters, tiempo_file, ntrials, puerto_canal, thr, directorio)
 

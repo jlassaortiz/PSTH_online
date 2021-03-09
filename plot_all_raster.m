@@ -1,8 +1,19 @@
-function plot_all_raster(estimulos, rasters, frequency_parameters, tiempo_file, ntrials, puerto_canal, thr, directorio)
+function plot_all_raster(estimulos, id_BOS, rasters, frequency_parameters, tiempo_file, ntrials, puerto_canal, thr, directorio)
 
-psth_max = ntrials ;
+% Plotea todos los estimulos
+%   No importa la cantidad de estimulos
 
+
+
+% Busco el maximo de los psth
+hist_aux = histcounts(rasters(id_BOS).spikes_norm * 1000/frequency_parameters.amplifier_sample_rate , ...
+        (1000/frequency_parameters.amplifier_sample_rate) * (-1000:(0.015* ... 
+        frequency_parameters.amplifier_sample_rate):(tiempo_file*frequency_parameters.amplifier_sample_rate)) );
+psth_max = max(hist_aux) * 1.2; % ylim de los psth es un 20% mas que el maximo del BOS
+
+% Inicializo figura
 figure()
+
 n = 5 * round(length(estimulos)/2);
 m = 2;
 j = 0;
