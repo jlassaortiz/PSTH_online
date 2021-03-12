@@ -54,7 +54,7 @@ for i = id_estimulos % para cada estímulo
         p = ((k / 3) - 1) * 15 + 3;
     end
     
-    % sonido
+    % SONIDO
     j = j + 1;
     h(j) = subplot(n, m , p);
     plot(1000/estimulos(i).freq * (0:1:(length(estimulos(i).song) -1)), estimulos(i).song,'black')
@@ -63,9 +63,9 @@ for i = id_estimulos % para cada estímulo
     xlim([0 tiempo_file * 1000])
     xticks([])
     
-    title(strcat(string(i), " - ",estimulos(i).name), 'Interpreter','None', 'FontSize',6)
+    title(strcat(string(i), " - ",estimulos(i).name), 'Interpreter','None', 'FontSize', 6)
 
-    % psth
+    % PSTH
     j = j + 1;
     h(j) = subplot(n, m, [p + 3, p + 6]);
     hist = histogram(rasters(i).spikes_norm * 1000/frequency_parameters.amplifier_sample_rate , ...
@@ -90,7 +90,7 @@ for i = id_estimulos % para cada estímulo
     ruido    = sum(rasters(i).spikes_norm > song_len * frequency_parameters.amplifier_sample_rate & ...
         rasters(i).spikes_norm < song_len * 2 * frequency_parameters.amplifier_sample_rate); 
     integral_norm = integral - ruido;
-    integral_text = strcat('integral_norm: ', string(integral_norm));
+    integral_text = strcat('Integral_norm : ', string(integral_norm));
     
     % Calculo sliding window para cada estimulo
     [sw_data, sw_times] = sliding_window(rasters(i).spikes_norm, frequency_parameters.amplifier_sample_rate, ...
@@ -102,14 +102,13 @@ for i = id_estimulos % para cada estímulo
     sw_data_norm = sw_data / max(sw_data);
     sw_data_norm = sw_data_norm(sw_times < duracion_BOS);
     R2 = corrcoef(sw_data_norm, sw_data_BOS_norm);
-    R2_text = strcat('R2 sw BOS norm: ' , string(round(R2(1,2), 2)));
+    R2_text = strcat(' Coef Pearson sw_BOS_norm : ' , string(round(R2(1,2), 2)));
 
-    
     % Escribo en el titulo los valores de integral y correlacion de sw
     % normalizadas
     title(strcat(integral_text, ' / ' , R2_text) , 'Interpreter','None')
 
-    % raster
+    % RASTER
     j = j + 1;
     h(j) = subplot(n, m, [p + 9, p + 12]);
     plot((1000/frequency_parameters.amplifier_sample_rate) * rasters(i).spikes_norm, rasters(i).trials_id, '.')  

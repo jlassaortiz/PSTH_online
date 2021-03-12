@@ -14,7 +14,7 @@ function [sliding_window_data, sliding_window_tiempo] = sliding_window(data, fs,
 % Calculo el tamaño final de: sliding_window_data y sliding_window_tiempo
 tf = t_window;
 n = 0;
-limite = data(end)/fs;
+limite = max(data)/fs;
 
 while tf <= limite
 
@@ -31,7 +31,7 @@ ti = 0;
 % Calculo el valor de cada punto de la sw y el tiempo que le corresponde
 for i = (1:1:n)
 
-    punto = data( data( data > ti*fs ) <= tf*fs );
+    punto = data( data > ti*fs & data <= tf*fs );
     sliding_window_data(i) = numel(punto);
 
     sliding_window_tiempo(i) = (ti + tf)/2;

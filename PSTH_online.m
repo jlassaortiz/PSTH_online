@@ -1,5 +1,7 @@
 % Script que hace todo de una
 
+close all
+
 % Defino directorio
 directorio = input('Directorio: ','s');
 directorio = horzcat(directorio , '/');
@@ -17,7 +19,7 @@ tiempo_file = input('Tiempo entre estimulos (en s): ');
 thr = input('Threshold para el threshold cutting (en uV):  ');
 
 % Especifico numero de id del BOS
-id_BOS = input('id BOS': );
+id_BOS = input('id BOS: ');
 
 % Genero songs.mat a partir de las canciones
 estimulos = carga_songs(directorio);
@@ -41,7 +43,7 @@ clear puerto canal filt_spikes
 spike_times = find_spike_times(raw_filtered, thr, frequency_parameters);
 
 % Carga datos filtrados y hace un threshold cutting
-plot_spikes_shapes(raw_filtered, spike_times, thr, frequency_parameters, directorio)
+% plot_spikes_shapes(raw_filtered, spike_times, thr, frequency_parameters, directorio)
 
 % Genero diccionario con nombre de los estimulos y el momento de presentacion
 t0s_dictionary = find_t0s(estimulos, ntrials, tiempo_file, board_adc_channels, frequency_parameters, directorio);
@@ -50,5 +52,11 @@ t0s_dictionary = find_t0s(estimulos, ntrials, tiempo_file, board_adc_channels, f
 rasters = generate_raster(spike_times, t0s_dictionary, tiempo_file, ntrials, frequency_parameters);
 
 % Grafica raster
-plot_all_raster(estimulos, id_BOS, rasters, frequency_parameters, tiempo_file, ntrials, puerto_canal, thr, directorio)
+% plot_all_raster(estimulos, id_BOS, rasters, frequency_parameters, tiempo_file, ntrials, puerto_canal, thr, directorio)
 
+% Grafica grilla de rasters ordenada por valores de C y L-traquea
+plot_some_raster([1, 2, 3, 7, 10, 4, 8, 11, 5, 9, 12, 6], id_BOS,  estimulos, rasters, frequency_parameters, tiempo_file, ntrials, puerto_canal, thr, directorio)
+xlim([0, 5000]);
+
+% Guarda la grilla
+print_pdf(1, directorio, strcat('_grilla_umbral_', string(thr)))
