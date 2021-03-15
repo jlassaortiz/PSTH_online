@@ -59,4 +59,4 @@ plot_some_raster([1, 2, 3, 7, 10, 4, 8, 11, 5, 9, 12, 6], id_BOS,  estimulos, ra
 xlim([0, 5000]);
 
 % Guarda la grilla
-print_pdf(1, directorio, strcat('_grilla_umbral_', string(thr)))
+print_pdf(1, directorio, strcat('_grilla_umbral_', string(round(thr))))
