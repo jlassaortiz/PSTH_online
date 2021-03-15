@@ -40,7 +40,7 @@ stdmean = (std1 + std2 + std3) / 3;
 % Determino el umbral como a partir desvio estandar del ruido (Quiroga 2004)
 % Si el desvio se estimo bien, la probabilidad de que un evento supere el
 % umbral sea ruido es << 1%
-thr = 4 * stdmean;
+thr = - 4 * stdmean;
 
 end
 
