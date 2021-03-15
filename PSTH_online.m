@@ -46,7 +46,7 @@ spike_times = find_spike_times(raw_filtered, thr, frequency_parameters);
 % plot_spikes_shapes(raw_filtered, spike_times, thr, frequency_parameters, directorio)
 
 % Genero diccionario con nombre de los estimulos y el momento de presentacion
-t0s_dictionary = find_t0s(estimulos, ntrials, tiempo_file, board_adc_channels, frequency_parameters, directorio);
+t0s_dictionary = find_t0s(estimulos, ntrials, tiempo_file, board_adc_channels, frequency_parameters, directorio, false);
 
 % Genero objeto con raster de todos los estimulos
 rasters = generate_raster(spike_times, t0s_dictionary, tiempo_file, ntrials, frequency_parameters);

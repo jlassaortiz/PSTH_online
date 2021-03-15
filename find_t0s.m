@@ -1,8 +1,24 @@
-function t0s_dictionary = find_t0s(estimulos, ntrials, tiempo_file, board_adc_channels, frequency_parameters, directorio) 
+function t0s_dictionary = find_t0s(estimulos, ntrials, tiempo_file, board_adc_channels, frequency_parameters, directorio, plotear) 
 
 % Genero diccionario con nombre de archivos de auido y tiempos en que se presentaron 
-% Los tiempos estan en samples, NO en unidades de tiempo
-% Cada entrada del dict es el nombre de un archivo de audio
+%
+%   Entrada:
+%   estimulos = (struct) es la salida de carga_songs
+%   ntrials = (double) cantidad de trials del protocolo
+%   tiempo_file = (double) tiempo entre presentacion de estimulos
+%   board_adc_channels = (struct) datos del canal analogico
+%   frequency_parameters = (struct) archivo generado por read_INTAN_channel.m con
+%   info de frecuencias de sampleo de los datos adquiridos
+%   directorio = (str) directorio donde estan los datos
+%   plotear = (bool) indica si se plotea canal analogico junto con la posicion 
+%   de los t0s
+%
+%   Salida:
+%   t0s_dictionary (struct)
+%   t0s_dictionary.id_estimulo = (str) nombre del archivo de audio
+%   t0s_dictionary.t0s = (vector columna) tiempos en los que se presenta el
+%   estimulo 
+%   Los tiempos estan en samples, NO en unidades de tiempo
 
 
 % Levanto la data de los canales analogicos (sacado del manual Intan y modificado levemente)
@@ -37,13 +53,10 @@ for i = (1:1: ntrials * length(estimulos))
     
     % Identifico el primer evento que supera el umbral
     if i == 1
-        condicion = locs_estimulos > 0 ;
-        t_umbral = locs_estimulos(logical(condicion));
         
-        t0s(1,1) = t_umbral(1,1);
+        t0s(1,1) = locs_estimulos(1,1);
         
-    else
-    
+    else   
         % Uso el t0s anterior como referencia para buscar el siguiente
         condicion = locs_estimulos > (t0s(i-1,1) + tiempo_file * frequency_parameters.board_adc_sample_rate) - 1.0 * frequency_parameters.board_adc_sample_rate ;
         t_umbral = locs_estimulos(logical(condicion));
@@ -56,8 +69,8 @@ end
 clear condicion t_umbral locs_estimulos
 
 
-% Verifica que cantidad de t0s sea la correcta
-if (length(t0s) ~= (ntrials * length(estimulos)))
+% Plotea senal analogica filtrada junto a posicion de los t0s
+if plotear
     
     figure()
     t_analog = (0:1:length(analog_filt)-1) / frequency_parameters.board_adc_sample_rate;
@@ -66,8 +79,6 @@ if (length(t0s) ~= (ntrials * length(estimulos)))
     plot(t0s / frequency_parameters.board_adc_sample_rate, ones(length(t0s),1)* umbral, 'or')
 
     title('analog filtrada');
-    
-    error('ERROR EN CANTIDAD DE T0s.')   
 end
 
 clear pks lcs test found a ans bpf umbral;

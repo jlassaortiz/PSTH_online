@@ -23,7 +23,7 @@ end
 % FIGURA %
 %%%%%%%%%%
 
-figure(1);
+figure();
 time_scale = (1/frequency_parameters.amplifier_sample_rate)*(0:1:(length(raw_filtered)-1));
 
 % Raw data y umbral
