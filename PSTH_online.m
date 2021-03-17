@@ -6,20 +6,34 @@ close all
 directorio = input('Directorio: ','s');
 directorio = horzcat(directorio , '/');
 
-% Eligo un canal de un puerto en especifico
-puerto = input('Puerto a levantar: ','s');
-canal = input('Canal de INTAN a filtrar (X-0XX):  ');
-puerto_canal = [puerto '-0' num2str(canal,'%.2d')];
+% Pregunto si el umbral se determina manualmente o automaticamente
+thr_automatico = input('¿Busqueda de thr automatica? (1 = SI / 0 = NO) : ');
+
+% Definimos manualmente un umbral para deteccion de spikes (en uV)
+if thr_automatico == 0 
+    thr = input('Threshold para el threshold cutting (en uV):  ');
+end
+
+% Carga vector con parametros del analisis de datos
+params_info = dir(horzcat(directorio, '*parametros*.txt'));
+params = readtable(horzcat(directorio,params_info.name),'Delimiter','\t','ReadVariableNames',false);
+clear params_info
+
+% Cargo valores de puerto-canal
+puerto = char(params.Var2(1));
+canal = char(params.Var2(2));
+puerto_canal = horzcat(puerto, '-0', num2str(canal,'%.2d'))
+clear puerto canal
 
 % Cargamos cantidad de trials y tiempo que dura cada uno
-ntrials = input('Numero de trials: ');
-tiempo_file = input('Tiempo entre estimulos (en s): ');
-
-% Definimos un umbral para threshold cutting (en uV)
-thr = input('Threshold para el threshold cutting (en uV):  ');
+ntrials = str2num(char(params.Var2(3)))
+tiempo_file = str2num(char(params.Var2(4)))
 
 % Especifico numero de id del BOS
-id_BOS = input('id BOS: ');
+id_BOS = str2num(char(params.Var2(5)))
+
+% Cargo orden de la grilla
+% grilla = str2num(string(params.Var2(6)))
 
 % Genero songs.mat a partir de las canciones
 estimulos = carga_songs(directorio);
@@ -37,26 +51,26 @@ filt_spikes = designfilt('highpassiir','DesignMethod','butter','FilterOrder',...
 
 % Aplica filtro
 raw_filtered = filtfilt(filt_spikes, raw);
-clear puerto canal filt_spikes
-
-% Buscamos spike por threshold cutting
-spike_times = find_spike_times(raw_filtered, thr, frequency_parameters);
-
-% Carga datos filtrados y hace un threshold cutting
-% plot_spikes_shapes(raw_filtered, spike_times, thr, frequency_parameters, directorio)
+clear puerto canal filt_spikes raw
 
 % Genero diccionario con nombre de los estimulos y el momento de presentacion
 t0s_dictionary = find_t0s(estimulos, ntrials, tiempo_file, board_adc_channels, frequency_parameters, directorio, false);
 
+    
+% Definimos un umbral para threshold cutting de manera automatica (en uV)
+if thr_automatico == 1
+    thr = find_thr(raw_filtered, t0s_dictionary, tiempo_file, frequency_parameters);
+end
+clear thr_automatico
+
+% Buscamos spike por threshold cutting
+spike_times = find_spike_times(raw_filtered, thr, frequency_parameters);
+
 % Genero objeto con raster de todos los estimulos
 rasters = generate_raster(spike_times, t0s_dictionary, tiempo_file, ntrials, frequency_parameters);
 
-% Grafica raster
+% Carga datos filtrados y hace un threshold cutting
+% plot_spikes_shapes(raw_filtered, spike_times, thr, frequency_parameters, directorio)
+
+% Grafica raster tidi
 % plot_all_raster(estimulos, id_BOS, rasters, frequency_parameters, tiempo_file, ntrials, puerto_canal, thr, directorio)
-
-% Grafica grilla de rasters ordenada por valores de C y L-traquea
-plot_some_raster([1, 2, 3, 7, 10, 4, 8, 11, 5, 9, 12, 6], id_BOS,  estimulos, rasters, frequency_parameters, tiempo_file, ntrials, puerto_canal, thr, directorio)
-xlim([0, 5000]);
-
-% Guarda la grilla
-print_pdf(1, directorio, strcat('_grilla_umbral_', string(round(thr))))

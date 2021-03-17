@@ -1,11 +1,15 @@
 function raw = read_INTAN_channel(directorio, puerto_canal, amplifier_channels)
 
-% Levanta un canal del amplificador INTAN
-% Se debe especificar: 
-% 1) el directorio donde esta el archivo amplifier.dat
-% 2) el canal a levantar en formato "PUERTO-NUMERO_CANAL" por ej: A-019
-% ATENCION: el nombre del canal se asume que es el NATIVO
-% 3) objeto amplifier_channerls generado por read_INTAN_RHD2000_file.m
+% Levanta UN canal del amplificador INTAN
+%
+%   Se debe especificar: 
+%   1) el directorio donde esta el archivo amplifier.dat
+%   2) el canal a levantar en formato "PUERTO-NUMERO_CANAL" por ej: A-019
+%   ATENCION: el nombre del canal se asume que es el NATIVO
+%   3) objeto amplifier_channerls generado por read_INTAN_RHD2000_file.m
+%   
+%   Devuelve:
+%   raw = (vector columna double) es la raw data del canal especificado
 
 % Comparo "puerto_canal" vs la lista de canales en amplifier_channels
 aux = strcmp(puerto_canal,{amplifier_channels(:).native_channel_name});

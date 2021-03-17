@@ -2,6 +2,13 @@ function dict_score = score_calculator(id_BOS, estimulos, rasters, frequency_par
 % Calcula la int_normalizada y la correlacion del protocolo experimental
 %   
 %   Entradas:
+%   id_BOS = (double) numero de orden que le corresponde al BOS en el
+%   objeto "estimulos" generado por la funcion carga_songs.m
+%   estimulos = (struct) generado por la funcion carga_songs.m con toda la
+%   info de los estimulos
+%   rasters = (struct) diccionarios con los rasters separados por estimulo
+%   frecuency_parameters = (struct) diccionario generado por
+%   read_Intan_RHD2000_file.m con info del amplificador y los datos grabados
 % 
 %   Salidas:
 %   dict_score = (struct)
@@ -12,6 +19,8 @@ function dict_score = score_calculator(id_BOS, estimulos, rasters, frequency_par
 %   dict_score.corr = (double) correlacion de pearson de la slinding window
 %   del estimulo con la sliding window del BOS
 
+
+% Tamano de ventana y step de la sliding window
 t_window = 0.015; % 15 ms
 step = 0.001; % 1 ms
 

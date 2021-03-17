@@ -40,6 +40,13 @@ sw_data_BOS = sw_data_BOS(sw_times_BOS < duracion_BOS);
 sw_times_BOS = sw_times_BOS(sw_times_BOS < duracion_BOS);
 sw_data_BOS_norm = sw_data_BOS / max(sw_data_BOS);
 
+% Calculo integracion de spikes normalizada del BOS para poder estandarizar
+% el resto
+integral = sum(rasters(id_BOS).spikes_norm < duracion_BOS * frequency_parameters.amplifier_sample_rate);
+ruido    = sum(rasters(id_BOS).spikes_norm > duracion_BOS * frequency_parameters.amplifier_sample_rate & ...
+    rasters(id_BOS).spikes_norm < duracion_BOS * 2 * frequency_parameters.amplifier_sample_rate); 
+integral_norm_BOS = integral - ruido;
+
 for i = id_estimulos % para cada estímulo
     
     k = k + 1;
@@ -89,7 +96,7 @@ for i = id_estimulos % para cada estímulo
     integral = sum(rasters(i).spikes_norm < song_len * frequency_parameters.amplifier_sample_rate);
     ruido    = sum(rasters(i).spikes_norm > song_len * frequency_parameters.amplifier_sample_rate & ...
         rasters(i).spikes_norm < song_len * 2 * frequency_parameters.amplifier_sample_rate); 
-    integral_norm = integral - ruido;
+    integral_norm = (integral - ruido) / integral_norm_BOS;
     integral_text = strcat('Integral_norm : ', string(integral_norm));
     
     % Calculo sliding window para cada estimulo
