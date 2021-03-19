@@ -6,7 +6,7 @@ function plot_some_raster(id_estimulos, id_BOS, estimulos, rasters, frequency_pa
 t_window = 0.015; % 15 ms
 step = 0.001; % 1 ms
 
-% Busco el maximo de los psth
+% Busco el maximo de los psth para saber que valor poner de ylim
 hist_aux = histcounts(rasters(id_BOS).spikes_norm * 1000/frequency_parameters.amplifier_sample_rate , ...
         (1000/frequency_parameters.amplifier_sample_rate) * (-1000:(0.015* ... 
         frequency_parameters.amplifier_sample_rate):(tiempo_file*frequency_parameters.amplifier_sample_rate)) );
@@ -30,6 +30,9 @@ m = 3;
 j = 0;
 k = 0;
 
+% Calculo scores de cada estimulo
+dict_score = score_calculator(id_BOS, estimulos, rasters, frequency_parameters);
+
 % Calculo la sw del BOS para poder hacer correlaciones con el resto
 [sw_data_BOS, sw_times_BOS] = sliding_window(rasters(id_BOS).spikes_norm, frequency_parameters.amplifier_sample_rate, ...
         t_window, step);
@@ -38,14 +41,6 @@ k = 0;
 duracion_BOS = length(estimulos(id_BOS).song) / estimulos(id_BOS).freq; 
 sw_data_BOS = sw_data_BOS(sw_times_BOS < duracion_BOS);
 sw_times_BOS = sw_times_BOS(sw_times_BOS < duracion_BOS);
-sw_data_BOS_norm = sw_data_BOS / max(sw_data_BOS);
-
-% Calculo integracion de spikes normalizada del BOS para poder estandarizar
-% el resto
-integral = sum(rasters(id_BOS).spikes_norm < duracion_BOS * frequency_parameters.amplifier_sample_rate);
-ruido    = sum(rasters(id_BOS).spikes_norm > duracion_BOS * frequency_parameters.amplifier_sample_rate & ...
-    rasters(id_BOS).spikes_norm < duracion_BOS * 2 * frequency_parameters.amplifier_sample_rate); 
-integral_norm_BOS = integral - ruido;
 
 for i = id_estimulos % para cada estímulo
     
@@ -81,23 +76,13 @@ for i = id_estimulos % para cada estímulo
     ylim([0 psth_max]);
     xlim([0 tiempo_file * 1000]);
     hold on;
-   
-    % Busco maximos en cada psth y los grafico
-    [maximo, id_max] = max(hist.Values);
-    pos_max = hist.BinEdges(id_max);
-    pos_max = pos_max + hist.BinWidth /2;
-    plot(pos_max, maximo, 'or');
     
     % Guardo la frecuencia de sampleo y el largo (en seg) de este estimulo
     song_freq = estimulos(i).freq;
     song_len = length(estimulos(i).song) / song_freq; % unidades: seg
     
     % Integracion de spikes normalizada
-    integral = sum(rasters(i).spikes_norm < song_len * frequency_parameters.amplifier_sample_rate);
-    ruido    = sum(rasters(i).spikes_norm > song_len * frequency_parameters.amplifier_sample_rate & ...
-        rasters(i).spikes_norm < song_len * 2 * frequency_parameters.amplifier_sample_rate); 
-    integral_norm = (integral - ruido) / integral_norm_BOS;
-    integral_text = strcat('Integral_norm : ', string(integral_norm));
+    integral_text = strcat('Integral_norm : ', string(dict_score(i).int_norm));
     
     % Calculo sliding window para cada estimulo
     [sw_data, sw_times] = sliding_window(rasters(i).spikes_norm, frequency_parameters.amplifier_sample_rate, ...
@@ -106,10 +91,7 @@ for i = id_estimulos % para cada estímulo
     plot(sw_times_BOS * 1000 , sw_data_BOS, '-r');
     
     % Calculo correlación de sw normalizada con la sw normalizada del BOS
-    sw_data_norm = sw_data / max(sw_data);
-    sw_data_norm = sw_data_norm(sw_times < duracion_BOS);
-    R2 = corrcoef(sw_data_norm, sw_data_BOS_norm);
-    R2_text = strcat(' Coef Pearson sw_BOS_norm : ' , string(round(R2(1,2), 2)));
+    R2_text = strcat(' Coef Pearson sw_BOS_norm : ' , string(round(dict_score(i).corr, 2)));
 
     % Escribo en el titulo los valores de integral y correlacion de sw
     % normalizadas
