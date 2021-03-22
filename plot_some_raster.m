@@ -70,16 +70,12 @@ for i = id_estimulos % para cada estímulo
     % PSTH
     j = j + 1;
     h(j) = subplot(n, m, [p + 3, p + 6]);
-    hist = histogram(rasters(i).spikes_norm * 1000/frequency_parameters.amplifier_sample_rate , ...
+    histogram(rasters(i).spikes_norm * 1000/frequency_parameters.amplifier_sample_rate , ...
         (1000/frequency_parameters.amplifier_sample_rate) * (-1000:(0.015* ... 
         frequency_parameters.amplifier_sample_rate):(tiempo_file*frequency_parameters.amplifier_sample_rate)) );
     ylim([0 psth_max]);
     xlim([0 tiempo_file * 1000]);
     hold on;
-    
-    % Guardo la frecuencia de sampleo y el largo (en seg) de este estimulo
-    song_freq = estimulos(i).freq;
-    song_len = length(estimulos(i).song) / song_freq; % unidades: seg
     
     % Integracion de spikes normalizada
     integral_text = strcat('Integral_norm : ', string(dict_score(i).int_norm));
