@@ -1,4 +1,4 @@
-% Calcula scores
+% Calculo scores de varios directorios y ploteo los graficos tipo sabana
 
 % Defino directorio donde esta archivo de parametros
 directorio_params = input('Directorio parametros: ','s');
@@ -7,13 +7,11 @@ directorio_params = horzcat(directorio_params , '/');
 % Carga vector con parametros del analisis de datos
 params_info = dir(horzcat(directorio_params, '*parametros*.txt'));
 params = readtable(horzcat(directorio_params,params_info.name),'Delimiter','\t','ReadVariableNames',false);
-clear params_info
 
 % Cargo valores de puerto-canal
 puerto = char(params.Var2(1));
 canal = char(params.Var2(2));
 puerto_canal = horzcat(puerto, '-0', num2str(canal,'%.2d'))
-clear puerto canal
 
 % Cargamos cantidad de trials y tiempo que dura cada uno
 ntrials = str2num(char(params.Var2(3)))
@@ -25,24 +23,32 @@ id_BOS = str2num(char(params.Var2(5)))
 % Cargo orden de la grilla
 grilla = str2num(string(params.Var2(6)))
 
+% Cargo el nombre de los parametros que varian por fila y columna de la grilla
+params(7,:)
+ejeX_fila = char(params.Var2(7))
+
+params(8,:)
+ejeY_col  = char(params.Var2(8))
+
+% Posicion del primer directorio en el archivo de parametros
+d = 9;
+
 % Cargo "estimulos" usando el primer directorio de protocolos de la lista 
 % de parametros
 % TODOS LOS PROTOCOLOS DEBEN TENER LOS MIMOS ESTIMULOS
-directorio_aux = horzcat(char(params.Var2(7)), '/');
+directorio_aux = horzcat(char(params.Var2(d)), '/');
 estimulos = carga_songs(directorio_aux);
+
+directorios = params(d:end, :);
 
 % Genero diccionario donde se va a guardar el score de todos
 score_total = struct;
 
 % Para cada directorio (protocolo)
-for j = (1:1:length(params.Var2(7:end)))
-    
-    % Primero guardo los directorios y el nombre corto de los protocolos
-    score_total(j).id = char(params.Var1(j+6));
-    score_total(j).dir = char(params.Var2(j+6));
+for j = (1:1:height(directorios))
 
     % Defino el directorio del protocolo
-    directorio = horzcat(score_total(j).dir, '/');
+    directorio = horzcat(char(directorios.Var2(j)), '/');% directorio protocolo
 
     % Leer info INTAN
     read_Intan_RHD2000_file(horzcat(directorio, 'info.rhd'));
@@ -57,7 +63,7 @@ for j = (1:1:length(params.Var2(7:end)))
 
     % Aplica filtro
     raw_filtered = filtfilt(filt_spikes, raw);
-    clear puerto canal filt_spikes
+    clear filt_spikes
 
     % Genero diccionario con nombre de los estimulos y el momento de presentacion
     t0s_dictionary = find_t0s(estimulos, ntrials, tiempo_file, board_adc_channels, frequency_parameters, directorio, false);
@@ -74,33 +80,35 @@ for j = (1:1:length(params.Var2(7:end)))
     % Calculo scores
     dict_score = score_calculator(id_BOS, estimulos, rasters, frequency_parameters);
     
-    % Inicializo la matriz donde van a ir los valores
-    % Esta pensado para analizar "SABANAS" es decir variaciones de DOS
-    % parametros del SYN y se le calcular DOS scores 
-    mat_scores = zeros(numel(grilla), 4);
+    % Selecciono scores con los que me quedo y hago matriz para graficar
+    [mat_scores, cell_estimulos] = scores_struct2mat(grilla,dict_score);
     
-    % Incializo la fila
-    fila = 1;
+    % Agrego estos valores a la struct score_total que recopila todo
+    score_total(j).id  = char(directorios.Var1(j)); % nombre corto protocolo
+    score_total(j).dir = char(directorios.Var2(j)); % directorio protocolo
+    score_total(j).grilla_scores = mat_scores; % array con valores XYZ para graficar
+    score_total(j).grilla_nombre_estimulos = cell_estimulos; % cell con nombre de estimulos para no perderles el restro
     
-    % Recorro cada elemento de la grilla
-    for x = (1:1:length(grilla))
-        for y = (1:1:length(grilla))
-            mat_scores(fila, 1) = x;
-            mat_scores(fila, 2) = y;
-            
-            id_estimulo = grilla(x,y);
-            mat_scores(fila, 3) = dict_score(id_estimulo).int_norm;
-            mat_scores(fila, 4) = dict_score(id_estimulo).corr;
-            
-            fila = fila + 1;
-        end
-    end
+    % Ploteo y guard
+    plot_sabana(mat_scores, directorio, ejeY_col, ejeX_fila);
     
-    score_total(j).grilla_scores = mat_scores;
+    plot_some_raster([1, 2, 3, 7, 10, 4, 8, 11, 5, 9, 12, 6], id_BOS,  estimulos, ...
+        rasters, frequency_parameters, tiempo_file, ntrials, puerto_canal, thr, directorio)
+    
+    print_pdf(1, directorio, strcat('_sabana_INT_', string(round(thr)),'uV', '.pdf'))
+    print_pdf(2, directorio, strcat('_sabana_CORR_', string(round(thr)),'uV', '.pdf'))
+    print_pdf(3, directorio, strcat('_grilla_', string(round(thr)),'uV', '.pdf')) 
+    
+    close all
+    
+    clear amplifier_channels board_adc_channels frequency_parameters
+    
 end
+
 
 % Calculo el promedio de todas las grillas
 mat_avg = zeros(numel(grilla), 4);
+
 for i = (1:1:length(score_total))
     mat_avg = score_total(i).grilla_scores + mat_avg;   
 end
@@ -108,46 +116,9 @@ end
 mat_avg = mat_avg / length(score_total);
 
 
-clear x y j id_estimulo id_aux dict_score directorio fila mat_scores directorio_aux
-clear rasters raw raw_filtered t0s_dictionary spike_times thr 
+% Ploteo
+plot_some_sabana(score_total, mat_avg, ejeX_fila, ejeY_col);
 
-% Vectores auxiliares
-X  = [];
-Y  = [];
-Z1 = [];
-Z2 = [];
-
-for i = (1:1:length(score_total))
-    
-X = vertcat(X, score_total(i).grilla_scores(:,1));
-Y = vertcat(Y, score_total(i).grilla_scores(:,2));
-Z1 = vertcat(Z1, score_total(i).grilla_scores(:,3));
-Z2 = vertcat(Z2, score_total(i).grilla_scores(:,4));
-
-end 
-clear i
-
-[xq,yq] = meshgrid(1:0.1:3);
-z = griddata(X,Y,Z1,xq,yq,'natural');
-figure()
-plot3(X,Y,Z1,'mo')
-hold on
-scatter3(mat_avg(:,1), mat_avg(:,2), mat_avg(:,3), 100, 'ro', 'filled')
-mesh(xq,yq,z)
-ylabel('C')
-xlabel('L-traquea')
-title('integral')
-
-
-[xq,yq] = meshgrid(1:0.1:3);
-z = griddata(X,Y,Z2,xq,yq,'natural');
-figure()
-plot3(X,Y,Z2,'mo')
-hold on
-scatter3(mat_avg(:,1), mat_avg(:,2), mat_avg(:,4), 100, 'ro', 'filled')
-mesh(xq,yq,z)
-ylabel('C')
-xlabel('L-traquea')
-title('correlacion')
-
-clear X Y Z1 Z2 z xq yq z2
+clear ans params_info d directorio directorio_aux  puerto canal i j 
+clear mat_scores cell_estimulos rasters raw raw_filtered spike_times
+clear t0s_dictionary thr dict_score 
