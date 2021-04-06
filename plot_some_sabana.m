@@ -25,7 +25,7 @@ mesh(xq,yq,z)
 legend(legends)
 ylabel(ejeY_col)
 xlabel(ejeX_fila)
-title('integral')
+title('integral', 'Interpreter','None')
 
 clear legends
 
@@ -52,7 +52,7 @@ mesh(xq,yq,z)
 legend(legends)
 ylabel(ejeY_col)
 xlabel(ejeX_fila)
-title('correlacion')
+title('correlacion', 'Interpreter','None')
 
 end
 

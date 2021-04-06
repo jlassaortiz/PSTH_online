@@ -1,6 +1,7 @@
 % Script que hace todo de una
 
 close all
+clear all
 
 % Defino directorio
 directorio = input('Directorio: ','s');
@@ -39,7 +40,7 @@ grilla = str2num(string(params.Var2(6)))
 char(params.Var1(7))
 ejeX_fila = char(params.Var2(7))
 
-xchar(params.Var1(8))
+char(params.Var1(8))
 ejeY_col  = char(params.Var2(8))
 
 % Genero songs.mat a partir de las canciones
@@ -86,10 +87,23 @@ dict_score = score_calculator(id_BOS, estimulos, rasters, frequency_parameters);
 % Machete algunos ploteos
 
 % Carga datos filtrados y hace un threshold cutting
-% plot_spikes_shapes(raw_filtered, spike_times, thr, frequency_parameters, directorio)
+plot_spikes_shapes(raw_filtered, spike_times, thr, frequency_parameters, directorio)
 
 % Grafica raster de todos los estimulos
-% plot_all_raster(estimulos, id_BOS, rasters, frequency_parameters, tiempo_file, ntrials, puerto_canal, thr, directorio)
+
+plot_some_raster([1, 2, 3, 10, 4, 7, 11, 5, 8, 12, 6, 9], id_BOS, estimulos, rasters, frequency_parameters, tiempo_file, ntrials, puerto_canal, thr, directorio)
+
+% plot_some_raster(estimulos,id_BOS, rasters, frequency_parameters, tiempo_file, ntrials, puerto_canal, thr, directorio)
 
 % Ploteo sabana
-% plot_sabana(mat_scores, directorio, ejeY_col, ejeX_fila)
+plot_sabana(mat_scores, directorio, ejeY_col, ejeX_fila)
+
+
+% Guardo
+print_png(1, directorio, strcat('_spike-shape_', string(round(thr)), '.pdf'))
+print_pdf(2, directorio, strcat('_grilla_', string(round(thr)), '.pdf'))
+print_pdf(3, directorio, strcat('_sabana_INT_', string(round(thr)), '.pdf'))
+print_pdf(4, directorio, strcat('_sabana_CORR_', string(round(thr)), '.pdf'))
+print_pdf(5, directorio, strcat('_CORTE_sabana_INT_', string(round(thr)), '.pdf'))
+print_pdf(6, directorio, strcat('_CORTE_sabana_CORR_', string(round(thr)), '.pdf'))
+

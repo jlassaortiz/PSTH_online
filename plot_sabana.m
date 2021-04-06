@@ -1,6 +1,7 @@
 function plot_sabana(mat_scores, directorio, ejeY_col, ejeX_fila)
 
-%UNTITLED4 Summary of this function goes here
+% Plotea Sabana x2 (integral y correlacio) y perfiles de sabana x2
+%
 %   Detailed explanation goes here
 
 X  = mat_scores(:,1);
@@ -16,7 +17,7 @@ hold on
 mesh(xq,yq,z)
 ylabel(ejeY_col)
 xlabel(ejeX_fila)
-title({'integral', directorio})
+title({'integral', directorio}, 'Interpreter','None')
 
 [xq,yq] = meshgrid(1:0.1:3);
 z = griddata(X,Y,Z2,xq,yq,'natural');
@@ -26,7 +27,36 @@ hold on
 mesh(xq,yq,z)
 ylabel(ejeY_col)
 xlabel(ejeX_fila)
-title({'correlacion', directorio})
+title({'correlacion', directorio}, 'Interpreter','None')
+
+
+% Hago diagonales para plotear perfiles
+diag_escala = mat_scores(:,1) == 1 & mat_scores(:,2) == 1 | ... 
+    mat_scores(:,1) == 2 & mat_scores(:,2) == 2 | ...
+    mat_scores(:,1) == 3 & mat_scores(:,2) == 3 ;
+
+diag_mostruo = mat_scores(:,1) == 1 & mat_scores(:,2) == 3 | ... 
+    mat_scores(:,1) == 2 & mat_scores(:,2) == 2 | ...
+    mat_scores(:,1) == 3 & mat_scores(:,2) == 1 ;
+
+% Ploteo perfiles
+figure()
+plot([0, 1, 2], mat_scores(diag_escala, 3))
+hold on
+plot([0, 1, 2], mat_scores(diag_mostruo, 3))
+legend('escala', 'mostruo')
+ylabel('integral')
+title({'integral', directorio}, 'Interpreter','None')
+
+
+figure()
+plot([0, 1, 2], mat_scores(diag_escala, 4))
+hold on
+plot([0, 1, 2], mat_scores(diag_mostruo, 4))
+legend('escala', 'mostruo')
+ylabel('correlacion')
+title({'correlacion', directorio}, 'Interpreter','None')
+
 
 end
 
