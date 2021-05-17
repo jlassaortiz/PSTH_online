@@ -4,7 +4,6 @@ function plot_all_raster(estimulos, id_BOS, rasters, frequency_parameters, tiemp
 %   No importa la cantidad de estimulos
 
 
-
 % Busco el maximo de los psth
 hist_aux = histcounts(rasters(id_BOS).spikes_norm * 1000/frequency_parameters.amplifier_sample_rate , ...
         (1000/frequency_parameters.amplifier_sample_rate) * (-1000:(0.015* ... 
@@ -13,6 +12,9 @@ psth_max = max(hist_aux) * 1.2; % ylim de los psth es un 20% mas que el maximo d
 
 % Inicializo figura
 figure()
+
+% Para no ver tanta actividad espontanea grafico 75% mas de lo que dura el BOS
+limite_eje_x = (1000 * length(estimulos(id_BOS).song) / estimulos(id_BOS).freq) * 1.75;
 
 n = 5 * round(length(estimulos)/2);
 m = 2;
@@ -33,7 +35,7 @@ for i = (1:1: length(rasters))
     plot(1000/estimulos(i).freq * (0:1:(length(estimulos(i).song) -1)), estimulos(i).song,'black')
     hold on;
     line([0 tiempo_file*1000],[0 0],'color',[0 0 0]);
-    xlim([0 tiempo_file * 1000])
+    xlim([0 limite_eje_x])
     title(strcat(string(i), " - ",estimulos(i).name), 'Interpreter','None')
     xticks([]);
     
@@ -43,14 +45,14 @@ for i = (1:1: length(rasters))
     histogram(rasters(i).spikes_norm * 1000/frequency_parameters.amplifier_sample_rate , ...
         (1000/frequency_parameters.amplifier_sample_rate) * (-1000:(0.015*frequency_parameters.amplifier_sample_rate):(tiempo_file*frequency_parameters.amplifier_sample_rate)) );
     ylim([0 psth_max]);
-    xlim([0 tiempo_file * 1000]);
+    xlim([0 limite_eje_x]);
     xticks([]);
     
     % raster
     j = j + 1;
     h(j) = subplot(n, m, [p + 6, p + 8]);
     plot((1000/frequency_parameters.amplifier_sample_rate) * rasters(i).spikes_norm, rasters(i).trials_id, '.')  
-    xlim([0 tiempo_file * 1000])
+    xlim([0 limite_eje_x])
     ylim([0 ntrials + 1])
 end
 

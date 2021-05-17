@@ -15,6 +15,9 @@ psth_max = max(hist_aux) * 1.2; % ylim de los psth es un 20% mas que el maximo d
 % Inicializo figura
 figure()
 
+% Para no ver tanta actividad espontanea grafico 75% mas de lo que dura el BOS
+limite_eje_x = (1000 * length(estimulos(id_BOS).song) / estimulos(id_BOS).freq) * 1.75;
+
 % Formula para armar grilla segun la cantidad de estimulos a analizar
 if mod(length(id_estimulos), 3) == 0
     n = 5 * length(id_estimulos)/3;
@@ -62,7 +65,7 @@ for i = id_estimulos % para cada estímulo
     plot(1000/estimulos(i).freq * (0:1:(length(estimulos(i).song) -1)), estimulos(i).song,'black')
     hold on;
     line([0 tiempo_file*1000],[0 0],'color',[0 0 0]);
-    xlim([0 tiempo_file * 1000])
+    xlim([0 limite_eje_x])
     xticks([])
     
     title(strcat(string(i), " - ",estimulos(i).name), 'Interpreter','None', 'FontSize', 6)
@@ -74,7 +77,7 @@ for i = id_estimulos % para cada estímulo
         (1000/frequency_parameters.amplifier_sample_rate) * (-1000:(0.015* ... 
         frequency_parameters.amplifier_sample_rate):(tiempo_file*frequency_parameters.amplifier_sample_rate)) );
     ylim([0 psth_max]);
-    xlim([0 tiempo_file * 1000]);
+    xlim([0 limite_eje_x]);
     hold on;
     
     % Integracion de spikes normalizada
@@ -97,7 +100,7 @@ for i = id_estimulos % para cada estímulo
     j = j + 1;
     h(j) = subplot(n, m, [p + 9, p + 12]);
     plot((1000/frequency_parameters.amplifier_sample_rate) * rasters(i).spikes_norm, rasters(i).trials_id, '.')  
-    xlim([0 tiempo_file * 1000])
+    xlim([0 limite_eje_x])
     ylim([0 ntrials + 1])
     xticks([])
 end 
