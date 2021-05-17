@@ -1,10 +1,14 @@
 % Calculo scores de varios directorios y ploteo los graficos tipo sabana
 
 close all % Como ploteo y guardo, mejor asegurarme que no haya plots viejos
+clear all
 
 % Defino directorio donde esta archivo de parametros
 directorio_params = input('Directorio parametros: ','s');
 directorio_params = horzcat(directorio_params , '/');
+
+% Guardo graficos sabanas de cada protocolo individual?
+guardar_graf_protocolos_ind = input('Guardo graf sabanas de cada protocolo individual? (1 = SI / 0 = NO) : ');
 
 % Carga vector con parametros del analisis de datos
 params_info = dir(horzcat(directorio_params, '*parametros*.txt'));
@@ -23,17 +27,18 @@ tiempo_file = str2num(char(params.Var2(4)))
 id_BOS = str2num(char(params.Var2(5)))
 
 % Cargo orden de la grilla
-grilla = str2num(string(params.Var2(6)))
+grilla_sabana = str2num(string(params.Var2(6)))
+grilla_psth = str2num(string(params.Var2(7)))
 
 % Cargo el nombre de los parametros que varian por fila y columna de la grilla
-params(7,:)
-ejeX_fila = char(params.Var2(7))
-
 params(8,:)
-ejeY_col  = char(params.Var2(8))
+ejeX_fila = char(params.Var2(8))
+
+params(9,:)
+ejeY_col  = char(params.Var2(9))
 
 % Posicion del primer directorio en el archivo de parametros
-d = 9;
+d = 10;
 
 % Cargo "estimulos" usando el primer directorio de protocolos de la lista 
 % de parametros
@@ -50,7 +55,8 @@ score_total = struct;
 for j = (1:1:height(directorios))
 
     % Defino el directorio del protocolo
-    directorio = horzcat(char(directorios.Var2(j)), '/');% directorio protocolo
+    directorio = horzcat(char(directorios.Var2(j)), '/') % directorio protocolo
+    
 
     % Leer info INTAN
     read_Intan_RHD2000_file(horzcat(directorio, 'info.rhd'));
@@ -83,7 +89,7 @@ for j = (1:1:height(directorios))
     dict_score = score_calculator(id_BOS, estimulos, rasters, frequency_parameters);
     
     % Selecciono scores con los que me quedo y hago matriz para graficar
-    [mat_scores, cell_estimulos] = scores_struct2mat(grilla,dict_score);
+    [mat_scores, cell_estimulos] = scores_struct2mat(grilla_sabana,dict_score);
     
     % Agrego estos valores a la struct score_total que recopila todo
     score_total(j).id  = char(directorios.Var1(j)); % nombre corto protocolo
@@ -91,30 +97,28 @@ for j = (1:1:height(directorios))
     score_total(j).grilla_scores = mat_scores; % array con valores XYZ para graficar
     score_total(j).grilla_nombre_estimulos = cell_estimulos; % cell con nombre de estimulos para no perderles el restro
    
-    
     % Sabana x4: integral y correlacion
     plot_sabana(mat_scores, directorio, ejeY_col, ejeX_fila); % Hace 4 plots
-    
+
     % Grilla de PSTH
-    plot_some_raster([1, 2, 3, 7, 10, 4, 8, 11, 5, 9, 12, 6], id_BOS,  estimulos, ...
-        rasters, frequency_parameters, tiempo_file, ntrials, puerto_canal, thr, directorio)
+    plot_some_raster(grilla_psth, id_BOS,  estimulos, ...
+        rasters, frequency_parameters, 6, ntrials, puerto_canal, thr, directorio)
     
     % Guardo todo en el directorio del protocolo
-    print_pdf(1, directorio, strcat('_sabana_INT_', string(round(thr)),'uV', '.pdf'))
-    print_pdf(2, directorio, strcat('_sabana_CORR_', string(round(thr)),'uV', '.pdf'))
-    print_pdf(3, directorio, strcat('_CORTE_sabana_INT_', string(round(thr)),'uV', '.pdf'))
-    print_pdf(4, directorio, strcat('_CORTE_sabana_CORR_', string(round(thr)),'uV', '.pdf'))
-    print_pdf(5, directorio, strcat('_grilla_', string(round(thr)),'uV', '.pdf')) 
+    if guardar_graf_protocolos_ind == 1
+        print_pdf(1, directorio, strcat('_sabana_INT_', string(round(thr)),'uV', '.pdf'))
+        print_pdf(2, directorio, strcat('_sabana_CORR_', string(round(thr)),'uV', '.pdf'))
+        print_pdf(3, directorio, strcat('_CORTE_sabana_INT_', string(round(thr)),'uV', '.pdf'))
+        print_pdf(4, directorio, strcat('_CORTE_sabana_CORR_', string(round(thr)),'uV', '.pdf'))
+        print_pdf(5, directorio, strcat('_grilla_', string(round(thr)),'uV', '.pdf')) 
+    end
     
     close all
-    
-    clear amplifier_channels board_adc_channels frequency_parameters
-    
+    clear amplifier_channels board_adc_channels frequency_parameters 
 end
 
-
 % Calculo el promedio de todas las grillas
-mat_avg = zeros(numel(grilla), 4);
+mat_avg = zeros(numel(grilla_sabana), 4);
 
 for i = (1:1:length(score_total))
     mat_avg = score_total(i).grilla_scores + mat_avg;   
@@ -135,7 +139,7 @@ diag_mostruo = mat_scores(:,1) == 1 & mat_scores(:,2) == 3 | ...
     mat_avg(:,1) == 2 & mat_avg(:,2) == 2 | ...
     mat_avg(:,1) == 3 & mat_avg(:,2) == 1 ;
 
-% Ploteo perfiles
+% Ploteo perfiles INTEGRAL
 figure()
 plot([0, 1, 2], mat_avg(diag_escala, 3))
 hold on
@@ -144,7 +148,7 @@ legend('escala', 'mostruo')
 ylabel('integral')
 title({'integral', directorio_params}, 'Interpreter','None')
 
-
+% Ploteo perfiles CORRELACION
 figure()
 plot([0, 1, 2], mat_avg(diag_escala, 4))
 hold on
@@ -154,10 +158,10 @@ ylabel('correlacion')
 title({'correlacion', directorio_params}, 'Interpreter','None')
 
 % Guardo
-print_pdf(1, directorio_params, strcat('_sabana_INT_', '.pdf'))
-print_pdf(2, directorio_params, strcat('_sabana_CORR_', '.pdf'))
-print_pdf(3, directorio_params, strcat('_CORTE_sabana_INT_', '.pdf'))
-print_pdf(4, directorio_params, strcat('_CORTE_sabana_CORR_', '.pdf'))
+print_pdf(1, directorio_params, strcat('_sabana_INT_', 'uV.pdf'))
+print_pdf(2, directorio_params, strcat('_sabana_CORR_', 'uV.pdf'))
+print_pdf(3, directorio_params, strcat('_CORTE_sabana_INT_', 'uV.pdf'))
+print_pdf(4, directorio_params, strcat('_CORTE_sabana_CORR_', 'uV.pdf'))
 
 clear ans params_info d directorio directorio_aux  puerto canal i j 
 clear mat_scores cell_estimulos rasters raw raw_filtered spike_times
