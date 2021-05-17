@@ -34,14 +34,15 @@ tiempo_file = str2num(char(params.Var2(4)))
 id_BOS = str2num(char(params.Var2(5)))
 
 % Cargo orden de la grilla
-grilla = str2num(string(params.Var2(6)))
+grilla_sabana = str2num(string(params.Var2(6)))
+grilla_psth = str2num(string(params.Var2(7)))
 
 % Cargo el nombre de los parametros que varian por fila y columna de la grilla
-char(params.Var1(7))
-ejeX_fila = char(params.Var2(7))
-
 char(params.Var1(8))
-ejeY_col  = char(params.Var2(8))
+ejeX_fila = char(params.Var2(8))
+
+char(params.Var1(9))
+ejeY_col  = char(params.Var2(9))
 
 % Genero songs.mat a partir de las canciones
 estimulos = carga_songs(directorio);
@@ -81,7 +82,7 @@ rasters = generate_raster(spike_times, t0s_dictionary, tiempo_file, ntrials, fre
 dict_score = score_calculator(id_BOS, estimulos, rasters, frequency_parameters);
 
 % Transformo alguno de los resultados en grillas
-[mat_scores, cell_estimulos] = scores_struct2mat(grilla,dict_score);
+[mat_scores, cell_estimulos] = scores_struct2mat(grilla_sabana,dict_score);
 
 
 % Machete algunos ploteos
@@ -90,20 +91,17 @@ dict_score = score_calculator(id_BOS, estimulos, rasters, frequency_parameters);
 plot_spikes_shapes(raw_filtered, spike_times, thr, frequency_parameters, directorio)
 
 % Grafica raster de todos los estimulos
+plot_some_raster(grilla_psth, id_BOS, estimulos, rasters, frequency_parameters, tiempo_file, ntrials, puerto_canal, thr, directorio)
 
-plot_some_raster([1, 2, 3, 10, 4, 7, 11, 5, 8, 12, 6, 9], id_BOS, estimulos, rasters, frequency_parameters, tiempo_file, ntrials, puerto_canal, thr, directorio)
-
-% plot_some_raster(estimulos,id_BOS, rasters, frequency_parameters, tiempo_file, ntrials, puerto_canal, thr, directorio)
-
-% Ploteo sabana
+% Ploteo sabana (x4 plots)
 plot_sabana(mat_scores, directorio, ejeY_col, ejeX_fila)
 
 
 % Guardo
-print_png(1, directorio, strcat('_spike-shape_', string(round(thr)), '.pdf'))
-print_pdf(2, directorio, strcat('_grilla_', string(round(thr)), '.pdf'))
-print_pdf(3, directorio, strcat('_sabana_INT_', string(round(thr)), '.pdf'))
-print_pdf(4, directorio, strcat('_sabana_CORR_', string(round(thr)), '.pdf'))
-print_pdf(5, directorio, strcat('_CORTE_sabana_INT_', string(round(thr)), '.pdf'))
-print_pdf(6, directorio, strcat('_CORTE_sabana_CORR_', string(round(thr)), '.pdf'))
+print_png(1, directorio, strcat('_spike-shape_', string(round(thr)), 'uV'))
+print_pdf(2, directorio, strcat('_grilla_', string(round(thr)), 'uV.pdf'))
+print_pdf(3, directorio, strcat('_sabana_INT_', string(round(thr)), 'uV.pdf'))
+print_pdf(4, directorio, strcat('_sabana_CORR_', string(round(thr)), 'uV.pdf'))
+print_pdf(5, directorio, strcat('_CORTE_sabana_INT_', string(round(thr)), 'uV.pdf'))
+print_pdf(6, directorio, strcat('_CORTE_sabana_CORR_', string(round(thr)), 'uV.pdf'))
 
