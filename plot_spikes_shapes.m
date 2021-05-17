@@ -32,7 +32,16 @@ plot(time_scale,raw_filtered);
 hold on
 plot([0,time_scale(end)],thr*[1 1],'r')
 xlim([0 time_scale(end)])
-ylim([1.5*min(raw_filtered) 1.5*max(raw_filtered)])
+minimo = min(raw_filtered);
+maximo = max(raw_filtered);
+if minimo < -250
+    minimo = -200;   
+end 
+
+if maximo > 250
+    maximo = 200;
+end 
+ylim([1.5*minimo 1.5*maximo])
 ylabel('V ($\mu$V)','Interpreter','Latex')
 xlabel('seg')
 
@@ -49,6 +58,7 @@ plot(t, mean(spike_samples,2)-std(spike_samples,0,2),'color',1/100*[0 1 1])
 ylabel('V ($\mu$V)','Interpreter','Latex')
 xlabel('mseg')
 xlim([0 1.6])
+ylim([1.5*minimo 1.5*maximo])
 title(thr)
 
 % Distribucion de ISIs
