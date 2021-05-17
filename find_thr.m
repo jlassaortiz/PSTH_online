@@ -37,10 +37,23 @@ std3 = median( abs(noise3)/0.6745 );
 % Promedio los tres desvios para sacar efectos de outliers
 stdmean = (std1 + std2 + std3) / 3;
 
-% Determino el umbral como a partir desvio estandar del ruido (Quiroga 2004)
-% Si el desvio se estimo bien, la probabilidad de que un evento supere el
-% umbral sea ruido es << 1%
-thr = - 4 * stdmean;
+% Determino el umbral a partir desvio estandar del ruido (CASI Quiroga 2004)
+thr = - 5 * stdmean;
+
+% figure()
+% histogram(abs(noise1))
+% hold on
+% xline(median( abs(noise1)/0.6745 ))
+% xline( 4 * median( abs(noise1)/0.6745 ), ':r')
+% 
+% figure()
+% histogram(noise1)
+% hold on
+% xline(std(noise1))
+% xline(- 4 * std(noise1), ':r')
+
+% histogram(noise2)
+% histogram(noise3)
 
 end
 
