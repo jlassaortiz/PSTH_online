@@ -22,8 +22,9 @@ cell_estimulos = cell(length(grilla));
 fila = 1;
 
 % Recorro cada elemento de la grilla
-for x = (1:1:length(grilla))
-    for y = (1:1:length(grilla))
+[n_x, n_y] = size(grilla);
+for x = (1:1:n_x)
+    for y = (1:1:n_y)
         
         % Agrego valores X e Y de la sabana
         mat_scores(fila, 1) = x;

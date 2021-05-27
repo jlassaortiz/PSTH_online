@@ -81,9 +81,11 @@ rasters = generate_raster(spike_times, t0s_dictionary, tiempo_file, ntrials, fre
 % Evaluo desempleño de los distintos estimulos
 dict_score = score_calculator(id_BOS, estimulos, rasters, frequency_parameters);
 
-% Transformo alguno de los resultados en grillas
-[mat_scores, cell_estimulos] = scores_struct2mat(grilla_sabana,dict_score);
-
+% Transformo alguno de los resultados en grillas (si propuse grilla nxn)
+[x, y] = size(grilla_sabana);
+if x == y
+    [mat_scores, cell_estimulos] = scores_struct2mat(grilla_sabana,dict_score);
+end 
 
 % Machete algunos ploteos
 
@@ -94,14 +96,17 @@ plot_spikes_shapes(raw_filtered, spike_times, thr, frequency_parameters, directo
 plot_some_raster(grilla_psth, id_BOS, estimulos, rasters, frequency_parameters, tiempo_file, ntrials, puerto_canal, thr, directorio)
 
 % Ploteo sabana (x4 plots)
-plot_sabana(mat_scores, directorio, ejeY_col, ejeX_fila)
-
+if x == y && x == 3
+    plot_sabana(mat_scores, directorio, ejeY_col, ejeX_fila)
+end
 
 % Guardo
 print_png(1, directorio, strcat('_spike-shape_', string(round(thr)), 'uV'))
 print_pdf(2, directorio, strcat('_grilla_', string(round(thr)), 'uV.pdf'))
-print_pdf(3, directorio, strcat('_sabana_INT_', string(round(thr)), 'uV.pdf'))
-print_pdf(4, directorio, strcat('_sabana_CORR_', string(round(thr)), 'uV.pdf'))
-print_pdf(5, directorio, strcat('_CORTE_sabana_INT_', string(round(thr)), 'uV.pdf'))
-print_pdf(6, directorio, strcat('_CORTE_sabana_CORR_', string(round(thr)), 'uV.pdf'))
 
+if x == y && x == 3
+    print_pdf(3, directorio, strcat('_sabana_INT_', string(round(thr)), 'uV.pdf'))
+    print_pdf(4, directorio, strcat('_sabana_CORR_', string(round(thr)), 'uV.pdf'))
+    print_pdf(5, directorio, strcat('_CORTE_sabana_INT_', string(round(thr)), 'uV.pdf'))
+    print_pdf(6, directorio, strcat('_CORTE_sabana_CORR_', string(round(thr)), 'uV.pdf'))
+end
