@@ -8,15 +8,15 @@ directorio = input('Directorio: ','s');
 directorio = horzcat(directorio , '/');
 
 % Pregunto si el umbral se determina manualmente o automaticamente
-thr_automatico = input('¿Busqueda de thr automatica? (1 = SI / 0 = NO) : ');
+thr_automatico = input('\n¿Busqueda de thr automatica? (1 = SI / 0 = NO) : ');
 
 % Definimos manualmente un umbral para deteccion de spikes (en uV)
 if thr_automatico == 0 
-    thr = input('Threshold para el threshold cutting (en uV):  ');
+    thr = input('\nThreshold para el threshold cutting (en uV):  ');
 end
 
 % Plot sabana?
-sabana = input('¿Ploteo sabanas? (1 = SI / 0 = NO) : ');
+sabana = input('\n¿Ploteo sabanas? (1 = SI / 0 = NO) : ');
 
 % Carga vector con parametros del analisis de datos
 params_info = dir(horzcat(directorio, '*parametros*.txt'));
