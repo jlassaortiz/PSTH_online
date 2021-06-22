@@ -14,29 +14,6 @@ guardar_graf_protocolos_ind = input('Guardo graf sabanas de cada protocolo indiv
 params_info = dir(horzcat(directorio_params, '*parametros*.txt'));
 params = readtable(horzcat(directorio_params,params_info.name),'Delimiter','\t','ReadVariableNames',false);
 
-% Cargo valores de puerto-canal
-puerto = char(params.Var2(1));
-canal = char(params.Var2(2));
-puerto_canal = horzcat(puerto, '-0', num2str(canal,'%.2d'))
-
-% Cargamos cantidad de trials y tiempo que dura cada uno
-ntrials = str2num(char(params.Var2(3)))
-tiempo_file = str2num(char(params.Var2(4)))
-
-% Especifico numero de id del BOS
-id_BOS = str2num(char(params.Var2(5)))
-
-% Cargo orden de la grilla
-grilla_sabana = str2num(string(params.Var2(6)))
-grilla_psth = str2num(string(params.Var2(7)))
-
-% Cargo el nombre de los parametros que varian por fila y columna de la grilla
-params(8,:)
-ejeX_fila = char(params.Var2(8))
-
-params(9,:)
-ejeY_col  = char(params.Var2(9))
-
 % Posicion del primer directorio en el archivo de parametros
 d = 10;
 
@@ -57,6 +34,38 @@ for j = (1:1:height(directorios))
     % Defino el directorio del protocolo
     directorio = horzcat(char(directorios.Var2(j)), '/') % directorio protocolo
     
+    % Carga vector con parametros del analisis de datos
+    params_info = dir(horzcat(directorio, '*parametros*.txt'));
+    params = readtable(horzcat(directorio,params_info.name),'Delimiter','\t','ReadVariableNames',false);
+    clear params_info
+
+    % Cargo valores de puerto-canal
+    puerto = char(params.Var2(1));
+    canal = char(params.Var2(2));
+    puerto_canal = horzcat(puerto, '-0', num2str(canal,'%.2d'))
+    clear puerto canal
+
+    % Cargamos cantidad de trials y tiempo que dura cada uno
+    ntrials = str2num(char(params.Var2(3)))
+    tiempo_file = str2num(char(params.Var2(4)))
+
+    % Especifico numero de id del BOS
+    id_BOS = str2num(char(params.Var2(5)))
+
+    % Cargo orden de la grilla
+    grilla_sabana = str2num(string(params.Var2(6)))
+    grilla_psth = str2num(string(params.Var2(7)))
+
+    % Cargo el nombre de los parametros que varian por fila y columna de la grilla
+    char(params.Var1(8))
+    ejeX_fila = char(params.Var2(8))
+
+    char(params.Var1(9))
+    ejeY_col  = char(params.Var2(9))
+
+    
+    % Genero songs.mat a partir de las canciones
+    estimulos = carga_songs(directorio);
 
     % Leer info INTAN
     read_Intan_RHD2000_file(horzcat(directorio, 'info.rhd'));
@@ -130,38 +139,14 @@ mat_avg = mat_avg / length(score_total);
 % Ploteo
 plot_some_sabana(score_total, mat_avg, ejeX_fila, ejeY_col);
 
-% Hago diagonales para plotear perfiles
-diag_escala = mat_avg(:,1) == 1 & mat_avg(:,2) == 1 | ... 
-    mat_avg(:,1) == 2 & mat_avg(:,2) == 2 | ...
-    mat_avg(:,1) == 3 & mat_avg(:,2) == 3 ;
 
-diag_mostruo = mat_scores(:,1) == 1 & mat_scores(:,2) == 3 | ... 
-    mat_avg(:,1) == 2 & mat_avg(:,2) == 2 | ...
-    mat_avg(:,1) == 3 & mat_avg(:,2) == 1 ;
-
-% Ploteo perfiles INTEGRAL
-figure()
-plot([0, 1, 2], mat_avg(diag_escala, 3))
-hold on
-plot([0, 1, 2], mat_avg(diag_mostruo, 3))
-legend('escala', 'mostruo')
-ylabel('integral')
-title({'integral', directorio_params}, 'Interpreter','None')
-
-% Ploteo perfiles CORRELACION
-figure()
-plot([0, 1, 2], mat_avg(diag_escala, 4))
-hold on
-plot([0, 1, 2], mat_avg(diag_mostruo, 4))
-legend('escala', 'mostruo')
-ylabel('correlacion')
-title({'correlacion', directorio_params}, 'Interpreter','None')
+plot_sabana(mat_avg, directorio_params, ejeY_col, ejeX_fila);
 
 % Guardo
 print_pdf(1, directorio_params, strcat('_sabana_INT_', 'uV.pdf'))
 print_pdf(2, directorio_params, strcat('_sabana_CORR_', 'uV.pdf'))
-print_pdf(3, directorio_params, strcat('_CORTE_sabana_INT_', 'uV.pdf'))
-print_pdf(4, directorio_params, strcat('_CORTE_sabana_CORR_', 'uV.pdf'))
+print_pdf(5, directorio_params, strcat('_CORTE_sabana_INT_', 'uV.pdf'))
+print_pdf(6, directorio_params, strcat('_CORTE_sabana_CORR_', 'uV.pdf'))
 
 clear ans params_info d directorio directorio_aux  puerto canal i j 
 clear mat_scores cell_estimulos rasters raw raw_filtered spike_times
