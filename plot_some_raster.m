@@ -34,7 +34,7 @@ j = 0;
 k = 0;
 
 % Calculo scores de cada estimulo
-dict_score = score_calculator(id_BOS, estimulos, rasters, frequency_parameters);
+dict_score = score_calculator(id_BOS, estimulos, frequency_parameters);
 
 % Calculo la sw del BOS para poder hacer correlaciones con el resto
 [sw_data_BOS, sw_times_BOS] = sliding_window(rasters(id_BOS).spikes_norm, frequency_parameters.amplifier_sample_rate, ...
