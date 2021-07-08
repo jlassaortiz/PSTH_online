@@ -16,39 +16,45 @@ if thr_automatico == 0
 end
 
 % Plot sabana?
-sabana = input('\n¿Ploteo sabanas? (1 = SI / 0 = NO) : ');
+guardar = input('\n¿Guardo? (1 = SI / 0 = NO) : ');
 
 % Carga vector con parametros del analisis de datos
-params_info = dir(horzcat(directorio, '*parametros*.txt'));
-params = readtable(horzcat(directorio,params_info.name),'Delimiter','\t','ReadVariableNames',false);
+params_info = dir(horzcat(directorio, '*parametros_protocolo*.txt'));
+params = readtable(horzcat(directorio,params_info.name),'Delimiter','\t');
+clear params_info
+
+% Carga vector con parametros del analisis de datos
+params_info = dir(horzcat(directorio, '*parametros_analisis*.txt'));
+params_analisis = readtable(horzcat(directorio,params_info.name),'Delimiter','\t');
 clear params_info
 
 % Cargo valores de puerto-canal
-puerto = char(params.Var2(1));
-canal = char(params.Var2(2));
+puerto = char(params.Puerto);
+canal = params.Canal;
 puerto_canal = horzcat(puerto, '-0', num2str(canal,'%.2d'))
 clear puerto canal
 
 % Cargamos cantidad de trials y tiempo que dura cada uno
-ntrials = str2num(char(params.Var2(3)))
-tiempo_file = str2num(char(params.Var2(4)))
+ntrials = params.Ntrials
+tiempo_file = params.tiempo_entre_estimulos
 
 % Especifico numero de id del BOS
-id_BOS = str2num(char(params.Var2(5)))
+id_BOS = params_analisis.id_bos(1)
 
 % Cargo orden de la grilla
-grilla_sabana = str2num(string(params.Var2(6)))
-grilla_psth = str2num(string(params.Var2(7)))
-
-% Cargo el nombre de los parametros que varian por fila y columna de la grilla
-char(params.Var1(8))
-ejeX_fila = char(params.Var2(8))
-
-char(params.Var1(9))
-ejeY_col  = char(params.Var2(9))
+grilla_psth = str2num(string(params_analisis.grilla_psth(1)))
 
 % Genero songs.mat a partir de las canciones
-estimulos = carga_songs(directorio);
+estimulos = carga_songs(directorio);    
+
+% cargo id_estimulos 
+for i = (1:1:length(estimulos))
+    estimulos(i).id = params_analisis.orden(i);
+    estimulos(i).frec_corte = params_analisis.freq_corte(i);
+    estimulos(i).tipo = categorical(params_analisis.tipo_estimulo(i));
+%     estimulos(i).protocolo_id = categorical({directorio_nombre_corto});
+end
+clear i 
 
 % Leer info INTAN
 read_Intan_RHD2000_file(horzcat(directorio, 'info.rhd'));
@@ -63,52 +69,81 @@ filt_spikes = designfilt('highpassiir','DesignMethod','butter','FilterOrder',...
 
 % Aplica filtro
 raw_filtered = filtfilt(filt_spikes, raw);
-clear puerto canal filt_spikes raw
+clear filt_spikes
 
 % Genero diccionario con nombre de los estimulos y el momento de presentacion
-t0s_dictionary = find_t0s(estimulos, ntrials, tiempo_file, board_adc_channels, frequency_parameters, directorio, false);
+estimulos = find_t0s(estimulos, ntrials, tiempo_file, board_adc_channels, frequency_parameters, directorio, false);
 
-    
-% Definimos un umbral para threshold cutting de manera automatica (en uV)
+% Definimos umbral de deteccion de spikes
 if thr_automatico == 1
-    thr = find_thr(raw_filtered, t0s_dictionary, tiempo_file, frequency_parameters);
+    thr = find_thr(raw_filtered, estimulos, tiempo_file, frequency_parameters);
 end
-clear thr_automatico
 
 % Buscamos spike por threshold cutting
 spike_times = find_spike_times(raw_filtered, thr, frequency_parameters);
 
 % Genero objeto con raster de todos los estimulos
-rasters = generate_raster(spike_times, t0s_dictionary, tiempo_file, ntrials, frequency_parameters);
+estimulos = generate_raster(spike_times, estimulos , tiempo_file, ntrials, frequency_parameters);
 
-% Evaluo desempleño de los distintos estimulos
-dict_score = score_calculator(id_BOS, estimulos, rasters, frequency_parameters);
+% Calculo scores
+estimulos = score_calculator(id_BOS, estimulos, frequency_parameters);
 
-% Transformo alguno de los resultados en grillas (si quiero graficar sabanas)
-if sabana == 1
-    [mat_scores, cell_estimulos] = scores_struct2mat(grilla_sabana,dict_score);
-end 
-
-% Machete algunos ploteos
-
-% Carga datos filtrados y hace un threshold cutting
+% Ploteo spike shapes
 plot_spikes_shapes(raw_filtered, spike_times, thr, frequency_parameters, directorio)
 
-% Grafica raster de todos los estimulos
-plot_some_raster(grilla_psth, id_BOS, estimulos, rasters, frequency_parameters, tiempo_file, ntrials, puerto_canal, thr, directorio)
+% Ploteo Grilla PSTH
+plot_some_raster(grilla_psth, id_BOS, estimulos, estimulos, frequency_parameters, tiempo_file, ntrials, puerto_canal, thr, directorio);
 
-% Ploteo sabana (x4 plots)
-if sabana == 1
-    plot_sabana(mat_scores, directorio, ejeY_col, ejeX_fila)
-end
+estimulos = struct2table(estimulos);
+
+
+
+% Selecciono datos de ese protocolo 
+pasa_altos = estimulos(estimulos.tipo == 'up' , :);
+pasa_bajos = estimulos(estimulos.tipo == 'down' , :);
+
+% Plotear INT PASA-ALTOS
+figure();
+plot(pasa_altos.frec_corte, pasa_altos.int_norm, '-o')
+title({strcat('INT_PASA-ALTOS_', datestr(now, 'yyyy-mm-dd')); ...
+string(directorio) ; ...
+strcat(string(puerto_canal), "  " , string(thr), "uV", "  ntrials:", string(ntrials), "  t_inter_estimulo:", string(tiempo_file)) }, 'Interpreter','None')
+legend
+
+% Plotear INT PASA-BAJOS
+figure();
+plot(pasa_bajos.frec_corte, pasa_bajos.int_norm, '-o')
+title({strcat('INT_PASA-BAJOS_', datestr(now, 'yyyy-mm-dd')); ...
+string(directorio) ; ...
+strcat(string(puerto_canal), "  " , string(thr), "uV", "  ntrials:", string(ntrials), "  t_inter_estimulo:", string(tiempo_file)) }, 'Interpreter','None')
+legend
+
+
+% Plotear CORR PASA-ALTOS
+figure();
+plot(pasa_altos.frec_corte, pasa_altos.corr, '-o')
+title({strcat('CORR_PASA-ALTOS_', datestr(now, 'yyyy-mm-dd')); ...
+string(directorio) ; ...
+strcat(string(puerto_canal), "  " , string(thr), "uV", "  ntrials:", string(ntrials), "  t_inter_estimulo:", string(tiempo_file)) }, 'Interpreter','None')
+legend
+
+% Plotear CORR PASA-BAJOS
+figure();
+plot(pasa_bajos.frec_corte, pasa_bajos.corr, '-o')
+title({strcat('CORR_PASA-BAJOS_', datestr(now, 'yyyy-mm-dd')); ...
+string(directorio) ; ...
+strcat(string(puerto_canal), "  " , string(thr), "uV", "  ntrials:", string(ntrials), "  t_inter_estimulo:", string(tiempo_file)) }, 'Interpreter','None')
+legend
+
 
 % Guardo
-print_png(1, directorio, strcat('_spike-shape_', string(round(thr)), 'uV'))
-print_pdf(2, directorio, strcat('_grilla_', string(round(thr)), 'uV.pdf'))
-
-if sabana == 1
-    print_pdf(3, directorio, strcat('_sabana_INT_', string(round(thr)), 'uV.pdf'))
-    print_pdf(4, directorio, strcat('_sabana_CORR_', string(round(thr)), 'uV.pdf'))
-    print_pdf(5, directorio, strcat('_CORTE_sabana_INT_', string(round(thr)), 'uV.pdf'))
-    print_pdf(6, directorio, strcat('_CORTE_sabana_CORR_', string(round(thr)), 'uV.pdf'))
+if guardar == 1
+    print_png(1, directorio, strcat('_spike-shape_', string(round(thr)), 'uV'))
+    print_pdf(2, directorio, strcat('_grilla_', string(round(thr)), 'uV.pdf'))
+    print_pdf(3, directorio, strcat('_INT_pasa-ALTOS', '.pdf'))
+    print_pdf(4, directorio, strcat('_INT_pasa-BAJOS', '.pdf'))
+    print_pdf(5, directorio, strcat('_CORR_pasa-ALTOS', '.pdf'))
+    print_pdf(6, directorio, strcat('_CORR_pasa-BAJOS', '.pdf'))
 end
+
+clear estimulos_aux j i spike_times  
