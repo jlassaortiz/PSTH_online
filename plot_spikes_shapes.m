@@ -10,6 +10,7 @@ function plot_spikes_shapes(raw_filtered, spike_times, thr, frequency_parameters
 
 % Calcula los ISI entre spikes
 ISI = diff(spike_times);
+limite = 25000;
 
 % Extrae los spikes shapes de la raw data
 for i = 1:length(spike_times)
@@ -18,6 +19,13 @@ for i = 1:length(spike_times)
     end
     spike_samples(:,i) = raw_filtered((spike_times(i)-(0.8E-3)*frequency_parameters.amplifier_sample_rate):(spike_times(i)+(0.8E-3)*frequency_parameters.amplifier_sample_rate));
 end
+
+if length(spike_samples) > limite
+    i = randperm(length(spike_samples));
+    spike_samples = spike_samples(:,i);
+    spike_samples = spike_samples(:, 1:limite);
+end
+    
 
 %%%%%%%%%%
 % FIGURA %
@@ -35,11 +43,11 @@ xlim([0 time_scale(end)])
 minimo = min(raw_filtered);
 maximo = max(raw_filtered);
 if minimo < -250
-    minimo = -200;   
+    minimo = -133; % Así el límite es 200 uV
 end 
 
 if maximo > 250
-    maximo = 200;
+    maximo = 133; % Así el límite es 200 uV
 end 
 ylim([1.5*minimo 1.5*maximo])
 ylabel('V ($\mu$V)','Interpreter','Latex')
@@ -48,7 +56,7 @@ xlabel('seg')
 % Spikes
 h(2)=subplot(2,2,3);
 t = (0:1:length(spike_samples(:,1)) -1)/frequency_parameters.amplifier_sample_rate * 1000;
-for i=1:(length(spike_times))
+for i=1:(length(spike_samples))
     plot(t, spike_samples(:,i));
     hold on
 end
@@ -59,7 +67,11 @@ ylabel('V ($\mu$V)','Interpreter','Latex')
 xlabel('mseg')
 xlim([0 1.6])
 ylim([1.5*minimo 1.5*maximo])
-title(thr)
+if limite < length(spike_times)
+    title({strcat('umbral :', num2str(thr),'uV'); strcat('subset de :', num2str(limite),' spikes de un total de :',num2str(length(spike_times)))})
+else 
+     title(strcat('umbral', num2str(thr),'uV'))
+end
 
 % Distribucion de ISIs
 h(3)=subplot(2,2,4);
