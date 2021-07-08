@@ -1,4 +1,4 @@
-function rasters = generate_raster(spike_times, t0s_dictionary, tiempo_file, ntrials, frequency_parameters)
+function t0s_dict = generate_raster(spike_times, t0s_dict, tiempo_file, ntrials, frequency_parameters)
 
 % Genera un struct con el raster de cada estimulo
 % Necesita como input:
@@ -12,14 +12,9 @@ function rasters = generate_raster(spike_times, t0s_dictionary, tiempo_file, ntr
 % estimulo y para cada spike se guarda el numero de trial en el que ocurrio
 
 % Guardo los spikes separados por estimulo y por trial en un struct
-rasters = struct();
 
 % Para cada estimulo
-for i = (1:1:length(t0s_dictionary))
-    
-    % Guardo el nombre de cada estimulo
-    estimulo = string(t0s_dictionary(i).id_estimulo);
-    rasters(i).estimulo = estimulo;
+for i = (1:1:length(t0s_dict))
     
     % Inicializo la lista donde guardo los spikestimes normalizados de cada
     % estimulo y el id del trial
@@ -30,7 +25,7 @@ for i = (1:1:length(t0s_dictionary))
     for j = (1:1: ntrials)
         
         % Defino tiempo inicial y final del trial
-        t_inicial = t0s_dictionary(i).t0s(j);
+        t_inicial = t0s_dict(i).t0s(j);
         t_final = t_inicial + tiempo_file * frequency_parameters.amplifier_sample_rate;
         
         % Busco los spikes que ocurrieron durante el trial
@@ -52,8 +47,8 @@ for i = (1:1:length(t0s_dictionary))
     end
     
     % Guardo los spikes y los trial_id de este estimulo
-    rasters(i).spikes_norm = spikes_norm(2:end); % elimino el primer cero
-    rasters(i).trials_id = trial_id(2:end); % elimino el primer cero
+    t0s_dict(i).spikes_norm = spikes_norm(2:end); % elimino el primer cero
+    t0s_dict(i).trials_id = trial_id(2:end); % elimino el primer cero
     
 end
 
