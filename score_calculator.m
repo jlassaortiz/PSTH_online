@@ -1,11 +1,9 @@
-function dict_score = score_calculator(id_BOS, estimulos, rasters, frequency_parameters)
+function rasters = score_calculator(id_BOS, rasters, frequency_parameters)
 % Calcula la int_normalizada y la correlacion del protocolo experimental
 %   
 %   Entradas:
 %   id_BOS = (double) numero de orden que le corresponde al BOS en el
 %   objeto "estimulos" generado por la funcion carga_songs.m
-%   estimulos = (struct) generado por la funcion carga_songs.m con toda la
-%   info de los estimulos
 %   rasters = (struct) diccionarios con los rasters separados por estimulo
 %   frecuency_parameters = (struct) diccionario generado por
 %   read_Intan_RHD2000_file.m con info del amplificador y los datos grabados
@@ -29,7 +27,7 @@ step = 0.001; % 1 ms
         t_window, step);
     
 % Conservo solo la seccion donde se presenta el estimulo auditivo
-duracion_BOS = length(estimulos(id_BOS).song) / estimulos(id_BOS).freq; % en seg
+duracion_BOS = length(rasters(id_BOS).song) / rasters(id_BOS).freq; % en seg
 sw_data_BOS = sw_data_BOS(sw_times_BOS < duracion_BOS);
 sw_data_BOS_norm = sw_data_BOS / max(sw_data_BOS);
 
@@ -40,16 +38,11 @@ ruido    = sum(rasters(id_BOS).spikes_norm > duracion_BOS * frequency_parameters
     rasters(id_BOS).spikes_norm < duracion_BOS * 2 * frequency_parameters.amplifier_sample_rate); 
 integral_norm_BOS = integral;
 
-dict_score = struct;
-
-for i = (1:1:length(estimulos)) % para cada estímulo
-    
-    % Guardo el nombre del estimulo
-    id_estimulo = estimulos(i).name;
+for i = (1:1:length(rasters)) % para cada estímulo
     
     % Guardo la frecuencia de sampleo y el largo (en seg) de este estimulo
-    song_freq = estimulos(i).freq;
-    song_len = length(estimulos(i).song) / song_freq; % unidades: seg
+    song_freq = rasters(i).freq;
+    song_len = length(rasters(i).song) / song_freq; % unidades: seg
     
     % Integracion de spikes normalizada
     integral = sum(rasters(i).spikes_norm < song_len * frequency_parameters.amplifier_sample_rate);
@@ -67,9 +60,8 @@ for i = (1:1:length(estimulos)) % para cada estímulo
     correlacion_pearson = corrcoef(sw_data_norm, sw_data_BOS_norm);
     
     % Guardo resultados
-    dict_score(i).name = id_estimulo;
-    dict_score(i).int_norm = integral_norm;
-    dict_score(i).corr = correlacion_pearson(1,2);
+    rasters(i).int_norm = integral_norm;
+    rasters(i).corr = correlacion_pearson(1,2);
 end 
 
 end
