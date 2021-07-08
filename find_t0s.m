@@ -1,4 +1,4 @@
-function t0s_dictionary = find_t0s(estimulos, ntrials, tiempo_file, board_adc_channels, frequency_parameters, directorio, plotear) 
+function estimulos = find_t0s(estimulos, ntrials, tiempo_file, board_adc_channels, frequency_parameters, directorio, plotear) 
 
 % Genero diccionario con nombre de archivos de auido y tiempos en que se presentaron 
 %
@@ -108,8 +108,7 @@ for i = (1:1:length(estimulos))
     end
     
   % Guardo el nombre del estimulo y los t0s en que se presento
-  t0s_dictionary(i).id_estimulo = estimulo;
-  t0s_dictionary(i).t0s = t0s(logical(orden));
+  estimulos(i).t0s = t0s(logical(orden));
     
 end 
 
