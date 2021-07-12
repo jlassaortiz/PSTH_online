@@ -23,6 +23,6 @@ end
 
 % Se fija cuales estan separados mas de 1 ms
 prueba = diff(spike_times);
-spike_times = spike_times(prueba > deadtime);
+spike_times = spike_times(prueba > deadtime); %(en samples, NO en unidades de tiempo)
 
 end

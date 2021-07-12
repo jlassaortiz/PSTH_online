@@ -15,7 +15,7 @@ if thr_automatico == 0
     thr = input('\nThreshold para el threshold cutting (en uV):  ');
 end
 
-% Plot sabana?
+% Guardo figuras?
 guardar = input('\n¿Guardo? (1 = SI / 0 = NO) : ');
 
 % Carga vector con parametros del analisis de datos
@@ -38,8 +38,9 @@ clear puerto canal
 ntrials = params.Ntrials
 tiempo_file = params.tiempo_entre_estimulos
 
-% Especifico numero de id del BOS
+% Especifico numero de id del BOS y REV
 id_BOS = params_analisis.id_bos(1)
+id_REV = params_analisis.id_rev(1)
 
 % Cargo orden de la grilla
 grilla_psth = str2num(string(params_analisis.grilla_psth(1)))
@@ -79,20 +80,20 @@ if thr_automatico == 1
     thr = find_thr(raw_filtered, estimulos, tiempo_file, frequency_parameters);
 end
 
-% Buscamos spike por threshold cutting
+% Buscamos spike times (en samples, NO unidades de tiempo) por threshold cutting 
 spike_times = find_spike_times(raw_filtered, thr, frequency_parameters);
 
 % Genero objeto con raster de todos los estimulos
 estimulos = generate_raster(spike_times, estimulos , tiempo_file, ntrials, frequency_parameters);
 
 % Calculo scores
-estimulos = score_calculator(id_BOS, estimulos, frequency_parameters);
+estimulos = score_calculator(id_BOS, id_REV, estimulos, frequency_parameters);
 
 % Ploteo spike shapes
 plot_spikes_shapes(raw_filtered, spike_times, thr, frequency_parameters, directorio)
 
 % Ploteo Grilla PSTH
-plot_some_raster(grilla_psth, id_BOS, estimulos, estimulos, frequency_parameters, tiempo_file, ntrials, puerto_canal, thr, directorio);
+plot_some_raster(grilla_psth, id_BOS, id_REV, estimulos, estimulos, frequency_parameters, tiempo_file, ntrials, puerto_canal, thr, directorio);
 
 estimulos = struct2table(estimulos);
 

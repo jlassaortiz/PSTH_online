@@ -54,8 +54,9 @@ for j = (1:1:height(directorios))
     ntrials = params.Ntrials
     tiempo_file = params.tiempo_entre_estimulos
     
-    % Especifico numero de id del BOS
+    % Especifico numero de id del BOS y REV
     id_BOS = params_analisis.id_bos(1)
+    id_REV = params_analisis.id_rev(1)
     
     % Cargo orden de la grilla
     grilla_psth = str2num(string(params_analisis.grilla_psth(1)))
@@ -100,7 +101,7 @@ for j = (1:1:height(directorios))
     estimulos = generate_raster(spike_times, estimulos , tiempo_file, ntrials, frequency_parameters);
 
     % Calculo scores
-    estimulos = score_calculator(id_BOS, estimulos, frequency_parameters);
+    estimulos = score_calculator(id_BOS, id_REV, estimulos, frequency_parameters);
     
     % Selecciono sub-set de estimulos para guardar
     estimulos_resumen = rmfield(estimulos, {'song', 't0s','spikes_norm', 'trials_id', 'id'});
