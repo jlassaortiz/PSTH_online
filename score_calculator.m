@@ -35,8 +35,8 @@ sw_data_BOS_norm = sw_data_BOS / max(sw_data_BOS);
 % el resto
 integral = sum(rasters(id_BOS).spikes_norm < duracion_BOS * frequency_parameters.amplifier_sample_rate);
 
-ruido    = sum(rasters(id_REV).spikes_norm > duracion_BOS * frequency_parameters.amplifier_sample_rate & ...
-    rasters(id_REV).spikes_norm < duracion_BOS * 2 * frequency_parameters.amplifier_sample_rate); 
+% RUIDO = spikes totales del REV
+ruido    = sum(rasters(id_REV).spikes_norm < duracion_BOS * frequency_parameters.amplifier_sample_rate); 
 
 integral = integral - ruido;
 
@@ -44,12 +44,12 @@ integral_norm_BOS = integral;
 
 for i = (1:1:length(rasters)) % para cada estímulo
     
-    % Guardo la frecuencia de sampleo y el largo (en seg) de este estimulo
-    song_freq = rasters(i).freq;
-    song_len = length(rasters(i).song) / song_freq; % unidades: seg
+%     % Guardo la frecuencia de sampleo y el largo (en seg) de este estimulo
+%     song_freq = rasters(i).freq;
+%     song_len = length(rasters(i).song) / song_freq; % unidades: seg
     
     % Integracion de spikes normalizada
-    integral = sum(rasters(i).spikes_norm < song_len * frequency_parameters.amplifier_sample_rate);
+    integral = sum(rasters(i).spikes_norm < duracion_BOS * frequency_parameters.amplifier_sample_rate);
     integral = integral - ruido;
     
     integral_norm = (integral)/integral_norm_BOS;
