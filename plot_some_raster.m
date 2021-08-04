@@ -1,4 +1,4 @@
-function plot_some_raster(id_estimulos, id_BOS, id_REV, estimulos, rasters, frequency_parameters, tiempo_file, ntrials, puerto_canal, thr, directorio)
+function plot_some_raster(id_estimulos, id_BOS, estimulos, rasters, frequency_parameters, tiempo_file, ntrials, puerto_canal, thr, directorio, spike_times)
 
 % plot_raster plotea el raster y psth del numero de estimulos indicados
 %   Detailed explanation goes here
@@ -34,7 +34,7 @@ j = 0;
 k = 0;
 
 % Calculo scores de cada estimulo
-dict_score = score_calculator(id_BOS, id_REV, estimulos, frequency_parameters);
+dict_score = score_calculator(id_BOS, estimulos, frequency_parameters, spike_times, ntrials);
 
 % Calculo la sw del BOS para poder hacer correlaciones con el resto
 [sw_data_BOS, sw_times_BOS] = sliding_window(rasters(id_BOS).spikes_norm, frequency_parameters.amplifier_sample_rate, ...

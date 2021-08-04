@@ -87,13 +87,13 @@ spike_times = find_spike_times(raw_filtered, thr, frequency_parameters);
 estimulos = generate_raster(spike_times, estimulos , tiempo_file, ntrials, frequency_parameters);
 
 % Calculo scores
-estimulos = score_calculator(id_BOS, id_REV, estimulos, frequency_parameters);
+estimulos = score_calculator(id_BOS, estimulos, frequency_parameters, spike_times, ntrials);
 
 % Ploteo spike shapes
 plot_spikes_shapes(raw_filtered, spike_times, thr, frequency_parameters, directorio)
 
 % Ploteo Grilla PSTH
-plot_some_raster(grilla_psth, id_BOS, id_REV, estimulos, estimulos, frequency_parameters, tiempo_file, ntrials, puerto_canal, thr, directorio);
+plot_some_raster(grilla_psth, id_BOS, estimulos, estimulos, frequency_parameters, tiempo_file, ntrials, puerto_canal, thr, directorio, spike_times);
 
 estimulos = struct2table(estimulos);
 

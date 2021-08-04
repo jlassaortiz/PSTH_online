@@ -1,4 +1,4 @@
-function rasters = score_calculator(id_BOS, id_REV, rasters, frequency_parameters)
+function rasters = score_calculator(id_BOS, rasters, frequency_parameters, spike_times, ntrials)
 % Calcula la int_normalizada y la correlacion del protocolo experimental
 %   
 %   Entradas:
@@ -35,8 +35,9 @@ sw_data_BOS_norm = sw_data_BOS / max(sw_data_BOS);
 % el resto
 integral = sum(rasters(id_BOS).spikes_norm < duracion_BOS * frequency_parameters.amplifier_sample_rate);
 
-% RUIDO = spikes totales del REV
-ruido    = sum(rasters(id_REV).spikes_norm < duracion_BOS * frequency_parameters.amplifier_sample_rate); 
+% RUIDO = determinado desde la ACTIVIDAD ESPONTANEA (primemos 60 seg.)
+ruido = sum(spike_times < 60 * frequency_parameters.amplifier_sample_rate);
+ruido = ntrials * ruido * duracion_BOS/60 ;
 
 integral = integral - ruido;
 

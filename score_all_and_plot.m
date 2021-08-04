@@ -101,7 +101,7 @@ for j = (1:1:height(directorios))
     estimulos = generate_raster(spike_times, estimulos , tiempo_file, ntrials, frequency_parameters);
 
     % Calculo scores
-    estimulos = score_calculator(id_BOS, id_REV, estimulos, frequency_parameters);
+    estimulos = score_calculator(id_BOS, estimulos, frequency_parameters, spike_times, ntrials);
     
     % Selecciono sub-set de estimulos para guardar
     estimulos_resumen = rmfield(estimulos, {'song', 't0s','spikes_norm', 'trials_id', 'id'});
