@@ -224,7 +224,8 @@ pasa_altos_stat.frec_cortes = double(string(pasa_altos_stat.frec_cortes));
 pasa_bajos_stat = score_statistics(score_statistics.tipo == categorical({'down'}),:);
 pasa_bajos_stat.frec_cortes = double(string(pasa_bajos_stat.frec_cortes));
 
-error_width = 6;
+error_width = 3;
+marker_size = 12;
 
 
 
@@ -251,7 +252,7 @@ for i = (1:1:height(directorios))
 
     % Plotear por separado (en dos figuras) pasa altos y pasa bajo con
     % leyenda con PROTOCOLO_ID y titulo PASA ALTOS / BAJOS
-    plot(pasa_altos.frec_corte, pasa_altos.int_norm, '-o','DisplayName', char(dir_id))
+    plot(pasa_altos.frec_corte, pasa_altos.int_norm, '-o','MarkerSize', marker_size, 'DisplayName', char(dir_id))
     
     hold on;
 end
@@ -280,7 +281,7 @@ for i = (1:1:height(directorios))
 
     % Plotear por separado (en dos figuras) pasa altos y pasa bajo con
     % leyenda con PROTOCOLO_ID y titulo PASA ALTOS / BAJOS
-    plot(pasa_bajos.frec_corte, pasa_bajos.int_norm, '-o','DisplayName', char(dir_id))
+    plot(pasa_bajos.frec_corte, pasa_bajos.int_norm, '-o','MarkerSize', marker_size,'DisplayName', char(dir_id))
     
     hold on;
 end
@@ -312,7 +313,7 @@ for i = (1:1:height(directorios))
 
     % Plotear por separado (en dos figuras) pasa altos y pasa bajo con
     % leyenda con PROTOCOLO_ID y titulo PASA ALTOS / BAJOS
-    plot(pasa_altos.frec_corte, pasa_altos.corr, '-o','DisplayName', char(dir_id))
+    plot(pasa_altos.frec_corte, pasa_altos.corr, '-o','MarkerSize', marker_size,'DisplayName', char(dir_id))
     
     hold on;
 end
@@ -342,7 +343,7 @@ for i = (1:1:height(directorios))
 
     % Plotear por separado (en dos figuras) pasa altos y pasa bajo con
     % leyenda con PROTOCOLO_ID y titulo PASA ALTOS / BAJOS
-    plot(pasa_bajos.frec_corte, pasa_bajos.corr, '-o','DisplayName', char(dir_id))
+    plot(pasa_bajos.frec_corte, pasa_bajos.corr, '-o','MarkerSize', marker_size,'DisplayName', char(dir_id))
     
     hold on;
 end
