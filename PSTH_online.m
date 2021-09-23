@@ -95,13 +95,13 @@ plot_spikes_shapes(raw_filtered, spike_times, thr, frequency_parameters, directo
 % Ploteo Grilla PSTH
 plot_some_raster(grilla_psth, id_BOS, estimulos, estimulos, frequency_parameters, tiempo_file, ntrials, puerto_canal, thr, directorio, spike_times);
 
-estimulos = struct2table(estimulos);
+estimulos_table = struct2table(estimulos);
 
 
 
 % Selecciono datos de ese protocolo 
-pasa_altos = estimulos(estimulos.tipo == 'up' , :);
-pasa_bajos = estimulos(estimulos.tipo == 'down' , :);
+pasa_altos = estimulos_table(estimulos_table.tipo == 'up' , :);
+pasa_bajos = estimulos_table(estimulos_table.tipo == 'down' , :);
 
 % Plotear INT PASA-ALTOS
 figure();
@@ -147,4 +147,4 @@ if guardar == 1
     print_pdf(6, directorio, strcat('_CORR_pasa-BAJOS', '.pdf'))
 end
 
-clear estimulos_aux j i spike_times  
+clear estimulos_aux j i  
