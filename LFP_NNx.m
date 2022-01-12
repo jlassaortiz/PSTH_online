@@ -28,10 +28,6 @@ end
 
 clear peine tetrodo canal
 
-% Hasta aca lo modifique algo
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-
 % Pregunto si el umbral se determina manualmente o automaticamente
 thr_automatico = input('\n¿Busqueda de thr automatica? (1 = SI / 0 = NO) : ');
 
@@ -44,13 +40,14 @@ end
 guardar = input('\n¿Guardo? (1 = SI / 0 = NO) : ');
 
 % Carga vector con parametros del analisis de datos
-params_info = dir(horzcat(directorio, '*parametros_protocolo*.txt'));
-params = readtable(horzcat(directorio,params_info.name),'Delimiter','\t');
+%params_info = dir(horzcat(directorio, '*parametros_protocolo*.txt'));
+params = readtable(horzcat(directorio,'/parametros_protocolo.txt'),...
+    'Delimiter','\t');
 clear params_info
 
 % Carga vector con parametros del analisis de datos
-params_info = dir(horzcat(directorio, '*parametros_analisis*.txt'));
-params_analisis = readtable(horzcat(directorio,params_info.name), ... 
+%params_info = dir(horzcat(directorio, '*parametros_analisis*.txt'));
+params_analisis = readtable(horzcat(directorio,'/parametros_analisis.txt'), ... 
     'Delimiter','\t');
 clear params_info
 
@@ -81,23 +78,55 @@ clear i
 read_Intan_RHD2000_file(horzcat(directorio, 'info.rhd'));
 clear notes spike_triggers supply_voltage_channels aux_input_channels 
 
-% Traduzco custom_channel_name a native_channel_name
-traduccion = strcmp(puerto_canal_custom, ...
-    {amplifier_channels(:).custom_channel_name});
-puerto_canal = amplifier_channels(traduccion).native_channel_name;
-clear traduccion
 
-% Levanto el canal de interes
-raw = read_INTAN_channel(directorio, puerto_canal, amplifier_channels);
+% Hasta aca lo modifique algo.
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Abajo algo hice pero inconcluso, pensarlo mejor. 
 
-% Define el filtro
-filt_spikes = designfilt('highpassiir','DesignMethod','butter','FilterOrder',...
-    4,'HalfPowerFrequency',500,'SampleRate', ... 
-    frequency_parameters.amplifier_sample_rate);
+if promedio_T
+    
+    % Creo objeto donde guardo trazas de LFP
+    
+    % Para cada canal del tetrodo
+    for i = (1:1:4)
+        
+        % Genero nombre de canal a levantar
+        puerto_canal_custom_aux = horzcat(puerto_canal_custom, ...
+            '-',num2str(i));
 
-% Aplica filtro
-raw_filtered = filtfilt(filt_spikes, raw);
-clear filt_spikes
+        % Traduzco custom_channel_name a native_channel_name
+        traduccion = strcmp(puerto_canal_custom_aux, ...
+            {amplifier_channels(:).custom_channel_name});
+        puerto_canal = amplifier_channels(traduccion).native_channel_name;
+        clear traduccion
+
+        % Levanto el canal de interes
+        raw = read_INTAN_channel(directorio, puerto_canal, amplifier_channels);
+
+        % Define el filtro para spikes
+        filt_spikes = designfilt('highpassiir','DesignMethod','butter',...
+            'FilterOrder', 4,'HalfPowerFrequency',500,'SampleRate', ... 
+            frequency_parameters.amplifier_sample_rate);
+
+        % Aplica filtro para spikes
+        raw_filtered = filtfilt(filt_spikes, raw);
+        clear filt_spikes
+        
+        % Define el filtro para LFP
+        filt_LFP = designfilt('lowpassiir','DesignMethod','butter',...
+            'FilterOrder', 4,'HalfPowerFrequency',100,'SampleRate', ... 
+            frequency_parameters.amplifier_sample_rate);
+        
+        % Aplica el filtro para LFP
+        LFP = filtfilt(filt_LFP, raw);
+        clear filt_LFP
+        
+        
+    LFP_list
+    
+        
+        
+
 
 % Genero dicc con nombre de los estimulos y el momento de presentacion
 estimulos = find_t0s(estimulos, ntrials, tiempo_file, board_adc_channels, ... 

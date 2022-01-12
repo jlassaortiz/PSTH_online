@@ -27,13 +27,13 @@ end
 guardar = input('\n¿Guardo? (1 = SI / 0 = NO) : ');
 
 % Carga vector con parametros del analisis de datos
-params_info = dir(horzcat(directorio, '*parametros_protocolo*.txt'));
-params = readtable(horzcat(directorio,params_info.name),'Delimiter','\t');
+%params_info = dir(horzcat(directorio, '*parametros_protocolo*.txt'));
+params = readtable(horzcat(directorio,'/parametros_protocolo.txt'),'Delimiter','\t');
 clear params_info
 
 % Carga vector con parametros del analisis de datos
-params_info = dir(horzcat(directorio, '*parametros_analisis*.txt'));
-params_analisis = readtable(horzcat(directorio,params_info.name),'Delimiter','\t');
+%params_info = dir(horzcat(directorio, '*parametros_analisis*.txt'));
+params_analisis = readtable(horzcat(directorio,'/parametros_analisis.txt'),'Delimiter','\t');
 clear params_info
 
 % Cargamos cantidad de trials y tiempo que dura cada uno
