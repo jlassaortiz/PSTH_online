@@ -73,21 +73,24 @@ for i = id_estimulos % para cada estímulo
     % PSTH
     j = j + 1;
     h(j) = subplot(n, m, [p + 3, p + 6]);
-    histogram(rasters(i).spikes_norm * 1000/frequency_parameters.amplifier_sample_rate , ...
-        (1000/frequency_parameters.amplifier_sample_rate) * (-1000:(0.015* ... 
-        frequency_parameters.amplifier_sample_rate):(tiempo_file*frequency_parameters.amplifier_sample_rate)) );
-    ylim([0 psth_max]);
-    xlim([0 limite_eje_x]);
-    hold on;
     
-    % Integracion de spikes normalizada
-    integral_text = strcat('Integral_norm : ', string(dict_score(i).int_norm));
+%     % Ploteo histograma del PSTH
+%     histogram(rasters(i).spikes_norm * 1000/frequency_parameters.amplifier_sample_rate , ...
+%         (1000/frequency_parameters.amplifier_sample_rate) * (-1000:(0.015* ... 
+%         frequency_parameters.amplifier_sample_rate):(tiempo_file*frequency_parameters.amplifier_sample_rate)) );
+%     hold on;
     
-    % Calculo sliding window para cada estimulo
+    % Calculo y ploteo sliding window para cada estimulo
     [sw_data, sw_times] = sliding_window(rasters(i).spikes_norm, frequency_parameters.amplifier_sample_rate, ...
         t_window, step);
     plot(sw_times * 1000, sw_data, '-b');
+    hold on;
     plot(sw_times_BOS * 1000 , sw_data_BOS, '-r');
+    ylim([0 psth_max]);
+    xlim([0 limite_eje_x]);
+    
+    % Integracion de spikes normalizada
+    integral_text = strcat('Integral_norm : ', string(dict_score(i).int_norm));
     
     % Calculo correlación de sw normalizada con la sw normalizada del BOS
     R2_text = strcat(' Coef Pearson sw_BOS_norm : ' , string(round(dict_score(i).corr, 2)));
