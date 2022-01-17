@@ -1,9 +1,11 @@
-function t0s_dict = generate_raster(spike_times, t0s_dict, tiempo_file, ntrials, frequency_parameters)
+function t0s_dict = generate_raster(spike_times, t0s_dict, tiempo_file, ...
+    ntrials, frequency_parameters)
 
 % Genera un struct con el raster de cada estimulo
 % Necesita como input:
 % 1) los time stamp de los spikes (en samples, NO en unidades de tiempo)
-% 2) el diccionario con los nombres de todos los estimuolos y el tiempo en que fue presentado
+% 2) el diccionario con los nombres de todos los estimuolos y el tiempo 
+% en que fue presentado
 % 3) tiempo que dura la presentacion del estimulo incluyendo el silencio
 % 4) objeto frequency_parameters generado por read_Intan_RHD2000_file.m
 %
@@ -26,10 +28,12 @@ for i = (1:1:length(t0s_dict))
         
         % Defino tiempo inicial y final del trial
         t_inicial = t0s_dict(i).t0s(j);
-        t_final = t_inicial + tiempo_file * frequency_parameters.amplifier_sample_rate;
+        t_final = t_inicial + ...
+            tiempo_file * frequency_parameters.amplifier_sample_rate;
         
         % Busco los spikes que ocurrieron durante el trial
-        spikes_trial = spike_times(spike_times > t_inicial & spike_times < t_final);
+        spikes_trial = spike_times(spike_times > t_inicial & ...
+            spike_times < t_final);
         
         % Normalizo los spikes times de cada trial
         spikes_trial = spikes_trial - t_inicial;
