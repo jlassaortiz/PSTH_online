@@ -24,8 +24,8 @@ read_Intan_RHD2000_file(horzcat(directorio, 'info.rhd'));
 clear notes spike_triggers supply_voltage_channels aux_input_channels 
     
 % Calcula LFP de cada canal del tetrodo especificado y el promedio de los 4
-[LFP_tetrodo, LFP_canales] = LFP_1tetrode(directorio,amplifier_channels, ...
-frequency_parameters, puerto_canal_custom);
+[LFP_tetrodo, LFP_canales, spikes_canales] = LFP_1tetrode(directorio, ...
+    amplifier_channels, frequency_parameters, puerto_canal_custom);
  
 % Calculo correlacion del LFP de cada canal con el LFP promedio
 
