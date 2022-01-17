@@ -12,7 +12,8 @@ peine = input('\nDefino canal a levantar (custom name) \n \nPeine (X): ');
 tetrodo = input('\nTetrodo (X): ');
 canal = input('\nCanal (X): ');
 
-puerto_canal_custom = horzcat('P',num2str(peine),'-','T',num2str(tetrodo),'-',num2str(canal));
+puerto_canal_custom = horzcat('P',num2str(peine),'-','T',num2str(tetrodo), ...
+    '-',num2str(canal));
 clear peine tetrodo canal
 
 % Pregunto si el umbral se determina manualmente o automaticamente
@@ -28,12 +29,14 @@ guardar = input('\n¿Guardo? (1 = SI / 0 = NO) : ');
 
 % Carga vector con parametros del analisis de datos
 %params_info = dir(horzcat(directorio, '*parametros_protocolo*.txt'));
-params = readtable(horzcat(directorio,'/parametros_protocolo.txt'),'Delimiter','\t');
+params = readtable(horzcat(directorio,'/parametros_protocolo.txt'), ...
+    'Delimiter','\t');
 clear params_info
 
 % Carga vector con parametros del analisis de datos
 %params_info = dir(horzcat(directorio, '*parametros_analisis*.txt'));
-params_analisis = readtable(horzcat(directorio,'/parametros_analisis.txt'),'Delimiter','\t');
+params_analisis = readtable(horzcat(directorio,'/parametros_analisis.txt'),...
+    'Delimiter','\t');
 clear params_info
 
 % Cargamos cantidad de trials y tiempo que dura cada uno
@@ -71,16 +74,24 @@ clear traduccion
 % Levanto el canal de interes
 raw = read_INTAN_channel(directorio, puerto_canal, amplifier_channels);
 
-% Define el filtro
-filt_spikes = designfilt('highpassiir','DesignMethod','butter','FilterOrder',...
-    4,'HalfPowerFrequency',500,'SampleRate',frequency_parameters.amplifier_sample_rate);
+% Define el filtro para SPIKES y LFP
+filt_spikes = designfilt('highpassiir','DesignMethod','butter',...
+    'FilterOrder', 4,'HalfPowerFrequency',500,...
+    'SampleRate',frequency_parameters.amplifier_sample_rate);
 
-% Aplica filtro
+filt_LFP = designfilt('lowpassiir','DesignMethod','butter',...
+    'FilterOrder', 4,'HalfPowerFrequency', 300, ...
+    'SampleRate', frequency_parameters.amplifier_sample_rate);
+
+% Aplica filtros
 raw_filtered = filtfilt(filt_spikes, raw);
+LFP = filtfilt(filt_LFP, raw);
+
 clear filt_spikes
 
 % Genero diccionario con nombre de los estimulos y el momento de presentacion
-estimulos = find_t0s(estimulos, ntrials, tiempo_file, board_adc_channels, frequency_parameters, directorio, false);
+estimulos = find_t0s(estimulos, ntrials, tiempo_file, board_adc_channels, ...
+    frequency_parameters, directorio, false);
 
 % Definimos umbral de deteccion de spikes
 if thr_automatico == 1
@@ -92,22 +103,40 @@ clear thr_automatico
 spike_times = find_spike_times(raw_filtered, thr, frequency_parameters);
 
 % Genero objeto con raster de todos los estimulos
-estimulos = generate_raster(spike_times, estimulos , tiempo_file, ntrials, frequency_parameters);
+estimulos = generate_raster(spike_times, estimulos , tiempo_file, ntrials, ...
+    frequency_parameters);
+
+% Calculo LFP promediado por estimulo todos los trials
+estimulos = trialAverage_LFP(LFP, estimulos, tiempo_file, ntrials, ...
+    frequency_parameters);
 
 % Calculo scores
-estimulos = score_calculator(id_BOS, estimulos, frequency_parameters, spike_times, ntrials);
+estimulos = score_calculator(id_BOS, estimulos, frequency_parameters, ...
+    spike_times, ntrials);
+
+
+% PLOTEO
 
 % Ploteo spike shapes
-plot_spikes_shapes(raw_filtered, spike_times, thr, frequency_parameters, directorio)
+plot_spikes_shapes(raw_filtered, spike_times, thr, frequency_parameters, ...
+    directorio)
 sgtitle({datestr(now, 'yyyy-mm-dd'); ...
 string(directorio) ; ...
-strcat(string(puerto_canal), " = ",string(puerto_canal_custom),"  |  ", string(thr), "uV", "  |  ", "ntrials:", string(ntrials), "  |  ", "t_inter_estimulo:", string(tiempo_file)) }, 'Interpreter','None','FontSize',8)
+strcat(string(puerto_canal), " = ",string(puerto_canal_custom),"  |  ", ...
+string(thr), "uV", "  |  ", "ntrials:", string(ntrials), "  |  ",...
+"t_inter_estimulo:", string(tiempo_file)) }, 'Interpreter','None',...
+'FontSize',8)
 
 % Ploteo Grilla PSTH
-plot_some_raster(grilla_psth, id_BOS, estimulos, estimulos, frequency_parameters, tiempo_file, ntrials, puerto_canal, thr, directorio, spike_times);
+plot_some_raster_LFP(grilla_psth, id_BOS, estimulos, estimulos, ...
+    frequency_parameters, tiempo_file, ntrials, puerto_canal, thr, ...
+    directorio, spike_times);
 sgtitle({datestr(now, 'yyyy-mm-dd'); ...
 string(directorio) ; ...
-strcat(string(puerto_canal), " = ",string(puerto_canal_custom),"  |  ", string(thr), "uV", "  |  ", "ntrials:", string(ntrials), "  |  ", "t_inter_estimulo:", string(tiempo_file)) }, 'Interpreter','None','FontSize',20)
+strcat(string(puerto_canal), " = ",string(puerto_canal_custom),"  |  ", ...
+string(thr), "uV", "  |  ", "ntrials:", string(ntrials), "  |  ", ...
+"t_inter_estimulo:", string(tiempo_file)) }, 'Interpreter','None',...
+'FontSize',20)
 
 estimulos_table = struct2table(estimulos);
 
@@ -122,7 +151,9 @@ figure();
 plot(pasa_altos.frec_corte, pasa_altos.int_norm, '-o')
 title({strcat('INT_PASA-ALTOS_', datestr(now, 'yyyy-mm-dd')); ...
 string(directorio) ; ...
-strcat(string(puerto_canal), " = ",string(puerto_canal_custom),"  |  ", string(thr), "uV", "  |  ", "ntrials:", string(ntrials), "  |  ", "t_inter_estimulo:", string(tiempo_file)) }, 'Interpreter','None')
+strcat(string(puerto_canal), " = ",string(puerto_canal_custom),"  |  ",...
+string(thr), "uV", "  |  ", "ntrials:", string(ntrials), "  |  ", ...
+"t_inter_estimulo:", string(tiempo_file)) }, 'Interpreter','None')
 legend
 set(gca,'FontSize',20)
 
@@ -132,7 +163,9 @@ figure();
 plot(pasa_bajos.frec_corte, pasa_bajos.int_norm, '-o')
 title({strcat('INT_PASA-BAJOS_', datestr(now, 'yyyy-mm-dd')); ...
 string(directorio) ; ...
-strcat(string(puerto_canal), " = ",string(puerto_canal_custom),"  |  ", string(thr), "uV", "  |  ", "ntrials:", string(ntrials), "  |  ", "t_inter_estimulo:", string(tiempo_file)) }, 'Interpreter','None')
+strcat(string(puerto_canal), " = ",string(puerto_canal_custom),"  |  ", ...
+string(thr), "uV", "  |  ", "ntrials:", string(ntrials), "  |  ", ...
+"t_inter_estimulo:", string(tiempo_file)) }, 'Interpreter','None')
 legend
 set(gca,'FontSize',20)
 
@@ -142,7 +175,9 @@ figure();
 plot(pasa_altos.frec_corte, pasa_altos.corr, '-o')
 title({strcat('CORR_PASA-ALTOS_', datestr(now, 'yyyy-mm-dd')); ...
 string(directorio) ; ...
-strcat(string(puerto_canal), " = ",string(puerto_canal_custom),"  |  ", string(thr), "uV", "  |  ", "ntrials:", string(ntrials), "  |  ", "t_inter_estimulo:", string(tiempo_file)) }, 'Interpreter','None')
+strcat(string(puerto_canal), " = ",string(puerto_canal_custom),"  |  ", ...
+string(thr), "uV", "  |  ", "ntrials:", string(ntrials), "  |  ", ...
+"t_inter_estimulo:", string(tiempo_file)) }, 'Interpreter','None')
 legend
 set(gca,'FontSize',20)
 
@@ -151,7 +186,9 @@ figure();
 plot(pasa_bajos.frec_corte, pasa_bajos.corr, '-o')
 title({strcat('CORR_PASA-BAJOS_', datestr(now, 'yyyy-mm-dd')); ...
 string(directorio) ; ...
-strcat(string(puerto_canal), " = ",string(puerto_canal_custom),"  |  ", string(thr), "uV", "  |  ", "ntrials:", string(ntrials), "  |  ", "t_inter_estimulo:", string(tiempo_file)) }, 'Interpreter','None')
+strcat(string(puerto_canal), " = ",string(puerto_canal_custom),"  |  ",...
+string(thr), "uV", "  |  ", "ntrials:", string(ntrials), "  |  ", ...
+"t_inter_estimulo:", string(tiempo_file)) }, 'Interpreter','None')
 legend
 set(gca,'FontSize',20)
 
@@ -159,12 +196,18 @@ set(gca,'FontSize',20)
 
 % Guardo
 if guardar == 1
-    print_png(1, directorio, strcat('_',string(puerto_canal_custom),'_spike-shape_', string(round(thr)), 'uV'))
-    print_pdf(2, directorio, strcat('_',string(puerto_canal_custom),'_grilla_', string(round(thr)), 'uV.pdf'))
-    print_pdf(3, directorio, strcat('_',string(puerto_canal_custom),'_INT_pasa-ALTOS', '.pdf'))
-    print_pdf(4, directorio, strcat('_',string(puerto_canal_custom),'_INT_pasa-BAJOS', '.pdf'))
-    print_pdf(5, directorio, strcat('_',string(puerto_canal_custom),'_CORR_pasa-ALTOS', '.pdf'))
-    print_pdf(6, directorio, strcat('_',string(puerto_canal_custom),'_CORR_pasa-BAJOS', '.pdf'))
+    print_png(1, directorio, strcat('_',string(puerto_canal_custom),...
+        '_spike-shape_', string(round(thr)), 'uV'))
+    print_pdf(2, directorio, strcat('_',string(puerto_canal_custom),...
+        '_grilla_', string(round(thr)), 'uV.pdf'))
+    print_pdf(3, directorio, strcat('_',string(puerto_canal_custom),...
+        '_INT_pasa-ALTOS', '.pdf'))
+    print_pdf(4, directorio, strcat('_',string(puerto_canal_custom),...
+        '_INT_pasa-BAJOS', '.pdf'))
+    print_pdf(5, directorio, strcat('_',string(puerto_canal_custom),...
+        '_CORR_pasa-ALTOS', '.pdf'))
+    print_pdf(6, directorio, strcat('_',string(puerto_canal_custom),...
+        '_CORR_pasa-BAJOS', '.pdf'))
 end
 
 clear estimulos_aux j i  
