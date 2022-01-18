@@ -1,5 +1,5 @@
-function [LFP_tetrodo, LFP_canales, spikes_canales] = LFP_1tetrode(directorio,amplifier_channels, ...
-    frequency_parameters, puerto_canal_custom)
+function [LFP_tetrodo, LFP_canales, spikes_canales]= LFP_1tetrode(directorio,...
+    amplifier_channels, frequency_parameters, puerto_canal_custom)
 
 % Calcula LFP de un tetrodo especificado (promedia 4 canales)
 %
@@ -17,17 +17,25 @@ function [LFP_tetrodo, LFP_canales, spikes_canales] = LFP_1tetrode(directorio,am
 %   donde x es el nombre del canal y varia de 1 a 4
 %
 %   OUTPUT:
-%   LFP_tetrodo: (matris Nx1) vector fila con señal filtrada y promediada de los 4
-%   canales del tetrodo
+%   LFP_tetrodo: (matris Nx1) vector fila con señal filtrada y promediada 
+%   de los 4 canales del tetrodo
+%   
 %   LFP_canales: (matris Nx4) matris donde c/columna es el LFP de 1 canal
+%   
+%   spikes_canales: (matris Nx4) matris donde c/columna es la señal
+%   filtrada para conservar spikes de 1 canal
 
 
-% Define el filtro para LFP
+% Define el filtro para LFP y SPIKES
 filt_LFP = designfilt('lowpassiir','DesignMethod','butter',...
     'HalfPowerFrequency',300,'FilterOrder', 4, ...
     'SampleRate', frequency_parameters.amplifier_sample_rate);
+
+filt_spikes = designfilt('highpassiir','DesignMethod','butter',...
+    'HalfPowerFrequency',500,'FilterOrder', 4, ...
+    'SampleRate',frequency_parameters.amplifier_sample_rate);
     
-% Creo objeto donde guardo trazas de LFP de manera auxilar
+% Creo objeto donde guardo trazas de LFP y SPIKES
 LFP_canales = [];
 spikes_canales = []; 
 
@@ -47,23 +55,13 @@ for i = (1:1:4)
     raw = read_INTAN_channel(directorio, puerto_canal, ...
         amplifier_channels);
 
-    % Aplica el filtro para LFP
+    % Aplica el filtro para LFP y SPIKES
     LFP = filtfilt(filt_LFP, raw);
-
-    % Adjunto LFP de este canal a la "lista" de LFP
-    LFP_canales = [LFP_canales,LFP];
-    
-    % Define el filtro para SPIKES
-    filt_spikes = designfilt('highpassiir','DesignMethod','butter',...
-        'FilterOrder', 4,'HalfPowerFrequency',500, ...
-        'SampleRate',frequency_parameters.amplifier_sample_rate);
-
-    % Aplica filtro para SPIKES
     spikes = filtfilt(filt_spikes, raw);
-    
-    % Adjunto SPIKES de este canal a la "lista" de SPIKES
+
+    % Adjunto traza LFP y SPIKES de este canal a la "lista" de LFP y SPIKES
+    LFP_canales = [LFP_canales,LFP];
     spikes_canales = [spikes_canales, spikes];
-    clear filt_spikes
     
 end
 
