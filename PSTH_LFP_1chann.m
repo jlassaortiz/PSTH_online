@@ -56,6 +56,12 @@ else
 
 end
 
+% Pregunto si ploteo toda la grilla o solo algunos estimulos
+plot_grilla = input('\nPloteo toda la grilla? (1 = SI / 0 = NO): ');
+if plot_grilla == 0
+    grilla_psth = input('\nMatris lineal con numero ID estimulos : ');
+end
+
 % Pregunto si el umbral se determina manualmente o automaticamente
 thr_automatico = input('\n¿Busqueda de thr automatica? (1 = SI / 0 = NO) : ');
 
@@ -76,7 +82,9 @@ id_BOS = params_analisis.id_bos(1)
 id_REV = params_analisis.id_rev(1)
 
 % Cargo orden de la grilla
-grilla_psth = str2num(string(params_analisis.grilla_psth(1)))
+if plot_grilla == 1
+    grilla_psth = str2num(string(params_analisis.grilla_psth(1)))
+end
 
 % Genero songs.mat a partir de las canciones
 estimulos = carga_songs(directorio);    
