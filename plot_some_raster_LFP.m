@@ -86,7 +86,11 @@ for i = id_estimulos % para cada estímulo
     
     % SONIDO
     j = j + 1;
-    h(j) = subplot(n, m , p);
+    if length(id_estimulos) == 1
+        h(1) = subplot(5,1,1);
+    else
+        h(j) = subplot(n, m , p);
+    end 
     plot(1000/estimulos(i).freq * (0:1:(length(estimulos(i).song) -1)), ... 
         estimulos(i).song,'black')
     hold on;
@@ -99,7 +103,11 @@ for i = id_estimulos % para cada estímulo
 
     % PSTH
     j = j + 1;
-    h(j) = subplot(n, m, [p + 3, p + 6]);
+    if length(id_estimulos) == 1
+        h(2) = subplot(5,1, [2,3]);
+    else
+        h(j) = subplot(n, m, [p + 3, p + 6]);
+    end
     
 %     % Ploteo histograma del PSTH
 %     histogram(rasters(i).spikes_norm * 1000/ ...
@@ -131,9 +139,14 @@ for i = id_estimulos % para cada estímulo
     % normalizadas
     title(strcat(integral_text, ' / ' , R2_text) , 'Interpreter','None')
 
+    
     % LFP promediado
     j = j + 1;
-    h(j) = subplot(n, m, [p + 9, p + 12]);
+    if length(id_estimulos) == 1
+        h(3) = subplot(5,1,[4,5]);
+    else 
+        h(j) = subplot(n, m, [p + 9, p + 12]);
+    end
     
     plot((1:1: tiempo_file * frequency_parameters.amplifier_sample_rate) *...
         1000 / frequency_parameters.amplifier_sample_rate, ...
