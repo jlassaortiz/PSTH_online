@@ -1,5 +1,5 @@
 % Este programa compara los LFP de cada canal de un tetrodo con el LFP
-% promedio del tetrodo
+% promedio del tetrodo (TODA LA SEÑAL)
 
 close all
 clear all
@@ -31,6 +31,7 @@ clear notes spike_triggers supply_voltage_channels aux_input_channels
 
 corr = zeros(4,1); % Matriz fila donde guardo correlaciones
 
+% Para cada canal calculo la correlación con el LFP promedio
 for i = (1:1:4)
     corr_aux = corrcoef(LFP_tetrodo(:,1), LFP_canales(:,i));
     corr(i) = corr_aux(2);
@@ -78,7 +79,7 @@ linkaxes(h, 'x');
 if guardar == 1
     
      print_png(1, directorio, strcat('_', puerto_canal_custom, ...
-         '_comparacion_LFP_ZOOM'))
+         '_comparacion_LFP'))
     
 end
 

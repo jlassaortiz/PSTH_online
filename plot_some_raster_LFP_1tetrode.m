@@ -1,5 +1,5 @@
-function plot_some_raster_LFP_1tetrode(id_estimulos, id_BOS, estimulos_tetrodos, ...
-    frequency_parameters, tiempo_file, ntrials, thr, ...
+function plot_some_raster_LFP_1tetrode(id_estimulos, id_BOS, ...
+    estimulos_tetrodos, frequency_parameters, tiempo_file, ntrials, thr,...
     directorio, spike_times)
 
 % Plotea el psth y LFP del numero de estimulos indicados
@@ -32,10 +32,8 @@ while tf <= tiempo_file
    tf = tf + step;
 end
 
-% Inicializo vector donde se guardan resultados y tiempos
+% Inicializo y genero vector de tiempos del PSTH
 t_PSTH = zeros(size_sw,1);
-
-% Calculo el valor de cada punto de la sw y el tiempo que le corresponde
 ti = 0;
 tf = t_window;
 for i = (1:1:size_sw)
@@ -47,20 +45,20 @@ for i = (1:1:size_sw)
 end
 
 % Busco el maximo de los psth para saber que valor poner de ylim
-hist_aux = histcounts(estimulos_tetrodos(1).canal(id_BOS).spikes_norm * 1000/...
-    frequency_parameters.amplifier_sample_rate , ...
+hist_aux = histcounts(estimulos_tetrodos(1).canal(id_BOS).spikes_norm * ...
+    1000/frequency_parameters.amplifier_sample_rate , ...
         (1000/frequency_parameters.amplifier_sample_rate) * ...
         (-1000:(0.015 * frequency_parameters.amplifier_sample_rate): ...
         (tiempo_file*frequency_parameters.amplifier_sample_rate)) );
 
 % ylim de los psth es un 20% mas que el maximo del BOS
-psth_max = max(hist_aux) * 1.2; 
+psth_max = max(hist_aux) * 1.2;
 
 % Inicializo figura
 figure()
 
 % Para no ver tanta actividad espontanea grafico 75% mas de lo que dura BOS
-limite_eje_x = (1000 * length(estimulos_tetrodos(1).canal(id_BOS).song) / ...
+limite_eje_x = (1000* length(estimulos_tetrodos(1).canal(id_BOS).song) /...
     estimulos_tetrodos(1).canal(id_BOS).freq) * 1.75;
 
 % Formula para armar grilla segun la cantidad de estimulos a analizar
@@ -79,19 +77,19 @@ j = 0;
 k = 0;
 
 % % Calculo scores de cada estimulo
-% dict_score = score_calculator(id_BOS, estimulos, frequency_parameters, ...
+% dict_score = score_calculator(id_BOS, estimulos, frequency_parameters,...
 %     spike_times, ntrials);
 
-% Calculo la sw del BOS para poder hacer correlaciones con el resto
-[sw_data_BOS, sw_times_BOS] = sliding_window(estimulos_tetrodos(1).canal(id_BOS).spikes_norm, ...
-    frequency_parameters.amplifier_sample_rate, ...
-        t_window, step);
-    
-% Conservo solo la seccion donde se presenta el estimulo auditivo
-duracion_BOS = length(estimulos_tetrodos(1).canal(id_BOS).song) / ...
-    estimulos_tetrodos(1).canal(id_BOS).freq; 
-sw_data_BOS = sw_data_BOS(sw_times_BOS < duracion_BOS);
-sw_times_BOS = sw_times_BOS(sw_times_BOS < duracion_BOS);
+% % Calculo la sw del BOS para graficarla y comparar con el resto
+% [sw_data_BOS, sw_times_BOS] = sliding_window(...
+%     estimulos_tetrodos(1).canal(id_BOS).spikes_norm, ...
+%     frequency_parameters.amplifier_sample_rate, t_window, step);
+%     
+% % Conservo solo la seccion donde se presenta el estimulo auditivo
+% duracion_BOS = length(estimulos_tetrodos(1).canal(id_BOS).song) / ...
+%     estimulos_tetrodos(1).canal(id_BOS).freq; 
+% sw_data_BOS = sw_data_BOS(sw_times_BOS < duracion_BOS);
+% sw_times_BOS = sw_times_BOS(sw_times_BOS < duracion_BOS);
 
 for i = id_estimulos % para cada estímulo
     
@@ -108,7 +106,8 @@ for i = id_estimulos % para cada estímulo
     end
     
     PSTH_avgTetrodo = zeros(size_sw, length(estimulos_tetrodos));
-    LFP_avgTetrodo = ones(length(estimulos_tetrodos(1).canal(1).LFP_promedio), ...
+    LFP_avgTetrodo = ones(...
+        length(estimulos_tetrodos(1).canal(1).LFP_promedio), ...
         length(estimulos_tetrodos));
     
     
@@ -148,16 +147,19 @@ for i = id_estimulos % para cada estímulo
         [sw_data, sw_times] = sliding_window(estimulos(i).spikes_norm, ...
             frequency_parameters.amplifier_sample_rate, ...
             t_window, step);
+        
+        % Ploteo cada PSTH de cada canal
         plot(sw_times * 1000, sw_data);
         hold on;
 
-        % Guardo PSTH y LFP de cada canal
+        % Guardo PSTH de cada canal
         PSTH_avgTetrodo(1:length(sw_data),c) = sw_data;
     end
     
     % Promedio PSTH de todos los canales de este estimulo
     PSTH_avgTetrodo = mean(PSTH_avgTetrodo, 2);
     
+    % Ploteo PSTH promedio
     plot(t_PSTH * 1000, PSTH_avgTetrodo, '-r', 'LineWidth', 2);
     ylim([0 psth_max]);
     xlim([0 limite_eje_x]);
@@ -187,8 +189,10 @@ for i = id_estimulos % para cada estímulo
     for c = (1:1:length(estimulos_tetrodos))
         
         estimulos = estimulos_tetrodos(c).canal;      
-
-        plot((1:1: tiempo_file * frequency_parameters.amplifier_sample_rate) *...
+        
+        % Ploteo LFP de cada canal
+        plot((1:1: ...
+            tiempo_file * frequency_parameters.amplifier_sample_rate) * ...
             1000 / frequency_parameters.amplifier_sample_rate, ...
             estimulos(i).LFP_promedio)
         hold on;
@@ -198,14 +202,15 @@ for i = id_estimulos % para cada estímulo
         
     end
     
-    % Promedio PSTH y LFP de cada canal
+    % Promedio LFP de todos los canales del tetrodo de este estimulo
     LFP_avgTetrodo = mean(LFP_avgTetrodo, 2);
-
-    t_LFP = (1:1:length(LFP_avgTetrodo)) * 1000/...
-        frequency_parameters.amplifier_sample_rate;
-
-    plot(t_LFP, LFP_avgTetrodo, '-b', 'LineWidth', 2)
     
+    % Calculo tiempos de LFP promedio
+    t_LFP = ( 1:1:length(LFP_avgTetrodo) ) * ...
+        1000/frequency_parameters.amplifier_sample_rate;
+
+    % Ploteo LFP promedio del tetrodo
+    plot(t_LFP, LFP_avgTetrodo, '-b', 'LineWidth', 2)
     
     xlim([0 limite_eje_x])
 %     ylim([-2000 2000])

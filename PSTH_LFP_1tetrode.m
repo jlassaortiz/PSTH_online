@@ -1,4 +1,5 @@
-% Calcula PSTH y LFP de cada estimulo para UN SOLO CANAL (TUNGSTENO o NNx)
+% Calcula PSTH y LFP de todos los canales de un tetrodo especificado y la
+% señal promedio (solo funciona con NNx)
 % Hace varios graficos
 
 close all
@@ -20,11 +21,11 @@ params = readtable(horzcat(directorio,'/parametros_protocolo.txt'), ...
     'Delimiter','\t');
 
 % Carga vector con parametros para el analisis de datos
-params_analisis = readtable(horzcat(directorio,'/parametros_analisis.txt'),...
-    'Delimiter','\t');
+params_analisis = readtable(...
+    horzcat(directorio,'/parametros_analisis.txt'), 'Delimiter','\t');
 
 % Defino tetrodo a levantar con nombre custom name
-peine = input('\nDefino tetrodo a levantar (custom name) \n \nPeine (X): ');
+peine = input('\nDefino tetrodo a levantar (custom name) \n\nPeine (X): ');
 tetrodo = input('\nTetrodo (X): ');
 puerto_canal_custom = horzcat('P',num2str(peine),'-','T',num2str(tetrodo));
 
@@ -34,11 +35,8 @@ if plot_grilla == 0
     grilla_psth = input('\nMatris lineal con numero ID estimulos : ');
 end
 
-% % puerto_canal = amplifier_channels(traduccion).native_channel_name;
-% % clear traduccion peine tetrodo canal
-
 % Pregunto si el umbral se determina manualmente o automaticamente
-thr_automatico = input('\n¿Busqueda de thr automatica? (1 = SI / 0 = NO) : ');
+thr_automatico = input('\n¿Busqueda thr automatica? (1 = SI / 0 = NO) : ');
 
 % Definimos manualmente un umbral para deteccion de spikes (en uV)
 if thr_automatico == 0 
@@ -55,8 +53,6 @@ tiempo_file = params.tiempo_entre_estimulos
 % Especifico numero de id del BOS y REV
 id_BOS = params_analisis.id_bos(1)
 
-% % id_REV = params_analisis.id_rev(1)
-
 % Cargo orden de la grilla
 if plot_grilla == 1
     grilla_psth = str2num(string(params_analisis.grilla_psth(1)))
@@ -65,7 +61,7 @@ end
 % Genero songs.mat a partir de las canciones
 estimulos = carga_songs(directorio);    
 
-% cargo id_estimulos 
+% Cargo id_estimulos 
 for i = (1:1:length(estimulos))
     estimulos(i).id = params_analisis.orden(i);
     estimulos(i).frec_corte = params_analisis.freq_corte(i);
@@ -81,34 +77,15 @@ clear i
 [LFP_tetrodo, LFP_canales, spikes_canales]= LFP_1tetrode(directorio,...
     amplifier_channels, frequency_parameters, puerto_canal_custom);
 
-% % Levanto el canal de interes
-% raw = read_INTAN_channel(directorio, puerto_canal, amplifier_channels);
-% 
-% % Define el filtro para SPIKES y LFP
-% filt_spikes = designfilt('highpassiir','DesignMethod','butter',...
-%     'FilterOrder', 4,'HalfPowerFrequency',500,...
-%     'SampleRate',frequency_parameters.amplifier_sample_rate);
-% 
-% filt_LFP = designfilt('lowpassiir','DesignMethod','butter',...
-%     'FilterOrder', 4,'HalfPowerFrequency', 300, ...
-%     'SampleRate', frequency_parameters.amplifier_sample_rate);
-% 
-% % Aplica filtros
-% raw_filtered = filtfilt(filt_spikes, raw);
-% LFP = filtfilt(filt_LFP, raw);
-% 
-% clear filt_spikes
-
-
-% Genero diccionario con nombre de los estimulos y el momento de presentacion
-estimulos = find_t0s(estimulos, ntrials, tiempo_file, board_adc_channels, ...
-    frequency_parameters, directorio, false);
+% Genero struct con nombre de los estimulos y el momento de presentacion
+estimulos = find_t0s(estimulos, ntrials, tiempo_file, ...
+    board_adc_channels, frequency_parameters, directorio, false);
 
 % Genero struct donde guardo datos de todos los canales
 estimulos_tetrodos = struct();
 
 % Para cada canal del tetrodo
-for c = ( 1:1:size(spikes_canales,2) )
+for c = ( 1:1: size(spikes_canales,2) )
     
     raw_filtered = spikes_canales(:,c);
     LFP = LFP_canales(:,c);
@@ -120,7 +97,7 @@ for c = ( 1:1:size(spikes_canales,2) )
     end
 
     % Buscamos spike times (en samples, NO unidades tiempo) por umbral
-    spike_times = find_spike_times(raw_filtered, thr, frequency_parameters);
+    spike_times =find_spike_times(raw_filtered, thr, frequency_parameters);
 
     % Genero objeto con RASTERS de todos los estimulos
     estimulos = generate_raster(spike_times, estimulos , tiempo_file, ... 
@@ -131,8 +108,8 @@ for c = ( 1:1:size(spikes_canales,2) )
         frequency_parameters);
 
     % Calculo scores
-    estimulos = score_calculator(id_BOS, estimulos, frequency_parameters, ...
-        spike_times, ntrials);
+    estimulos = score_calculator(id_BOS, estimulos, ...
+        frequency_parameters, spike_times, ntrials);
 
     % Guardo resultados de este canal en una struct con todos los datos
     estimulos_tetrodos(c).canal = estimulos;
@@ -141,21 +118,9 @@ end
 
 % PLOTEO %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-% % % Ploteo spike shapes
-% % plot_spikes_shapes(raw_filtered, spike_times, thr, frequency_parameters, ...
-% %     directorio)
-% % sgtitle({datestr(now, 'yyyy-mm-dd'); ...
-% % string(directorio) ; ...
-% % strcat(string(puerto_canal), " = ",string(puerto_canal_custom),"  |  ", ...
-% % string(thr), "uV", "  |  ", "ntrials:", string(ntrials), "  |  ",...
-% % "t_inter_estimulo:", string(tiempo_file)) }, 'Interpreter','None',...
-% % 'FontSize',8)
-
-
 % Ploteo Grilla PSTH
 plot_some_raster_LFP_1tetrode(grilla_psth, id_BOS, estimulos_tetrodos, ...
-    frequency_parameters, tiempo_file, ntrials, thr, ...
-    directorio, spike_times);
+    frequency_parameters, tiempo_file, ntrials,thr,directorio,spike_times);
 sgtitle({datestr(now, 'yyyy-mm-dd'); ...
 string(directorio) ; ...
 strcat('tetrodo = ',string(puerto_canal_custom),"  |  ", ...
@@ -226,7 +191,7 @@ if guardar == 1
 %         '_spike-shape_', string(round(thr)), 'uV'))
 
     print_pdf(1, directorio, strcat('_',string(puerto_canal_custom),...
-        '_grilla_PSTH-LFP', string(round(thr)), 'uV.pdf'))
+        '_grilla_PSTH-LFP-tetrode', string(round(thr)), 'uV.pdf'))
     
 %     print_pdf(2, directorio, strcat('_',string(puerto_canal_custom),...
 %         '_INT_pasa-ALTOS', '.pdf'))

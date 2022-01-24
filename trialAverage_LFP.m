@@ -1,11 +1,12 @@
-function t0s_dict = trialAverage_LFP(LFP, t0s_dict, tiempo_file, ntrials, ...
-    frequency_parameters)
+function t0s_dict = trialAverage_LFP(LFP, t0s_dict, tiempo_file, ...
+    ntrials, frequency_parameters)
+
 % "Apila" (promedia) LFP de todos los trials para cada estimulo
 %   
 %   INPUTS
 %   LFP = (matris Nx1) señal de un canal filtrada para conservar el LFP
 %
-%   t0s_dict = (struct) diccionario con los nombres de todos los estimulos ...
+%   t0s_dict = (struct) diccionario con los nombres de todos los estimulos
 %   y el tiempo en que fue presentado
 %
 %   tiempo_file = (num) tiempo que dura el estimulo incluyendo el silencio
@@ -46,8 +47,8 @@ for i = (1:1:length(t0s_dict))
     % Promedio todos los LFP del trial
     LFP_promedio = mean(allTrials_LFP, 2);
     
-    % Guardo los spikes y los trial_id de este estimulo
-    t0s_dict(i).LFP_promedio = LFP_promedio; % elimino el primer cero    
+    % Guardo los LFP promedio de este canal para este estimulo
+    t0s_dict(i).LFP_promedio = LFP_promedio;    
 end
 
 end

@@ -1,7 +1,7 @@
 function LFP = LFP_1channel(directorio,amplifier_channels, ...
     frequency_parameters, puerto_canal_custom)
 
-% Calcula LFP de un canal especificado
+% Calcula LFP de un canal especificado (FILTRA)
 %
 %   ! NECESITA QUE ANTES SE CORRA read_Intan_RHD2000_file
 %

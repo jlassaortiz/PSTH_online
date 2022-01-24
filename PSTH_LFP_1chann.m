@@ -4,7 +4,7 @@
 close all
 clear all
 
-%% Cargo y defino parametros
+% Cargo y defino parametros %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 % Defino directorio
 directorio = input('Directorio: ','s');
@@ -22,13 +22,15 @@ clear params_info
 
 % Carga vector con parametros del analisis de datos
 %params_info = dir(horzcat(directorio, '*parametros_analisis*.txt'));
-params_analisis = readtable(horzcat(directorio,'/parametros_analisis.txt'),...
+params_analisis = readtable( ...
+    horzcat(directorio,'/parametros_analisis.txt'), ...
     'Delimiter','\t');
 clear params_info
 
 % Pregunto si determino canal de manera manual o automatica (esta
 % explicitado en parametros que se cargan)
-canal_automatico = input('\n¿Determino canal automaticamente? (1 = SI / 0 = NO) : ');
+canal_automatico = ...
+    input('\n¿Determino canal automaticamente? (1 = SI / 0 = NO) : ');
 
 if canal_automatico == 1
     % Cargo valores de puerto-canal del archivo parametros dentro del dir
@@ -40,12 +42,13 @@ if canal_automatico == 1
 
 else
     % Defino canal a levantar con nombre custom name
-    peine = input('\nDefino canal a levantar (custom name) \n \nPeine (X): ');
+    peine = ...
+        input('\nDefino canal a levantar (custom name) \n \nPeine (X): ');
     tetrodo = input('\nTetrodo (X): ');
     canal = input('\nCanal (X): ');
 
-    puerto_canal_custom = horzcat('P',num2str(peine),'-','T',num2str(tetrodo), ...
-        '-',num2str(canal));
+    puerto_canal_custom = horzcat('P',num2str(peine),'-', ...
+        'T',num2str(tetrodo),'-',num2str(canal));
 
     % Traduzco custom_channel_name a native_channel_name
     traduccion = strcmp(puerto_canal_custom, ...
@@ -53,7 +56,6 @@ else
     
     puerto_canal = amplifier_channels(traduccion).native_channel_name;
     clear traduccion peine tetrodo canal
-
 end
 
 % Pregunto si ploteo toda la grilla o solo algunos estimulos
@@ -63,7 +65,8 @@ if plot_grilla == 0
 end
 
 % Pregunto si el umbral se determina manualmente o automaticamente
-thr_automatico = input('\n¿Busqueda de thr automatica? (1 = SI / 0 = NO) : ');
+thr_automatico = ...
+    input('\n¿Busqueda de thr automatica? (1 = SI / 0 = NO) : ');
 
 % Definimos manualmente un umbral para deteccion de spikes (en uV)
 if thr_automatico == 0 
@@ -89,16 +92,15 @@ end
 % Genero songs.mat a partir de las canciones
 estimulos = carga_songs(directorio);    
 
-% cargo id_estimulos 
+% Cargo id_estimulos 
 for i = (1:1:length(estimulos))
     estimulos(i).id = params_analisis.orden(i);
     estimulos(i).frec_corte = params_analisis.freq_corte(i);
     estimulos(i).tipo = categorical(params_analisis.tipo_estimulo(i));
-%     estimulos(i).protocolo_id = categorical({directorio_nombre_corto});
 end
 clear i 
 
-%% Levanto señal neuronal y analizo
+% Levanto señal neuronal y analizo %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 % Levanto el canal de interes
 raw = read_INTAN_channel(directorio, puerto_canal, amplifier_channels);
@@ -118,22 +120,22 @@ LFP = filtfilt(filt_LFP, raw);
 
 clear filt_spikes
 
-% Genero diccionario con nombre de los estimulos y el momento de presentacion
-estimulos = find_t0s(estimulos, ntrials, tiempo_file, board_adc_channels, ...
-    frequency_parameters, directorio, false);
+% Genero struct con nombre de los estimulos y el momento de presentacion
+estimulos = find_t0s(estimulos, ntrials, tiempo_file, ...
+    board_adc_channels, frequency_parameters, directorio, false);
 
 % Definimos umbral de deteccion de spikes
 if thr_automatico == 1
-    thr = find_thr(raw_filtered, estimulos, tiempo_file, frequency_parameters);
+    thr =find_thr(raw_filtered,estimulos,tiempo_file,frequency_parameters);
 end
 clear thr_automatico
 
-% Buscamos spike times (en samples, NO unidades de tiempo) por threshold cutting 
+% Buscamos spike times (en samples, NO unidades de tiempo) por threshold 
 spike_times = find_spike_times(raw_filtered, thr, frequency_parameters);
 
 % Genero objeto con raster de todos los estimulos
-estimulos = generate_raster(spike_times, estimulos , tiempo_file, ntrials, ...
-    frequency_parameters);
+estimulos = generate_raster(spike_times, estimulos , tiempo_file, ...
+    ntrials, frequency_parameters);
 
 % Calculo LFP promediado por estimulo todos los trials
 estimulos = trialAverage_LFP(LFP, estimulos, tiempo_file, ntrials, ...
@@ -144,10 +146,10 @@ estimulos = score_calculator(id_BOS, estimulos, frequency_parameters, ...
     spike_times, ntrials);
 
 
-%% PLOTEO
+% PLOTEO %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 % Ploteo spike shapes
-plot_spikes_shapes(raw_filtered, spike_times, thr, frequency_parameters, ...
+plot_spikes_shapes(raw_filtered, spike_times, thr, frequency_parameters,...
     directorio)
 sgtitle({datestr(now, 'yyyy-mm-dd'); ...
 string(directorio) ; ...
@@ -158,7 +160,7 @@ string(thr), "uV", "  |  ", "ntrials:", string(ntrials), "  |  ",...
 
 
 % Ploteo Grilla PSTH
-plot_some_raster_LFP_1channel(grilla_psth, id_BOS, estimulos, estimulos, ...
+plot_some_raster_LFP_1channel(grilla_psth, id_BOS, estimulos, estimulos,...
     frequency_parameters, tiempo_file, ntrials, puerto_canal, thr, ...
     directorio, spike_times);
 sgtitle({datestr(now, 'yyyy-mm-dd'); ...
