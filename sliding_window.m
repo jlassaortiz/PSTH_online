@@ -1,4 +1,5 @@
-function [sliding_window_data, sliding_window_tiempo] = sliding_window(data, fs, t_window, step)
+function [sliding_window_data, sliding_window_tiempo] = sliding_window( ...
+    data, fs, t_window, step)
 
 % Toma un vector unidimensional y le calcula la slinding window (SW)
 % con los parametros de tamaño de ventana (en seg.) y tamaño del paso  

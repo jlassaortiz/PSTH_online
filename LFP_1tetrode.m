@@ -1,5 +1,5 @@
-function [LFP_tetrodo, LFP_canales, spikes_canales]= LFP_1tetrode(directorio,...
-    amplifier_channels, frequency_parameters, puerto_canal_custom)
+function [LFP_tetrodo, LFP_canales, spikes_canales]= LFP_1tetrode(...
+    directorio,amplifier_channels,frequency_parameters,puerto_canal_custom)
 
 % Calcula LFP de un tetrodo especificado (promedia 4 canales)
 %

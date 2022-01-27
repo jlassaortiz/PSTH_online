@@ -33,7 +33,7 @@ while tf <= tiempo_file
 end
 
 % Inicializo y genero vector de tiempos del PSTH
-t_PSTH = zeros(size_sw,1);
+t_PSTH = zeros(size_sw,1); % va a estar en SEGUNDOS
 ti = 0;
 tf = t_window;
 for i = (1:1:size_sw)
@@ -127,8 +127,8 @@ for i = id_estimulos % para cada estímulo
     xlim([0 limite_eje_x])
     xticks([])
     
-%   title(strcat(string(i), " - ",estimulos(i).name), 'Interpreter','None', ...
-%       'FontSize', 6)
+    title(strcat(string(i), " - ",estimulos_tetrodos(1).canal(i).name), ...
+        'Interpreter','None','FontSize', 6)
 
     % PSTH %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     j = j + 1;

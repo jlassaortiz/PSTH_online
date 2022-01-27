@@ -85,7 +85,7 @@ clear pks lcs test found a ans bpf umbral;
 
 
 % CARGA EL VECTOR CON EL ORDEN DE LOS ESTIMULOS
-estimulos_log_info = dir(horzcat(directorio, '*estimulos*.txt'));
+estimulos_log_info = dir(horzcat(directorio, 'estimulos.txt'));
 estimulos_log = readtable(horzcat(directorio, estimulos_log_info.name),'Delimiter','\t','ReadVariableNames',false);
 
 clear estimulos_log_info
