@@ -145,6 +145,33 @@ estimulos = trialAverage_LFP(LFP, estimulos, tiempo_file, ntrials, ...
 estimulos = score_calculator(id_BOS, estimulos, frequency_parameters, ...
     spike_times, ntrials);
 
+% Calculo sliding window para cada estimulo
+t_window = 0.015; % 15 ms
+step = 0.001; % 1 ms
+for i = (1:length(estimulos))
+    [sw_data, sw_times] = sliding_window(estimulos(i).spikes_norm, ...
+        frequency_parameters.amplifier_sample_rate, ...
+        t_window, step);
+    psth_sw = [sw_data, sw_times];
+    estimulos(i).psth_sw = psth_sw;
+end
+clear i psth_sw
+
+
+% Guardo figuras?
+guardar_txt = input('\n¿Guardo PSTH_sw y LFP_promedio BOS? (1 = SI / 0 = NO) : ');
+
+if guardar_txt == 1
+    
+    writematrix(estimulos(id_BOS).psth_sw, ...
+        [directorio '/psth_sw_BOS' '.txt'],...
+        'Delimiter','tab')
+    
+    writematrix(estimulos(id_BOS).LFP_promedio,...
+        [directorio '/LFP_promedio_BOS' '.txt'],...
+        'Delimiter','tab')
+end
+
 
 % PLOTEO %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
