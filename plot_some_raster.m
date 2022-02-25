@@ -45,7 +45,7 @@ duracion_BOS = length(estimulos(id_BOS).song) / estimulos(id_BOS).freq;
 sw_data_BOS = sw_data_BOS(sw_times_BOS < duracion_BOS);
 sw_times_BOS = sw_times_BOS(sw_times_BOS < duracion_BOS);
 
-for i = id_estimulos % para cada estímulo
+for i = id_estimulos % para cada estï¿½mulo
     
     k = k + 1;
     
@@ -92,7 +92,7 @@ for i = id_estimulos % para cada estímulo
     % Integracion de spikes normalizada
     integral_text = strcat('Integral_norm : ', string(dict_score(i).int_norm));
     
-    % Calculo correlación de sw normalizada con la sw normalizada del BOS
+    % Calculo correlaciï¿½n de sw normalizada con la sw normalizada del BOS
     R2_text = strcat(' Coef Pearson sw_BOS_norm : ' , string(round(dict_score(i).corr, 2)));
 
     % Escribo en el titulo los valores de integral y correlacion de sw
@@ -110,12 +110,12 @@ end
 
 % Linkeo eje x (no se pueden hacer varios links independientes juntos)
 linkaxes(h, 'x');
-
-% Titulo general
-sgtitle({datestr(now, 'yyyy-mm-dd'); ...
-    string(directorio) ; ...
-    strcat(string(puerto_canal), "  " , string(thr), "uV", "  ntrials:", string(ntrials),  ...
-    "  t_inter_estimulo:", string(tiempo_file)) }, 'Interpreter','None')
+% 
+% % Titulo general
+% sgtitle({datestr(now, 'yyyy-mm-dd'); ...
+%     string(directorio) ; ...
+%     strcat(string(puerto_canal), "  " , string(thr), "uV", "  ntrials:", string(ntrials),  ...
+%     "  t_inter_estimulo:", string(tiempo_file)) }, 'Interpreter','None')
 
 end
 

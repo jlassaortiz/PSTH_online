@@ -2,7 +2,7 @@ function plot_spikes_shapes(raw_filtered, spike_times, thr, frequency_parameters
 
 % Plotea spike shapes, ISI y raw data filtrada
 % Necesita:
-% 1) la señal neuronal filtrada
+% 1) la seï¿½al neuronal filtrada
 % 2) los time stamps (en samples NO en unidades de tiempo) donde estan los spikes 
 % 3) el umbral en uV
 % 4) el objeto frequency_parameters generado por read_Intan_RHD2000_file.m
@@ -43,11 +43,11 @@ xlim([0 time_scale(end)])
 minimo = min(raw_filtered);
 maximo = max(raw_filtered);
 if minimo < -250
-    minimo = -133; % Así el límite es 200 uV
+    minimo = -133; % Asï¿½ el lï¿½mite es 200 uV
 end 
 
 if maximo > 250
-    maximo = 133; % Así el límite es 200 uV
+    maximo = 133; % Asï¿½ el lï¿½mite es 200 uV
 end 
 ylim([1.5*minimo 1.5*maximo])
 ylabel('V ($\mu$V)','Interpreter','Latex')
@@ -80,7 +80,7 @@ ylabel('bin count')
 xlabel('Time (ms)')
 xlim([-5 105])
 
-sgtitle({datestr(now, 'yyyy-mm-dd'); ...
-    string(directorio) }, 'Interpreter','None')
+% sgtitle({datestr(now, 'yyyy-mm-dd'); ...
+%     string(directorio) }, 'Interpreter','None')
 
 end
