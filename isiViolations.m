@@ -18,7 +18,8 @@ numViolations = sum(diff(spikeTrain) <= refDur);
 % estimated false positive rate.
 % NOTE: This does not use the equation from Dan Hill's paper (see below)
 % but instead uses the equation from his UltraMegaSort
-violationTime = 2*length(spikeTrain)*(refDur-minISI); % total time available for violations - 
+violationTime = 2*length(spikeTrain)*(refDur-minISI); % total time available for violations -  
+                                                    % total time available for violations -
                                                     % there is an available
                                                     % window of length
                                                     % (refDur-minISI) after
