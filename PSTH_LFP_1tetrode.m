@@ -1,5 +1,5 @@
 % Calcula PSTH y LFP de todos los canales de un tetrodo especificado y la
-% señal promedio (solo funciona con NNx)
+% seï¿½al promedio (solo funciona con NNx)
 % Hace varios graficos
 
 close all
@@ -36,7 +36,7 @@ if plot_grilla == 0
 end
 
 % Pregunto si el umbral se determina manualmente o automaticamente
-thr_automatico = input('\n¿Busqueda thr automatica? (1 = SI / 0 = NO) : ');
+thr_automatico = input('\nï¿½Busqueda thr automatica? (1 = SI / 0 = NO) : ');
 
 % Definimos manualmente un umbral para deteccion de spikes (en uV)
 if thr_automatico == 0 
@@ -44,7 +44,7 @@ if thr_automatico == 0
 end
 
 % Guardo figuras?
-guardar = input('\n¿Guardo? (1 = SI / 0 = NO) : ');
+guardar = input('\nï¿½Guardo? (1 = SI / 0 = NO) : ');
 
 % Cargamos cantidad de trials y tiempo que dura cada uno
 ntrials = params.Ntrials
@@ -52,6 +52,10 @@ tiempo_file = params.tiempo_entre_estimulos
 
 % Especifico numero de id del BOS y REV
 id_BOS = params_analisis.id_bos(1)
+
+% Tamano sliding window
+t_window = 0.015; % 15 ms tamaÃ±o ventana
+step = 0.001; % 1 ms step de ventana
 
 % Cargo orden de la grilla
 if plot_grilla == 1
@@ -70,9 +74,9 @@ end
 clear i 
 
 
-% Levanto señal neuronal y analizo %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Levanto seï¿½al neuronal y analizo %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-% Levanta señal neuronal y la filtra para obtener: LFP de cada canal del
+% Levanta seï¿½al neuronal y la filtra para obtener: LFP de cada canal del
 % tetrodo , LFP promediando todos los canales y SPIKES de cada canal
 [LFP_tetrodo, LFP_canales, spikes_canales]= LFP_1tetrode(directorio,...
     amplifier_channels, frequency_parameters, puerto_canal_custom);
@@ -110,9 +114,71 @@ for c = ( 1:1: size(spikes_canales,2) )
     % Calculo scores
     estimulos = score_calculator(id_BOS, estimulos, ...
         frequency_parameters, spike_times, ntrials);
+    
+    % Calculo sliding window para cada estimulo
+    for i = (1:length(estimulos))
+        [sw_data, sw_times] = sliding_window(estimulos(i).spikes_norm, ...
+            frequency_parameters.amplifier_sample_rate, ...
+            t_window, step);
+        psth_sw = [sw_data, sw_times];
+        estimulos(i).psth_sw = psth_sw;
+    end
+    clear i psth_sw
 
     % Guardo resultados de este canal en una struct con todos los datos
     estimulos_tetrodos(c).canal = estimulos;
+end
+clear c
+
+
+% Tamano del vector sw una vez que recorre todo el canto
+size_sw = 0;
+tf = t_window;
+while tf <= tiempo_file
+   size_sw = size_sw + 1;
+   tf = tf + step;
+end
+
+% Inicializo y genero vector de tiempos del PSTH
+t_PSTH = zeros(size_sw,1); % va a estar en SEGUNDOS
+ti = 0;
+tf = t_window;
+for i = (1:1:size_sw)
+    
+    t_PSTH(i) = (ti + tf)/2;
+    
+    ti = ti + step;
+    tf = tf + step;
+end
+clear ti tf
+
+% Inicializo vectores de PSTH y LFP promediado por tetrodo
+PSTHsw_1tet_BOS_aux = zeros(size_sw, length(estimulos_tetrodos));
+LFP_1tet_BOS_aux = ones(...
+        length(estimulos_tetrodos(1).canal(1).LFP_promedio), ...
+        length(estimulos_tetrodos));
+
+for c = 1:4 
+    l_aux = length(estimulos_tetrodos(c).canal(id_BOS).psth_sw(:,1));
+    PSTHsw_1tet_BOS_aux(1:l_aux,c) = estimulos_tetrodos(c).canal(id_BOS).psth_sw(:,1);
+    LFP_1tet_BOS_aux(:,c) = estimulos_tetrodos(c).canal(id_BOS).LFP_promedio;
+end 
+
+PSTHsw_1tet_BOS = mean(PSTHsw_1tet_BOS_aux, 2);
+PSTHsw_1tet_BOS(:,2) = t_PSTH;
+LFP_1tet_BOS = mean(LFP_1tet_BOS_aux, 2);
+
+
+% Guardo txt?
+guardar_txt = input('\nï¿½Guardo PSTHsw_1tet y LFP_1tet BOS? (1 = SI / 0 = NO) : ');
+
+if guardar_txt == 1
+    
+    csvwrite([directorio '/PSTHsw_1tet_BOS_' puerto_canal_custom '.txt'], ...
+        PSTHsw_1tet_BOS)
+    
+    csvwrite([directorio '/LFP_1tet_BOS_' puerto_canal_custom '.txt'], ...
+        LFP_1tet_BOS)
 end
 
 
@@ -121,12 +187,12 @@ end
 % Ploteo Grilla PSTH
 plot_some_raster_LFP_1tetrode(grilla_psth, id_BOS, estimulos_tetrodos, ...
     frequency_parameters, tiempo_file, ntrials,thr,directorio,spike_times);
-sgtitle({datestr(now, 'yyyy-mm-dd'); ...
-string(directorio) ; ...
-strcat('tetrodo = ',string(puerto_canal_custom),"  |  ", ...
-string(thr), "uV", "  |  ", "ntrials:", string(ntrials), "  |  ", ...
-"t_inter_estimulo:", string(tiempo_file)) }, 'Interpreter','None',...
-'FontSize',20)
+% sgtitle({datestr(now, 'yyyy-mm-dd'); ...
+% string(directorio) ; ...
+% strcat('tetrodo = ',string(puerto_canal_custom),"  |  ", ...
+% string(thr), "uV", "  |  ", "ntrials:", string(ntrials), "  |  ", ...
+% "t_inter_estimulo:", string(tiempo_file)) }, 'Interpreter','None',...
+% 'FontSize',20)
 
 %%%%%%%%%%%%%%%%% desarrolle hasta aca.
 % Falta ver si puedo calcular corr de PSTH_sw y LFP de estimulos vs BOS
