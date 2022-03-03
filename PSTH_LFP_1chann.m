@@ -30,7 +30,7 @@ clear params_info
 % Pregunto si determino canal de manera manual o automatica (esta
 % explicitado en parametros que se cargan)
 canal_automatico = ...
-    input('\n¿Determino canal automaticamente? (1 = SI / 0 = NO) : ');
+    input('\nï¿½Determino canal automaticamente? (1 = SI / 0 = NO) : ');
 
 if canal_automatico == 1
     % Cargo valores de puerto-canal del archivo parametros dentro del dir
@@ -66,7 +66,7 @@ end
 
 % Pregunto si el umbral se determina manualmente o automaticamente
 thr_automatico = ...
-    input('\n¿Busqueda de thr automatica? (1 = SI / 0 = NO) : ');
+    input('\nï¿½Busqueda de thr automatica? (1 = SI / 0 = NO) : ');
 
 % Definimos manualmente un umbral para deteccion de spikes (en uV)
 if thr_automatico == 0 
@@ -74,7 +74,7 @@ if thr_automatico == 0
 end
 
 % Guardo figuras?
-guardar = input('\n¿Guardo? (1 = SI / 0 = NO) : ');
+guardar = input('\nï¿½Guardo? (1 = SI / 0 = NO) : ');
 
 % Cargamos cantidad de trials y tiempo que dura cada uno
 ntrials = params.Ntrials
@@ -100,7 +100,7 @@ for i = (1:1:length(estimulos))
 end
 clear i 
 
-% Levanto señal neuronal y analizo %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Levanto seï¿½al neuronal y analizo %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 % Levanto el canal de interes
 raw = read_INTAN_channel(directorio, puerto_canal, amplifier_channels);
@@ -158,17 +158,17 @@ end
 clear i psth_sw
 
 
-% Guardo figuras?
-guardar_txt = input('\n¿Guardo PSTH_sw y LFP_promedio BOS? (1 = SI / 0 = NO) : ');
+% Guardo txt?
+guardar_txt = input('\nï¿½Guardo PSTH_sw y LFP_promedio BOS? (1 = SI / 0 = NO) : ');
 
 if guardar_txt == 1
     
     writematrix(estimulos(id_BOS).psth_sw, ...
-        [directorio '/psth_sw_BOS' '.txt'],...
+        [directorio '/PSTHsw_1chann_BOS_' puerto_canal_custom '.txt'],...
         'Delimiter','tab')
     
     writematrix(estimulos(id_BOS).LFP_promedio,...
-        [directorio '/LFP_promedio_BOS' '.txt'],...
+        [directorio '/LFP_1chann_BOS_' puerto_canal_custom '.txt'],...
         'Delimiter','tab')
 end
 

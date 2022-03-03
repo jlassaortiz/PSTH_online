@@ -24,7 +24,7 @@ function plot_some_raster_LFP_1tetrode(id_estimulos, id_BOS, ...
 t_window = 0.015; % 15 ms
 step = 0.001; % 1 ms
 
-% Tamaño del sw una vez que recorre todo el canto
+% Tamaï¿½o del sw una vez que recorre todo el canto
 size_sw = 0;
 tf = t_window;
 while tf <= tiempo_file
@@ -91,7 +91,7 @@ k = 0;
 % sw_data_BOS = sw_data_BOS(sw_times_BOS < duracion_BOS);
 % sw_times_BOS = sw_times_BOS(sw_times_BOS < duracion_BOS);
 
-for i = id_estimulos % para cada estímulo
+for i = id_estimulos % para cada estï¿½mulo
     
     k = k + 1;
     
@@ -168,7 +168,7 @@ for i = id_estimulos % para cada estímulo
 % %         integral_text = strcat('Integral_norm : ', ...
 % %             string(dict_score(i).int_norm));
 % % 
-% %         % Calculo correlación de sw normalizada con la sw normalizada del BOS
+% %         % Calculo correlaciï¿½n de sw normalizada con la sw normalizada del BOS
 % %         R2_text = strcat(' Coef Pearson sw_BOS_norm : ' , ...
 % %             string(round(dict_score(i).corr, 2)));
 
@@ -220,13 +220,13 @@ end
 % Linkeo eje x (no se pueden hacer varios links independientes juntos)
 linkaxes(h, 'x');
 
-% Titulo general
-sgtitle({datestr(now, 'yyyy-mm-dd'); ...
-    string(directorio) ; ...
-    strcat(string(thr), "uV", ...
-    "  ntrials:", string(ntrials), ...
-    "  t_inter_estimulo:", string(tiempo_file)) }, ...
-    'Interpreter','None')
+% % Titulo general
+% sgtitle({datestr(now, 'yyyy-mm-dd'); ...
+%     string(directorio) ; ...
+%     strcat(string(thr), "uV", ...
+%     "  ntrials:", string(ntrials), ...
+%     "  t_inter_estimulo:", string(tiempo_file)) }, ...
+%     'Interpreter','None')
 
 end
 
