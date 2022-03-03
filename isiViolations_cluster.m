@@ -4,8 +4,6 @@ close all
 clear all
 
 % Cargo y defino parametros %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-minISI = 0.001; % duracion de spike
 refDur = 0.002; % duracion de tiempo refractario
 
 % Defino directorios
@@ -78,11 +76,11 @@ spike_times = spike_times(spike_clusters);
 spike_times = double(spike_times);
 spikeTrain = spike_times / sr;
 
-[fpRate, numViolations] = isiViolations(spikeTrain, minISI, refDur);
-
-fpRate
-
-numViolations
+[violationFraction, numViolations] = isiViolations(spikeTrain, refDur);
+% 
+% violationFraction
+% 
+% numViolations
 
 plot_spikes_shapes(raw_filtered, spike_times, thr, frequency_parameters,...
     directorio);
