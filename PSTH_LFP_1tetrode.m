@@ -46,6 +46,9 @@ end
 % Guardo figuras?
 guardar = input('\n�Guardo? (1 = SI / 0 = NO) : ');
 
+% Guardo txt?
+guardar_txt = input('\n�Guardo PSTHsw_1tet y LFP_1tet BOS? (1 = SI / 0 = NO) : ');
+
 % Cargamos cantidad de trials y tiempo que dura cada uno
 ntrials = params.Ntrials
 tiempo_file = params.tiempo_entre_estimulos
@@ -168,9 +171,6 @@ PSTHsw_1tet_BOS = mean(PSTHsw_1tet_BOS_aux, 2);
 PSTHsw_1tet_BOS(:,2) = t_PSTH;
 LFP_1tet_BOS = mean(LFP_1tet_BOS_aux, 2);
 
-
-% Guardo txt?
-guardar_txt = input('\n�Guardo PSTHsw_1tet y LFP_1tet BOS? (1 = SI / 0 = NO) : ');
 
 if guardar_txt == 1
     
