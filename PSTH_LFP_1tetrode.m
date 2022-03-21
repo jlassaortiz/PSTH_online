@@ -36,7 +36,7 @@ if plot_grilla == 0
 end
 
 % Pregunto si el umbral se determina manualmente o automaticamente
-thr_automatico = input('\n�Busqueda thr automatica? (1 = SI / 0 = NO) : ');
+thr_automatico = input('\Busqueda thr automatica? (1 = SI / 0 = NO) : ');
 
 % Definimos manualmente un umbral para deteccion de spikes (en uV)
 if thr_automatico == 0 
@@ -44,10 +44,10 @@ if thr_automatico == 0
 end
 
 % Guardo figuras?
-guardar = input('\n�Guardo? (1 = SI / 0 = NO) : ');
+guardar = input('\Guardo? (1 = SI / 0 = NO) : ');
 
 % Guardo txt?
-guardar_txt = input('\n�Guardo PSTHsw_1tet y LFP_1tet BOS? (1 = SI / 0 = NO) : ');
+guardar_txt = input('\Guardo PSTHsw_1tet y LFP_1tet BOS? (1 = SI / 0 = NO) : ');
 
 % Cargamos cantidad de trials y tiempo que dura cada uno
 ntrials = params.Ntrials
@@ -77,9 +77,9 @@ end
 clear i 
 
 
-% Levanto se�al neuronal y analizo %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Levanto senal neuronal y analizo %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-% Levanta se�al neuronal y la filtra para obtener: LFP de cada canal del
+% Levanta senal neuronal y la filtra para obtener: LFP de cada canal del
 % tetrodo , LFP promediando todos los canales y SPIKES de cada canal
 [LFP_tetrodo, LFP_canales, spikes_canales]= LFP_1tetrode(directorio,...
     amplifier_channels, frequency_parameters, puerto_canal_custom);
