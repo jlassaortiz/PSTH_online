@@ -7,16 +7,9 @@ clear all
 directorio = input('Directorio: ','s');
 directorio = horzcat(directorio , '/');
 
-% Pregunto si el umbral se determina manualmente o automaticamente
-thr_automatico = input('\n¿Busqueda de thr automatica? (1 = SI / 0 = NO) : ');
-
-% Definimos manualmente un umbral para deteccion de spikes (en uV)
-if thr_automatico == 0 
-    thr = input('\nThreshold para el threshold cutting (en uV):  ');
-end
-
-% Guardo figuras?
-guardar = input('\n¿Guardo? (1 = SI / 0 = NO) : ');
+% Leer info INTAN
+read_Intan_RHD2000_file(horzcat(directorio, 'info.rhd'));
+clear notes spike_triggers supply_voltage_channels aux_input_channels 
 
 % Carga vector con parametros del analisis de datos
 params_info = dir(horzcat(directorio, 'parametros_protocolo.txt'));
@@ -28,11 +21,47 @@ params_info = dir(horzcat(directorio, 'parametros_analisis.txt'));
 params_analisis = readtable(horzcat(directorio,params_info.name),'Delimiter','\t');
 clear params_info
 
-% Cargo valores de puerto-canal
-puerto = char(params.Puerto);
-canal = params.Canal;
-puerto_canal = horzcat(puerto, '-0', num2str(canal,'%.2d'))
-clear puerto canal
+% Pregunto si determino canal de manera manual o automatica (esta
+% explicitado en parametros que se cargan)
+canal_automatico = ...
+    input('\nDetermino canal automaticamente? (1 = SI / 0 = NO) : ');
+
+if canal_automatico == 1
+    % Cargo valores de puerto-canal del archivo parametros dentro del dir
+    puerto = char(params.Puerto);
+    canal = params.Canal;
+    puerto_canal = horzcat(puerto, '-0', num2str(canal,'%.2d'))
+    puerto_canal_custom = puerto_canal;
+    clear puerto canal 
+
+else
+    % Defino canal a levantar con nombre custom name
+    peine = ...
+        input('\nDefino canal a levantar (custom name) \n \nPeine (X): ');
+    tetrodo = input('\nTetrodo (X): ');
+    canal = input('\nCanal (X): ');
+
+    puerto_canal_custom = horzcat('P',num2str(peine),'-', ...
+        'T',num2str(tetrodo),'-',num2str(canal));
+
+    % Traduzco custom_channel_name a native_channel_name
+    traduccion = strcmp(puerto_canal_custom, ...
+        {amplifier_channels(:).custom_channel_name});
+    
+    puerto_canal = amplifier_channels(traduccion).native_channel_name;
+    clear traduccion peine tetrodo canal
+end
+
+% Pregunto si el umbral se determina manualmente o automaticamente
+thr_automatico = input('\n¿Busqueda de thr automatica? (1 = SI / 0 = NO) : ');
+
+% Definimos manualmente un umbral para deteccion de spikes (en uV)
+if thr_automatico == 0 
+    thr = input('\nThreshold para el threshold cutting (en uV):  ');
+end
+
+% Guardo figuras?
+guardar = input('\n¿Guardo? (1 = SI / 0 = NO) : ');
 
 % Cargamos cantidad de trials y tiempo que dura cada uno
 ntrials = params.Ntrials
@@ -56,10 +85,6 @@ for i = (1:1:length(estimulos))
 %     estimulos(i).protocolo_id = categorical({directorio_nombre_corto});
 end
 clear i 
-
-% Leer info INTAN
-read_Intan_RHD2000_file(horzcat(directorio, 'info.rhd'));
-clear notes spike_triggers supply_voltage_channels aux_input_channels 
 
 % Levanto el canal de interes
 raw = read_INTAN_channel(directorio, puerto_canal, amplifier_channels);
@@ -92,8 +117,20 @@ estimulos = score_calculator(id_BOS, estimulos, frequency_parameters, spike_time
 % Ploteo spike shapes
 plot_spikes_shapes(raw_filtered, spike_times, thr, frequency_parameters, directorio)
 
+suptitle2({datestr(now, 'yyyy-mm-dd'); ...
+string(directorio) ; ...
+strcat(string(puerto_canal), " = ",string(puerto_canal_custom), "  |  ",...
+string(thr), "uV", "  |  ", "ntrials:", string(ntrials), "  |  ",...
+"t_inter_estimulo:", string(tiempo_file)) })
+
 % Ploteo Grilla PSTH
 plot_some_raster(grilla_psth, id_BOS, estimulos, estimulos, frequency_parameters, tiempo_file, ntrials, puerto_canal, thr, directorio, spike_times);
+
+suptitle2({datestr(now, 'yyyy-mm-dd'); ...
+string(directorio) ; ...
+strcat(string(puerto_canal), " = ",string(puerto_canal_custom),"  |  ", ...
+string(thr), "uV", "  |  ", "ntrials:", string(ntrials), "  |  ", ...
+"t_inter_estimulo:", string(tiempo_file)) })
 
 estimulos_table = struct2table(estimulos);
 
@@ -139,12 +176,18 @@ legend
 
 % Guardo
 if guardar == 1
-    print_png(1, directorio, strcat('_spike-shape_', string(round(thr)), 'uV'))
-    print_pdf(2, directorio, strcat('_grilla_', string(round(thr)), 'uV.pdf'))
-    print_pdf(3, directorio, strcat('_INT_pasa-ALTOS', '.pdf'))
-    print_pdf(4, directorio, strcat('_INT_pasa-BAJOS', '.pdf'))
-    print_pdf(5, directorio, strcat('_CORR_pasa-ALTOS', '.pdf'))
-    print_pdf(6, directorio, strcat('_CORR_pasa-BAJOS', '.pdf'))
+    print_png(1, directorio, strcat('_',string(puerto_canal_custom), ...
+        '_spike-shape_', string(round(thr)), 'uV'))
+    print_pdf(2, directorio, strcat('_',string(puerto_canal_custom), ...
+        '_grilla_', string(round(thr)), 'uV.pdf'))
+    print_pdf(3, directorio, strcat('_',string(puerto_canal_custom),...
+        '_INT_pasa-ALTOS', '.pdf'))
+    print_pdf(4, directorio, strcat('_',string(puerto_canal_custom),...
+        '_INT_pasa-BAJOS', '.pdf'))
+    print_pdf(5, directorio, strcat('_',string(puerto_canal_custom),...
+        '_CORR_pasa-ALTOS', '.pdf'))
+    print_pdf(6, directorio, strcat('_',string(puerto_canal_custom),...
+        '_CORR_pasa-BAJOS', '.pdf'))
 end
 
 clear estimulos_aux j i  
