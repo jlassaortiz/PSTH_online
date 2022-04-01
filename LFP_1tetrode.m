@@ -17,24 +17,24 @@ function [LFP_tetrodo, LFP_canales, spikes_canales]= LFP_1tetrode(...
 %   donde x es el nombre del canal y varia de 1 a 4
 %
 %   OUTPUT:
-%   LFP_tetrodo: (matris Nx1) vector fila con señal filtrada y promediada 
+%   LFP_tetrodo: (matris Nx1) vector fila con seï¿½al filtrada y promediada 
 %   de los 4 canales del tetrodo
 %   
 %   LFP_canales: (matris Nx4) matris donde c/columna es el LFP de 1 canal
 %   
-%   spikes_canales: (matris Nx4) matris donde c/columna es la señal
+%   spikes_canales: (matris Nx4) matris donde c/columna es la seï¿½al
 %   filtrada para conservar spikes de 1 canal
 
 
 % Define el filtro para LFP y SPIKES
 filt_LFP = designfilt('lowpassiir','DesignMethod','butter',...
-    'HalfPowerFrequency',35,'FilterOrder', 4, ...
+    'HalfPowerFrequency',500,'FilterOrder', 4, ...
     'SampleRate', frequency_parameters.amplifier_sample_rate);
 
-% Define el filtro para LFP y SPIKES
-filt_LFP_h = designfilt('highpassiir','DesignMethod','butter',...
-    'HalfPowerFrequency',25,'FilterOrder', 4, ...
-    'SampleRate', frequency_parameters.amplifier_sample_rate);
+% % Define el filtro para LFP y SPIKES
+% filt_LFP_h = designfilt('highpassiir','DesignMethod','butter',...
+%     'HalfPowerFrequency',25,'FilterOrder', 4, ...
+%     'SampleRate', frequency_parameters.amplifier_sample_rate);
 
 
 filt_spikes = designfilt('highpassiir','DesignMethod','butter',...
@@ -63,7 +63,7 @@ for i = (1:1:4)
 
     % Aplica el filtro para LFP y SPIKES
     LFP = filtfilt(filt_LFP, raw);
-    LFP = filtfilt(filt_LFP_h, raw);
+%     LFP = filtfilt(filt_LFP_h, raw);
     
     spikes = filtfilt(filt_spikes, raw);
 
