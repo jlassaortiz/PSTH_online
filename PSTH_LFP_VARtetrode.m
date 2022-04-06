@@ -90,28 +90,25 @@ for i = (1:1:length(estimulos))
 end
 clear i 
 
-% Conservo solo el estimulo de interes
-estimulos = estimulos(estimulo_ID);
-
-
-
 
 % Levanto senal neuronal y analizo %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 for t = (1:1:length(tetrodos_list))
     puerto_canal_custom = tetrodos_list(t).puerto_canal_custom;
-    
-    %%%%%%%%%%%%%%%%%%%%%% hasta aca
-    %%%%%%%%%%%%%%%%%%%%%% codeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee
-    
+        
     % Levanta senal neuronal y la filtra para obtener: LFP de cada canal del
     % tetrodo , LFP promediando todos los canales y SPIKES de cada canal
+    % PASO MUY LENTO, MEJORAR !
     [LFP_tetrodo, LFP_canales, spikes_canales]= LFP_1tetrode(directorio,...
         amplifier_channels, frequency_parameters, puerto_canal_custom);
 
     % Genero struct con nombre de los estimulos y el momento de presentacion
     estimulos = find_t0s(estimulos, ntrials, tiempo_file, ...
         board_adc_channels, frequency_parameters, directorio, false);
+
+    % Conservo solo el estimulo de interes
+    estimulos = estimulos(estimulo_ID);
+    estimulos.puerto_canal_custom = puerto_canal_custom;
 
     % Genero struct donde guardo datos de todos los canales
     estimulos_tetrodos = struct();
@@ -139,9 +136,9 @@ for t = (1:1:length(tetrodos_list))
         estimulos = trialAverage_LFP(LFP, estimulos, tiempo_file, ntrials, ...
             frequency_parameters);
 
-        % Calculo scores
-        estimulos = score_calculator(id_BOS, estimulos, ...
-            frequency_parameters, spike_times, ntrials);
+%         % Calculo scores
+%         estimulos = score_calculator(1, estimulos, ...
+%             frequency_parameters, spike_times, ntrials);
 
         % Calculo sliding window para cada estimulo
         for i = (1:length(estimulos))
@@ -157,8 +154,11 @@ for t = (1:1:length(tetrodos_list))
         estimulos_tetrodos(c).canal = estimulos;
     end
     clear c
-
-
+    
+     %%%%%%%%%%%%%%%%%%%%%% hasta aca
+    %%%%%%%%%%%%%%%%%%%%%% codeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee
+    % anda pero no queda comodo, hay que cambiar mucho arriba ...
+    
     % Tamano del vector sw una vez que recorre todo el canto
     size_sw = 0;
     tf = t_window;
@@ -179,35 +179,38 @@ for t = (1:1:length(tetrodos_list))
         tf = tf + step;
     end
     clear ti tf
-
-% Inicializo vectores de PSTH y LFP promediado por tetrodo
-PSTHsw_1tet_BOS_aux = zeros(size_sw, length(estimulos_tetrodos));
-LFP_1tet_BOS_aux = ones(...
-        length(estimulos_tetrodos(1).canal(1).LFP_promedio), ...
-        length(estimulos_tetrodos));
-
-for c = 1:4 
-    l_aux = length(estimulos_tetrodos(c).canal(id_BOS).psth_sw(:,1));
-    PSTHsw_1tet_BOS_aux(1:l_aux,c) = estimulos_tetrodos(c).canal(id_BOS).psth_sw(:,1);
-    LFP_1tet_BOS_aux(:,c) = estimulos_tetrodos(c).canal(id_BOS).LFP_promedio;
-end 
-
-PSTHsw_1tet_BOS = mean(PSTHsw_1tet_BOS_aux, 2);
-PSTHsw_1tet_BOS(:,2) = t_PSTH;
-LFP_1tet_BOS = mean(LFP_1tet_BOS_aux, 2);
-
-
-if guardar_txt == 1
-    
-    csvwrite([directorio '/PSTHsw_1tet_BOS_' puerto_canal_custom '.txt'], ...
-        PSTHsw_1tet_BOS)
-    
-    csvwrite([directorio '/LFP_1tet_BOS_' puerto_canal_custom '.txt'], ...
-        LFP_1tet_BOS)
-end
+% 
+%     % Inicializo vectores de PSTH y LFP del BOS promediado por tetrodo
+%     PSTHsw_1tet_BOS_aux = zeros(size_sw, length(estimulos_tetrodos));
+%     LFP_1tet_BOS_aux = ones(...
+%             length(estimulos_tetrodos(1).canal(1).LFP_promedio), ...
+%             length(estimulos_tetrodos));
+% 
+%     for c = 1:4 
+%         l_aux = length(estimulos_tetrodos(c).canal(id_BOS).psth_sw(:,1));
+%         PSTHsw_1tet_BOS_aux(1:l_aux,c) = estimulos_tetrodos(c).canal(id_BOS).psth_sw(:,1);
+%         LFP_1tet_BOS_aux(:,c) = estimulos_tetrodos(c).canal(id_BOS).LFP_promedio;
+%     end 
+% 
+%     PSTHsw_1tet_BOS = mean(PSTHsw_1tet_BOS_aux, 2);
+%     PSTHsw_1tet_BOS(:,2) = t_PSTH;
+%     LFP_1tet_BOS = mean(LFP_1tet_BOS_aux, 2);
+% 
+% 
+%     if guardar_txt == 1
+% 
+%         csvwrite([directorio '/PSTHsw_1tet_BOS_' puerto_canal_custom '.txt'], ...
+%             PSTHsw_1tet_BOS)
+% 
+%         csvwrite([directorio '/LFP_1tet_BOS_' puerto_canal_custom '.txt'], ...
+%             LFP_1tet_BOS)
+%     end
 
 
 % PLOTEO %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+
 
 % Ploteo Grilla PSTH
 plot_some_raster_LFP_1tetrode(grilla_psth, id_BOS, estimulos_tetrodos, ...
