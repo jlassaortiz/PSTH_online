@@ -74,6 +74,22 @@ id_BOS = params_analisis.id_bos(1)
 t_window = 0.015; % 15 ms tamaño ventana
 step = 0.001; % 1 ms step de ventana
 
+% Tamano del vector sw una vez que recorre todo el canto
+size_sw = 0;
+tf = t_window;
+while tf <= tiempo_file
+   size_sw = size_sw + 1;
+   tf = tf + step;
+end
+
+% Vector de tiempos del sw (en segundos!)
+times_sw = zeros(size_sw,1);
+times_sw(1,1) = t_window /2;
+for i = (2:1:size_sw)
+    times_sw(i,1) = times_sw(i -1,1) + step;
+end 
+clear i
+
 % % Cargo orden de la grilla
 % if plot_grilla == 1
 %     grilla_psth = str2num(string(params_analisis.grilla_psth(1)))
@@ -93,8 +109,24 @@ clear i
 
 % Levanto senal neuronal y analizo %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
+% Genero struct con nombre de los estimulos y el momento de presentacion
+estimulos = find_t0s(estimulos, ntrials, tiempo_file, ...
+    board_adc_channels, frequency_parameters, directorio, false);
+
+% Conservo solo el estimulo de interes
+estimulos = estimulos(estimulo_ID);
+
+% Inicializo struct donde guardo los struct de cada tetrodo a analizar
+estimulos_VARchann = estimulos;
+estimulos_VARchann.VARchann = struct();
+
 for t = (1:1:length(tetrodos_list))
+    
+    estimulos_1chan = estimulos;
+    
+    % Indico el nombre del tetrodo a analizar
     puerto_canal_custom = tetrodos_list(t).puerto_canal_custom;
+    estimulos_VARchann.VARchann(t).puerto_canal_custom = puerto_canal_custom;
         
     % Levanta senal neuronal y la filtra para obtener: LFP de cada canal del
     % tetrodo , LFP promediando todos los canales y SPIKES de cada canal
@@ -102,16 +134,12 @@ for t = (1:1:length(tetrodos_list))
     [LFP_tetrodo, LFP_canales, spikes_canales]= LFP_1tetrode(directorio,...
         amplifier_channels, frequency_parameters, puerto_canal_custom);
 
-    % Genero struct con nombre de los estimulos y el momento de presentacion
-    estimulos = find_t0s(estimulos, ntrials, tiempo_file, ...
-        board_adc_channels, frequency_parameters, directorio, false);
-
-    % Conservo solo el estimulo de interes
-    estimulos = estimulos(estimulo_ID);
-    estimulos.puerto_canal_custom = puerto_canal_custom;
-
     % Genero struct donde guardo datos de todos los canales
     estimulos_tetrodos = struct();
+    
+    % Inicializo variables donde guardar psth y lfp de cada canal
+    PSTH_avgTetrodo = zeros(size_sw, 4);
+    LFP_avgTetrodo = [];
 
     % Para cada canal del tetrodo
     for c = ( 1:1: size(spikes_canales,2) )
@@ -129,56 +157,63 @@ for t = (1:1:length(tetrodos_list))
         spike_times =find_spike_times(raw_filtered, thr, frequency_parameters);
 
         % Genero objeto con RASTERS de todos los estimulos
-        estimulos = generate_raster(spike_times, estimulos , tiempo_file, ... 
-            ntrials, frequency_parameters);
+        estimulos_1chan = generate_raster(spike_times, estimulos_1chan ,...
+            tiempo_file, ntrials, frequency_parameters);
 
-        % Calculo LFP promediado por estimulo todos los trials
-        estimulos = trialAverage_LFP(LFP, estimulos, tiempo_file, ntrials, ...
-            frequency_parameters);
+        % Calculo LFP promediado por estimulo todos los trials de cada canal
+        estimulos_1chan = trialAverage_LFP(LFP, estimulos_1chan, ...
+            tiempo_file, ntrials, frequency_parameters);
+  
+       % Guardo LFP de cada canal 
+       LFP_avgTetrodo(:,c) = estimulos_1chan.LFP_promedio;
 
 %         % Calculo scores
 %         estimulos = score_calculator(1, estimulos, ...
 %             frequency_parameters, spike_times, ntrials);
 
-        % Calculo sliding window para cada estimulo
-        for i = (1:length(estimulos))
-            [sw_data, sw_times] = sliding_window(estimulos(i).spikes_norm, ...
-                frequency_parameters.amplifier_sample_rate, ...
-                t_window, step);
-            psth_sw = [sw_data, sw_times];
-            estimulos(i).psth_sw = psth_sw;
-        end
+        % Calculo sliding window de cada canal
+        [sw_data, sw_times] = sliding_window(estimulos_1chan.spikes_norm, ...
+            frequency_parameters.amplifier_sample_rate, ...
+            t_window, step);
+        psth_sw = [sw_data, sw_times];
+        
+        % Guardo PSTH de cada canal
+        PSTH_avgTetrodo(1:length(sw_data),c) = sw_data;
+        estimulos_1chan.PSTH_1chann = [sw_data, sw_times];
+     
         clear i psth_sw
 
         % Guardo resultados de este canal en una struct con todos los datos
-        estimulos_tetrodos(c).canal = estimulos;
+        estimulos_tetrodos(c).canal = estimulos_1chan;
     end
     clear c
     
-     %%%%%%%%%%%%%%%%%%%%%% hasta aca
-    %%%%%%%%%%%%%%%%%%%%%% codeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee
-    % anda pero no queda comodo, hay que cambiar mucho arriba ...
+    % Promedio LFP de todos los canales del tetrodo de este estimulo
+    LFP_avgTetrodo = mean(LFP_avgTetrodo, 2);
+    LFP_avgTetrodo(:,2) = (0:1:length(LFP_avgTetrodo)-1) / ...
+        frequency_parameters.amplifier_sample_rate; % Agrego vector de tiempos (segundos!)
     
-    % Tamano del vector sw una vez que recorre todo el canto
-    size_sw = 0;
-    tf = t_window;
-    while tf <= tiempo_file
-       size_sw = size_sw + 1;
-       tf = tf + step;
-    end
+    % Promedio PSTH de todos los canales de este estimulo
+    PSTH_avgTetrodo = mean(PSTH_avgTetrodo, 2);  
+    PSTH_avgTetrodo(:,2) = times_sw;
+    
+    % Guardo curvas PSTH y LFP promedio tetrodos
+    estimulos_VARchann.VARchann(t).LFP_tetrodo = LFP_avgTetrodo;
+    estimulos_VARchann.VARchann(t).PSTH_tetrodo = PSTH_avgTetrodo;
+    estimulos_VARchann.VARchann(t).canales_tet = estimulos_tetrodos; 
 
-    % Inicializo y genero vector de tiempos del PSTH
-    t_PSTH = zeros(size_sw,1); % va a estar en SEGUNDOS
-    ti = 0;
-    tf = t_window;
-    for i = (1:1:size_sw)
-
-        t_PSTH(i) = (ti + tf)/2;
-
-        ti = ti + step;
-        tf = tf + step;
-    end
-    clear ti tf
+%     % Inicializo y genero vector de tiempos del PSTH
+%     t_PSTH = zeros(size_sw,1); % va a estar en SEGUNDOS
+%     ti = 0;
+%     tf = t_window;
+%     for i = (1:1:size_sw)
+% 
+%         t_PSTH(i) = (ti + tf)/2;
+% 
+%         ti = ti + step;
+%         tf = tf + step;
+%     end
+%     clear ti tf
 % 
 %     % Inicializo vectores de PSTH y LFP del BOS promediado por tetrodo
 %     PSTHsw_1tet_BOS_aux = zeros(size_sw, length(estimulos_tetrodos));
@@ -205,12 +240,13 @@ for t = (1:1:length(tetrodos_list))
 %         csvwrite([directorio '/LFP_1tet_BOS_' puerto_canal_custom '.txt'], ...
 %             LFP_1tet_BOS)
 %     end
+end
 
+
+%%%%%%%%%%%%%%%%%%%%%% hasta aca codeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee
+%%%%%%%%%%%%%%%%%%%%%% hasta aca codeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee
 
 % PLOTEO %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-
-
 
 % Ploteo Grilla PSTH
 plot_some_raster_LFP_1tetrode(grilla_psth, id_BOS, estimulos_tetrodos, ...
