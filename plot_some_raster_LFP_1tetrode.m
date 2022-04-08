@@ -7,8 +7,7 @@ function plot_some_raster_LFP_1tetrode(id_estimulos, id_BOS, ...
 %   INPUTS:
 %   id_estimulos: (matris) lista de numeros id de los estimulos a graficar
 %   id_BOS: (num) numero de id del estimulos BOS
-%   estimulos: (struct) objeto donde estan los audios de los estimulos
-%   rasters: (struct) objeto donde estan los rasters de cada estimulo
+%   estimulos_tetrodos: (struct) donde audios y rasters de cada estimulo
 %   frequency_parameters: (struct) objeto donde esta el sampling rate INTAN
 %   tiempo_file: (num) tiempo en segundos que duran los estimulos
 %   ntrials: (num) numero de trials que se pasa cada estimulo
@@ -18,7 +17,7 @@ function plot_some_raster_LFP_1tetrode(id_estimulos, id_BOS, ...
 %   spike_times: (matris) lista de tiempos de todos los spikes detectados
 %
 %   OUTPUTS:
-%
+
 
 % Ventana y step del sliding window
 t_window = 0.015; % 15 ms
@@ -163,19 +162,6 @@ for i = id_estimulos % para cada est�mulo
     plot(t_PSTH * 1000, PSTH_avgTetrodo, '-r', 'LineWidth', 2);
     ylim([0 psth_max]);
     xlim([0 limite_eje_x]);
-    
-% %         % Integracion de spikes normalizada
-% %         integral_text = strcat('Integral_norm : ', ...
-% %             string(dict_score(i).int_norm));
-% % 
-% %         % Calculo correlaci�n de sw normalizada con la sw normalizada del BOS
-% %         R2_text = strcat(' Coef Pearson sw_BOS_norm : ' , ...
-% %             string(round(dict_score(i).corr, 2)));
-
-% %         % Escribo en el titulo los valores de integral y correlacion de sw
-% %         % normalizadas
-% %         title(strcat(integral_text, ' / ' , R2_text) , 'Interpreter','None')
-
     
     % LFP promediado %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     j = j + 1;
