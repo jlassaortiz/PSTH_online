@@ -1,5 +1,5 @@
 % Calcula PSTH y LFP de todos los canales de un tetrodo especificado y la
-% se�al promedio (solo funciona con NNx)
+% senal promedio (solo funciona con NNx)
 % Hace varios graficos
 
 close all
@@ -14,7 +14,7 @@ directorio = horzcat(directorio , '/');
 
 % Leer info INTAN
 read_Intan_RHD2000_file(horzcat(directorio, 'info.rhd'));
-clear notes spike_triggers supply_voltage_channels aux_input_channels 
+clear notes spike_triggers supply_voltage_channels aux_input_channels
 
 % Carga vector con parametros del protocolo experimental
 params = readtable(horzcat(directorio,'/parametros_protocolo.txt'), ...
@@ -32,19 +32,13 @@ while masTetrodos == 1
     peine = input('\nDefino tetrodo a levantar (custom name) \n\nPeine (X): ');
     tetrodo = input('\nTetrodo (X): ');
     puerto_canal_custom = horzcat('P',num2str(peine),'-','T',num2str(tetrodo));
-    
-    tetrodos_list(count).puerto_canal_custom = puerto_canal_custom;
-    
-    masTetrodos = input('\nAgrego mas tetrodos? (1 = SI / 0 = NO): ');
-    
-    count = count + 1;
-end 
 
-% % Pregunto si ploteo toda la grilla o solo algunos estimulos
-% plot_grilla = input('\nPloteo toda la grilla? (1 = SI / 0 = NO): ');
-% if plot_grilla == 0
-%     grilla_psth = input('\nMatris lineal con numero ID estimulos : ');
-% end
+    tetrodos_list(count).puerto_canal_custom = puerto_canal_custom;
+
+    masTetrodos = input('\nAgrego mas tetrodos? (1 = SI / 0 = NO): ');
+
+    count = count + 1;
+end
 
 % Indico estimulo a graficar (solo uno)
 estimulo_ID = input('\nNumero ID del estimulo a graficar: ');
@@ -53,15 +47,12 @@ estimulo_ID = input('\nNumero ID del estimulo a graficar: ');
 thr_automatico = input('\Busqueda thr automatica? (1 = SI / 0 = NO) : ');
 
 % Definimos manualmente un umbral para deteccion de spikes (en uV)
-if thr_automatico == 0 
+if thr_automatico == 0
     thr = input('\nThreshold para el threshold cutting (en uV):  ');
 end
 
 % Guardo figuras?
 guardar = input('\Guardo? (1 = SI / 0 = NO) : ');
-
-% % Guardo txt?
-% guardar_txt = input('\Guardo PSTHsw_1tet y LFP_1tet BOS? (1 = SI / 0 = NO) : ');
 
 % Cargamos cantidad de trials y tiempo que dura cada uno
 ntrials = params.Ntrials
@@ -87,24 +78,19 @@ times_sw = zeros(size_sw,1);
 times_sw(1,1) = t_window /2;
 for i = (2:1:size_sw)
     times_sw(i,1) = times_sw(i -1,1) + step;
-end 
+end
 clear i
 
-% % Cargo orden de la grilla
-% if plot_grilla == 1
-%     grilla_psth = str2num(string(params_analisis.grilla_psth(1)))
-% end
-
 % Genero songs.mat a partir de las canciones
-estimulos = carga_songs(directorio);    
+estimulos = carga_songs(directorio);
 
-% Cargo id_estimulos 
+% Cargo id_estimulos
 for i = (1:1:length(estimulos))
     estimulos(i).id = params_analisis.orden(i);
     estimulos(i).frec_corte = params_analisis.freq_corte(i);
     estimulos(i).tipo = categorical(params_analisis.tipo_estimulo(i));
 end
-clear i 
+clear i
 
 
 % Levanto senal neuronal y analizo %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -121,13 +107,13 @@ estimulos_VARchann = estimulos;
 estimulos_VARchann.VARchann = struct();
 
 for t = (1:1:length(tetrodos_list))
-    
+
     estimulos_1chan = estimulos;
-    
+
     % Indico el nombre del tetrodo a analizar
     puerto_canal_custom = tetrodos_list(t).puerto_canal_custom;
     estimulos_VARchann.VARchann(t).puerto_canal_custom = puerto_canal_custom;
-        
+
     % Levanta senal neuronal y la filtra para obtener: LFP de cada canal del
     % tetrodo , LFP promediando todos los canales y SPIKES de cada canal
     % PASO MUY LENTO, MEJORAR !
@@ -136,7 +122,7 @@ for t = (1:1:length(tetrodos_list))
 
     % Genero struct donde guardo datos de todos los canales
     estimulos_tetrodos = struct();
-    
+
     % Inicializo variables donde guardar psth y lfp de cada canal
     PSTH_avgTetrodo = zeros(size_sw, 4);
     LFP_avgTetrodo = [];
@@ -163,8 +149,8 @@ for t = (1:1:length(tetrodos_list))
         % Calculo LFP promediado por estimulo todos los trials de cada canal
         estimulos_1chan = trialAverage_LFP(LFP, estimulos_1chan, ...
             tiempo_file, ntrials, frequency_parameters);
-  
-       % Guardo LFP de cada canal 
+
+       % Guardo LFP de cada canal
        LFP_avgTetrodo(:,c) = estimulos_1chan.LFP_promedio;
 
 %         % Calculo scores
@@ -176,169 +162,75 @@ for t = (1:1:length(tetrodos_list))
             frequency_parameters.amplifier_sample_rate, ...
             t_window, step);
         psth_sw = [sw_data, sw_times];
-        
+
         % Guardo PSTH de cada canal
         PSTH_avgTetrodo(1:length(sw_data),c) = sw_data;
         estimulos_1chan.PSTH_1chann = [sw_data, sw_times];
-     
+
         clear i psth_sw
 
         % Guardo resultados de este canal en una struct con todos los datos
         estimulos_tetrodos(c).canal = estimulos_1chan;
     end
     clear c
-    
+
     % Promedio LFP de todos los canales del tetrodo de este estimulo
     LFP_avgTetrodo = mean(LFP_avgTetrodo, 2);
     LFP_avgTetrodo(:,2) = (0:1:length(LFP_avgTetrodo)-1) / ...
-        frequency_parameters.amplifier_sample_rate; % Agrego vector de tiempos (segundos!)
-    
+        frequency_parameters.amplifier_sample_rate;
+    % Agrego vector de tiempos (segundos!)
+
     % Promedio PSTH de todos los canales de este estimulo
-    PSTH_avgTetrodo = mean(PSTH_avgTetrodo, 2);  
+    PSTH_avgTetrodo = mean(PSTH_avgTetrodo, 2);
     PSTH_avgTetrodo(:,2) = times_sw;
-    
+
     % Guardo curvas PSTH y LFP promedio tetrodos
     estimulos_VARchann.VARchann(t).LFP_tetrodo = LFP_avgTetrodo;
     estimulos_VARchann.VARchann(t).PSTH_tetrodo = PSTH_avgTetrodo;
-    estimulos_VARchann.VARchann(t).canales_tet = estimulos_tetrodos; 
-
-%     % Inicializo y genero vector de tiempos del PSTH
-%     t_PSTH = zeros(size_sw,1); % va a estar en SEGUNDOS
-%     ti = 0;
-%     tf = t_window;
-%     for i = (1:1:size_sw)
-% 
-%         t_PSTH(i) = (ti + tf)/2;
-% 
-%         ti = ti + step;
-%         tf = tf + step;
-%     end
-%     clear ti tf
-% 
-%     % Inicializo vectores de PSTH y LFP del BOS promediado por tetrodo
-%     PSTHsw_1tet_BOS_aux = zeros(size_sw, length(estimulos_tetrodos));
-%     LFP_1tet_BOS_aux = ones(...
-%             length(estimulos_tetrodos(1).canal(1).LFP_promedio), ...
-%             length(estimulos_tetrodos));
-% 
-%     for c = 1:4 
-%         l_aux = length(estimulos_tetrodos(c).canal(id_BOS).psth_sw(:,1));
-%         PSTHsw_1tet_BOS_aux(1:l_aux,c) = estimulos_tetrodos(c).canal(id_BOS).psth_sw(:,1);
-%         LFP_1tet_BOS_aux(:,c) = estimulos_tetrodos(c).canal(id_BOS).LFP_promedio;
-%     end 
-% 
-%     PSTHsw_1tet_BOS = mean(PSTHsw_1tet_BOS_aux, 2);
-%     PSTHsw_1tet_BOS(:,2) = t_PSTH;
-%     LFP_1tet_BOS = mean(LFP_1tet_BOS_aux, 2);
-% 
-% 
-%     if guardar_txt == 1
-% 
-%         csvwrite([directorio '/PSTHsw_1tet_BOS_' puerto_canal_custom '.txt'], ...
-%             PSTHsw_1tet_BOS)
-% 
-%         csvwrite([directorio '/LFP_1tet_BOS_' puerto_canal_custom '.txt'], ...
-%             LFP_1tet_BOS)
-%     end
+    estimulos_VARchann.VARchann(t).canales_tet = estimulos_tetrodos;
 end
 
+clear estimulos estimulos_1chan estimulos_tetrodos
 
-%%%%%%%%%%%%%%%%%%%%%% hasta aca codeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee
-%%%%%%%%%%%%%%%%%%%%%% hasta aca codeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee
+% Inicializo struct para plotear mas facil
+plotear = struct();
 
-% PLOTEO %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Song la defino una vez porque es la misma siempre en este caso
+song = estimulos_VARchann.song;
+song_times = (1:1:length(song)) / estimulos_VARchann.freq;
+song = horzcat(song, song_times');
 
-% Ploteo Grilla PSTH
-plot_some_raster_LFP_1tetrode(grilla_psth, id_BOS, estimulos_tetrodos, ...
-    frequency_parameters, tiempo_file, ntrials,thr,directorio,spike_times);
+% Completo struct con datos
+for t = (1:1:length(tetrodos_list))
+
+    % Song
+    plotear(t).song = song;
+
+    % Subtitulo
+    plotear(t).subTitle = estimulos_VARchann.VARchann(t).puerto_canal_custom;
+
+    % PSTH
+    plotear(t).psth = estimulos_VARchann.VARchann(t).PSTH_tetrodo;
+
+    % LFP
+    plotear(t).lfp = estimulos_VARchann.VARchann(t).LFP_tetrodo;
+end
+
+clear song song_times
+
+
+% PLOTEO
+plotSimple_song_psth_lfp(plotear)
 
 suptitle2({datestr(now, 'yyyy-mm-dd'); ...
 string(directorio) ; ...
-strcat('tetrodo = ',string(puerto_canal_custom),"  |  ", ...
-string(thr), "uV", "  |  ", "ntrials:", string(ntrials), "  |  ", ...
-"t_inter_estimulo:", string(tiempo_file)) })
-
-
-% sgtitle({datestr(now, 'yyyy-mm-dd'); ...
-% string(directorio) ; ...
-% strcat('tetrodo = ',string(puerto_canal_custom),"  |  ", ...
-% string(thr), "uV", "  |  ", "ntrials:", string(ntrials), "  |  ", ...
-% "t_inter_estimulo:", string(tiempo_file)) }, 'Interpreter','None',...
-% 'FontSize',20)
-
-%%%%%%%%%%%%%%%%% desarrolle hasta aca.
-% Falta ver si puedo calcular corr de PSTH_sw y LFP de estimulos vs BOS
-
-% % Selecciono datos de ese protocolo 
-% estimulos_table = struct2table(estimulos);
-% pasa_altos = estimulos_table(estimulos_table.tipo == 'up' , :);
-% pasa_bajos = estimulos_table(estimulos_table.tipo == 'down' , :);
-% 
-% 
-% % Plotear INT PASA-ALTOS
-% figure();
-% plot(pasa_altos.frec_corte, pasa_altos.int_norm, '-o')
-% title({strcat('INT_PASA-ALTOS_', datestr(now, 'yyyy-mm-dd')); ...
-% string(directorio) ; ...
-% strcat(string(puerto_canal), " = ",string(puerto_canal_custom),"  |  ",...
-% string(thr), "uV", "  |  ", "ntrials:", string(ntrials), "  |  ", ...
-% "t_inter_estimulo:", string(tiempo_file)) }, 'Interpreter','None')
-% legend
-% set(gca,'FontSize',20)
-% 
-% 
-% % Plotear INT PASA-BAJOS
-% figure();
-% plot(pasa_bajos.frec_corte, pasa_bajos.int_norm, '-o')
-% title({strcat('INT_PASA-BAJOS_', datestr(now, 'yyyy-mm-dd')); ...
-% string(directorio) ; ...
-% strcat(string(puerto_canal), " = ",string(puerto_canal_custom),"  |  ", ...
-% string(thr), "uV", "  |  ", "ntrials:", string(ntrials), "  |  ", ...
-% "t_inter_estimulo:", string(tiempo_file)) }, 'Interpreter','None')
-% legend
-% set(gca,'FontSize',20)
-% 
-% 
-% % Plotear CORR PASA-ALTOS
-% figure();
-% plot(pasa_altos.frec_corte, pasa_altos.corr, '-o')
-% title({strcat('CORR_PASA-ALTOS_', datestr(now, 'yyyy-mm-dd')); ...
-% string(directorio) ; ...
-% strcat(string(puerto_canal), " = ",string(puerto_canal_custom),"  |  ", ...
-% string(thr), "uV", "  |  ", "ntrials:", string(ntrials), "  |  ", ...
-% "t_inter_estimulo:", string(tiempo_file)) }, 'Interpreter','None')
-% legend
-% set(gca,'FontSize',20)
-% 
-% 
-% % Plotear CORR PASA-BAJOS
-% figure();
-% plot(pasa_bajos.frec_corte, pasa_bajos.corr, '-o')
-% title({strcat('CORR_PASA-BAJOS_', datestr(now, 'yyyy-mm-dd')); ...
-% string(directorio) ; ...
-% strcat(string(puerto_canal), " = ",string(puerto_canal_custom),"  |  ",...
-% string(thr), "uV", "  |  ", "ntrials:", string(ntrials), "  |  ", ...
-% "t_inter_estimulo:", string(tiempo_file)) }, 'Interpreter','None')
-% legend
-% set(gca,'FontSize',20)
+estimulos_VARchann.name;
+strcat("ntrials:",string(ntrials),"  |  t_inter_estimulo:",string(tiempo_file))})
 
 
 % Guardo
 if guardar == 1
-%     print_png(1, directorio, strcat('_',string(puerto_canal_custom),...
-%         '_spike-shape_', string(round(thr)), 'uV'))
-
-    print_pdf(1, directorio, strcat('_',string(puerto_canal_custom),...
-        '_grilla_PSTH-LFP-tetrode', string(round(thr)), 'uV.pdf'))
-    
-%     print_pdf(2, directorio, strcat('_',string(puerto_canal_custom),...
-%         '_INT_pasa-ALTOS', '.pdf'))
-%     print_pdf(3, directorio, strcat('_',string(puerto_canal_custom),...
-%         '_INT_pasa-BAJOS', '.pdf'))
-%     print_pdf(4, directorio, strcat('_',string(puerto_canal_custom),...
-%         '_CORR_pasa-ALTOS', '.pdf'))
-%     print_pdf(5, directorio, strcat('_',string(puerto_canal_custom),...
-%         '_CORR_pasa-BAJOS', '.pdf'))
+    print_pdf(1, directorio,'_PSTH-LFP-VARtetrode', '.pdf'))
 end
 
-clear estimulos_aux j i  
+clear estimulos_aux j i
