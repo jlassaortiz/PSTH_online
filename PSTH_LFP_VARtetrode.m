@@ -225,12 +225,14 @@ plotSimple_song_psth_lfp(plotear)
 suptitle2({datestr(now, 'yyyy-mm-dd'); ...
 string(directorio) ; ...
 estimulos_VARchann.name;
-strcat("ntrials:",string(ntrials),"  |  t_inter_estimulo:",string(tiempo_file))})
+strcat("ntrials:",string(ntrials), ...
+"  |  t_inter_estimulo:",string(tiempo_file))})
 
 
 % Guardo
 if guardar == 1
-    print_pdf(1, directorio,'_PSTH-LFP-VARtetrode', '.pdf'))
+    print_pdf(1, directorio,strcat('_PSTH-LFP-VARtetrode_', ...
+        estimulos_VARchann.name,'.pdf'))
 end
 
 clear estimulos_aux j i
