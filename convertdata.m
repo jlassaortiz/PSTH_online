@@ -1,6 +1,6 @@
 % Convert data 
 % Guarda los registros neuronales del Intan en un archivo binario,
-%seleccionando los tetrodos
+% separando por tetrodos
 
 clear all
 close all
@@ -55,9 +55,6 @@ for peine = (1:1:4)
 end
 clear peine tetrodo canal t trad puerto_canal puerto_canal_custom
 
-% % Extraigo todos los canales
-% fid = fopen('amplifier.dat','r');
-% v = fread(fid,[num_channels, num_samples],'int16');
 
 % Extraigo y guardo datos agrupando por tetrodos (4 canales por archivo)
 % Para cada tetrodo
@@ -93,8 +90,6 @@ for t = (1:1:length(NNx))
         amplifier_1tetrodo(c,:) = raw;
     end 
     
-%     amplifier_1tetrodo_t = amplifier_1tetrodo';
-    
     % Defino nombre del archivo binario con datos de 1 tetrodo
     filename = ['amplifier_' NNx(t).tetrodo_name '.bin'];
     % Guardo datos de 1 tetrodo
@@ -102,7 +97,7 @@ for t = (1:1:length(NNx))
     fwrite(fid, amplifier_1tetrodo ,'int16'); 
     fclose(fid);
     
-    % Chequeo que se guardó bien
+    % Chequeo que se guardo bien
     fid = fopen([directorio  filename],'r');
     test = fread(fid,[4 largo_raw], 'int16');
     fclose(fid);
@@ -132,7 +127,6 @@ end
 clear c c_aux raw filename t test puerto_canal fid largo_raw
 
 
-
 for p = 1:4
     
     tetrodos_1peine = [];
@@ -157,8 +151,7 @@ for p = 1:4
 end 
         
    
-
-% Me fijo si se guardó bien
+% Me fijo si se guardo bien
 for p = 1:4
     
     filename = ['amplifier_P' num2str(p) '.bin'];
@@ -180,22 +173,4 @@ for p = 1:4
         
         end
     end
-end 
-        
-
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-
+end
