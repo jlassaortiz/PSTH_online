@@ -1,6 +1,5 @@
 
-
-function plotSimple_song_psth_lfp(plotear)
+function plotSimple_song_psth_lfp(plotear, superpuesto, x4_col)
 % Plotea varios (Canto + PSTH_sw + LFP) en grilla 3x:
 %   Necesita de entrada un solo struct de 4xN (plotear) estructurado asi:
 %   plotear(i).subTitle = (str) subtitulo de plot i
@@ -24,6 +23,12 @@ elseif mod(n_plots, 3) == 2
 else
     n = 5 * (round(n_plots/3) + 1);
 end
+
+if x4_col & mod(n_plots, 4) == 0
+    filas = 5 * n_plots / 4;
+elseif x4_col & not(mod(n_plots, 4) == 0)
+    filas = (5 * fix(n_plots /4)) + 1;
+end
     
 m = 3;    
 j = 0;
@@ -33,7 +38,7 @@ k = 0;
 pos2 = 1;
 graf2 = 1; 
 
-% Para caso 4 graficos
+% Para caso 4 graficos o x4_col
 pos4 = 1;
 graf4 = 1;
 
@@ -74,73 +79,94 @@ for i = (1:n_plots)
     else
         p = ((k / 3) - 1) * 15 + 3;
     end
-     
+    
     
     % SONIDO %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     j = j + 1;
-    if n_plots == 1
+    if n_plots == 1 | superpuesto
         h(1) = subplot(5,1,1);
+         hold on
     elseif n_plots == 2
         h(graf2) = subplot(10,1,pos2);
     elseif n_plots == 4
         h(graf4) = subplot(10,2, pos4);
+    elseif x4_col
+        h(j) = subplot(filas, 4, pos4);
     else
         h(j) = subplot(n, m , p);
     end
     
     plot(plotear(i).song(:,2), plotear(i).song(:,1),'black')
     xticks([])
-    title(plotear(i).subTitle, 'Interpreter','None','FontSize', 6)
+    title(plotear(i).subTitle, 'Interpreter','None','FontSize', 14)
 
     
     % PSTH %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     j = j + 1;
-    if n_plots == 1
+    if n_plots == 1 | superpuesto
         h(2) = subplot(5,1, [2,3]);
+         hold on
     elseif n_plots == 2
         h(graf2 + 1) = subplot(10,1, [pos2 + 1,pos2 + 2]);
     elseif n_plots == 4
         h(graf4 + 1) = subplot(10, 2, [pos4 + 2, pos4 + 4]);
+    elseif x4_col
+        h(j) = subplot(filas,4, [pos4+4  pos4+8]);
     else
         h(j) = subplot(n, m, [p + 3, p + 6]);
     end
     
-    plot(plotear(i).psth(:,2), plotear(i).psth(:,1), '-r', 'LineWidth', 2);
+    plot(plotear(i).psth(:,2), plotear(i).psth(:,1), 'LineWidth', 1);
     ylim([0 psth_max]);
   
     
     % LFP promediado %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     j = j + 1;
-    if n_plots == 1
+    if n_plots == 1 | superpuesto
         h(3) = subplot(5,1,[4,5]);
+        hold on
     elseif n_plots == 2
         h(graf2 + 2) = subplot(10,1, [pos2 + 3, pos2 + 4]);
     elseif n_plots == 4
-        h(graf4 + 2) = subplot(10, 2, [pos4 + 6, pos4 + 8]);
+        h(graf4 + 2) = subplot(10, 2, [pos4+6 pos4+8]);
+    elseif x4_col
+        h(j) = subplot(filas, 4, [pos4+12 pos4+16]);
     else 
         h(j) = subplot(n, m, [p + 9, p + 12]);
     end
+    
+    plot(plotear(i).lfp(:,2), plotear(i).lfp(:,1), 'LineWidth', 1)
+    ylim([lfp_min lfp_max]);
+    xticks([])
     
     % Avance para caso 2 graf
     pos2 = pos2 + 5;
     graf2 = graf2 + 3;
     
     % Avance para el caso 4 graf
-    if i == 1
-        graf4 = 4;
-        pos4 = 2;
-    elseif i == 2
-        graf4 = 7;
-        pos4 = 11;
-    elseif i == 3
-        graf4 = 10;
-        pos4 = 12;
+    if n_plots == 4
+        if i == 1
+            graf4 = 4;
+            pos4 = 2;
+        elseif i == 2
+            graf4 = 7;
+            pos4 = 11;
+        elseif i == 3
+            graf4 = 10;
+            pos4 = 12;
+        end
+    elseif x4_col
+        if mod(i, 4) == 0
+            pos4 = pos4 + 17;
+        else
+            pos4 = pos4 + 1;
+        end
     end
     
-    plot(plotear(i).lfp(:,2), plotear(i).lfp(:,1), '-b', 'LineWidth', 2)
-    ylim([lfp_min lfp_max]);
-    xticks([])
+
 end 
+
+legend(plotear.subTitle)
 
 % Linkeo eje x
 linkaxes(h, 'x');

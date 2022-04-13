@@ -220,7 +220,7 @@ clear song song_times
 
 
 % PLOTEO
-plotSimple_song_psth_lfp(plotear)
+plotSimple_song_psth_lfp(plotear, false, true)
 
 suptitle2({datestr(now, 'yyyy-mm-dd'); ...
 string(directorio) ; ...
