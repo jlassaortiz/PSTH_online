@@ -124,7 +124,7 @@ for t = (1:1:length(NNx))
     linkaxes(a, 'x');
     ylim(a, [-500 500]);
 end
-clear c c_aux raw filename t test puerto_canal fid largo_raw
+clear c c_aux raw filename t test puerto_canal fid
 
 
 for p = 1:4
@@ -133,7 +133,7 @@ for p = 1:4
     
     for t = 1:4
         
-        filename = ['amplifierP' num2str(p) '-T' num2str(t) '.bin'];
+        filename = ['amplifierP_' num2str(p) '-T' num2str(t) '.bin'];
      
         % Levanto canales guaradados
         fid = fopen([directorio  filename],'r');
