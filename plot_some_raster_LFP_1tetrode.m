@@ -104,10 +104,14 @@ for i = id_estimulos % para cada estï¿½mulo
         p = ((k / 3) - 1) * 15 + 3;
     end
     
+    % Inicializo vector donde guardo señales y correlaciones
     PSTH_avgTetrodo = zeros(size_sw, length(estimulos_tetrodos));
+    corr_error_PSTH = zeros(2, length(estimulos_tetrodos));
+    
     LFP_avgTetrodo = ones(...
         length(estimulos_tetrodos(1).canal(1).LFP_promedio), ...
         length(estimulos_tetrodos));
+    corr_error_LFP = ones(2, length(estimulos_tetrodos)); 
     
     
     % SONIDO %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -154,14 +158,24 @@ for i = id_estimulos % para cada estï¿½mulo
         % Guardo PSTH de cada canal
         PSTH_avgTetrodo(1:length(sw_data),c) = sw_data;
     end
-    
+        
     % Promedio PSTH de todos los canales de este estimulo
-    PSTH_avgTetrodo = mean(PSTH_avgTetrodo, 2);
+    PSTH_avgTetrodo_mean = mean(PSTH_avgTetrodo, 2);
+    
+    % Calculo correlaciones y error cuadratico medio del PSTH de cada canal
+    for c = (1:1:length(estimulos_tetrodos))
+        corr_error_PSTH(1,c) = corr(PSTH_avgTetrodo(:,c), PSTH_avgTetrodo_mean);
+        corr_error_PSTH(2,c) = immse(PSTH_avgTetrodo(:,c), PSTH_avgTetrodo_mean);
+    end 
+    corr_error_PSTH = round(corr_error_PSTH, 2);
     
     % Ploteo PSTH promedio
-    plot(t_PSTH * 1000, PSTH_avgTetrodo, '-r', 'LineWidth', 2);
+    plot(t_PSTH * 1000, PSTH_avgTetrodo_mean, '-r', 'LineWidth', 2);
     ylim([0 psth_max]);
     xlim([0 limite_eje_x]);
+    title(strcat('corr chann: ', num2str(corr_error_PSTH(1,:)),...
+        ' MSE chann: ', num2str(corr_error_PSTH(2, :))), ...
+        'FontSize', 8)
     
     % LFP promediado %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     j = j + 1;
@@ -183,20 +197,31 @@ for i = id_estimulos % para cada estï¿½mulo
             estimulos(i).LFP_promedio)
         hold on;
         
-        % Guardo PSTH y LFP de cada canal
+        % Guardo LFP de cada canal
         LFP_avgTetrodo(:,c) = estimulos(i).LFP_promedio;
         
     end
-    
+  
     % Promedio LFP de todos los canales del tetrodo de este estimulo
-    LFP_avgTetrodo = mean(LFP_avgTetrodo, 2);
+    LFP_avgTetrodo_mean = mean(LFP_avgTetrodo, 2);
+    lfp_max = max(LFP_avgTetrodo_mean);
+    
+    % Calculo correlaciones y error cuadratico medio del PSTH de cada canal
+    for c = (1:1:length(estimulos_tetrodos))
+        corr_error_LFP(1,c) = corr(LFP_avgTetrodo(:,c), LFP_avgTetrodo_mean);
+        corr_error_LFP(2,c) = immse(LFP_avgTetrodo(:,c), LFP_avgTetrodo_mean);
+    end 
+    corr_error_LFP = round(corr_error_LFP, 2);
     
     % Calculo tiempos de LFP promedio
-    t_LFP = ( 1:1:length(LFP_avgTetrodo) ) * ...
+    t_LFP = ( 1:1:length(LFP_avgTetrodo_mean) ) * ...
         1000/frequency_parameters.amplifier_sample_rate;
-
+    
     % Ploteo LFP promedio del tetrodo
-    plot(t_LFP, LFP_avgTetrodo, '-b', 'LineWidth', 2)
+    plot(t_LFP, LFP_avgTetrodo_mean, '-b', 'LineWidth', 2)
+    title(strcat('corr chann: ', num2str(corr_error_LFP(1,:)), ...
+    ' MSE chann: ', num2str(corr_error_LFP(2, :))),...
+    'FontSize', 8, 'Position', [limite_eje_x/2, lfp_max*(0.95), 0])
     
     xlim([0 limite_eje_x])
 %     ylim([-2000 2000])
