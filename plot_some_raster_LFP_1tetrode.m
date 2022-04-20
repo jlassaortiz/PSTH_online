@@ -165,7 +165,8 @@ for i = id_estimulos % para cada est�mulo
     % Calculo correlaciones y error cuadratico medio del PSTH de cada canal
     for c = (1:1:length(estimulos_tetrodos))
         corr_error_PSTH(1,c) = corr(PSTH_avgTetrodo(:,c), PSTH_avgTetrodo_mean);
-        corr_error_PSTH(2,c) = immse(PSTH_avgTetrodo(:,c), PSTH_avgTetrodo_mean);
+        corr_error_PSTH(2,c) = sum(abs(PSTH_avgTetrodo(:,c) - ...
+            PSTH_avgTetrodo_mean)) / length(PSTH_avgTetrodo_mean);
     end 
     corr_error_PSTH = round(corr_error_PSTH, 2);
     
@@ -174,7 +175,7 @@ for i = id_estimulos % para cada est�mulo
     ylim([0 psth_max]);
     xlim([0 limite_eje_x]);
     title(strcat('corr chann: ', num2str(corr_error_PSTH(1,:)),...
-        ' MSE chann: ', num2str(corr_error_PSTH(2, :))), ...
+        ' MAE chann: ', num2str(corr_error_PSTH(2, :))), ...
         'FontSize', 8)
     
     % LFP promediado %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -209,7 +210,8 @@ for i = id_estimulos % para cada est�mulo
     % Calculo correlaciones y error cuadratico medio del PSTH de cada canal
     for c = (1:1:length(estimulos_tetrodos))
         corr_error_LFP(1,c) = corr(LFP_avgTetrodo(:,c), LFP_avgTetrodo_mean);
-        corr_error_LFP(2,c) = immse(LFP_avgTetrodo(:,c), LFP_avgTetrodo_mean);
+        corr_error_LFP(2,c) = sum(abs(LFP_avgTetrodo(:,c) - ...
+            LFP_avgTetrodo_mean)) / length(LFP_avgTetrodo_mean);
     end 
     corr_error_LFP = round(corr_error_LFP, 2);
     
@@ -220,7 +222,7 @@ for i = id_estimulos % para cada est�mulo
     % Ploteo LFP promedio del tetrodo
     plot(t_LFP, LFP_avgTetrodo_mean, '-b', 'LineWidth', 2)
     title(strcat('corr chann: ', num2str(corr_error_LFP(1,:)), ...
-    ' MSE chann: ', num2str(corr_error_LFP(2, :))),...
+    ' MAE chann: ', num2str(corr_error_LFP(2, :))),...
     'FontSize', 8, 'Position', [limite_eje_x/2, lfp_max*(0.95), 0])
     
     xlim([0 limite_eje_x])
