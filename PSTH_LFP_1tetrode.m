@@ -179,6 +179,14 @@ if guardar_txt == 1
     
     csvwrite([directorio '/LFP_1tet_BOS_' puerto_canal_custom '.txt'], ...
         LFP_1tet_BOS)
+    
+    filename = [directorio '/LFP_1tet_BOS_' puerto_canal_custom '.wav'];
+    
+    max_abs = max(abs(LFP_1tet_BOS));
+    LFP_1tet_BOS_norm = (LFP_1tet_BOS / max_abs) * 0.9;
+    
+    audiowrite(filename,LFP_1tet_BOS_norm, frequency_parameters.amplifier_sample_rate)
+    
 end
 
 
