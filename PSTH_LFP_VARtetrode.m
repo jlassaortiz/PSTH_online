@@ -25,19 +25,34 @@ params_analisis = readtable(...
     horzcat(directorio,'/parametros_analisis.txt'), 'Delimiter','\t');
 
 tetrodos_list = struct();
-masTetrodos = 1;
-count = 1;
-while masTetrodos == 1
-    % Defino tetrodos a levantar con nombre custom name
-    peine = input('\nDefino tetrodo a levantar (custom name) \n\nPeine (X): ');
-    tetrodo = input('\nTetrodo (X): ');
-    puerto_canal_custom = horzcat('P',num2str(peine),'-','T',num2str(tetrodo));
 
-    tetrodos_list(count).puerto_canal_custom = puerto_canal_custom;
+full_peine = input('\nGrafico TODO el peine?(1 = SI / 0 = NO): ');
 
-    masTetrodos = input('\nAgrego mas tetrodos? (1 = SI / 0 = NO): ');
+if full_peine == 1
+    count = 1;
+    for tetrodo = [4, 3, 2, 1]
+        for peine = [1,2,3,4]
+            puerto_canal_custom = horzcat('P',num2str(peine),'-','T',num2str(tetrodo));
+            tetrodos_list(count).puerto_canal_custom = puerto_canal_custom;
+            count = count + 1;
+        end 
+    end
+    
+else
+    masTetrodos = 1;
+    count = 1;
+    while masTetrodos == 1
+        % Defino tetrodos a levantar con nombre custom name
+        peine = input('\nDefino tetrodo a levantar (custom name) \n\nPeine (X): ');
+        tetrodo = input('\nTetrodo (X): ');
+        puerto_canal_custom = horzcat('P',num2str(peine),'-','T',num2str(tetrodo));
 
-    count = count + 1;
+        tetrodos_list(count).puerto_canal_custom = puerto_canal_custom;
+
+        masTetrodos = input('\nAgrego mas tetrodos? (1 = SI / 0 = NO): ');
+
+        count = count + 1;
+    end
 end
 
 % Indico estimulo a graficar (solo uno)
