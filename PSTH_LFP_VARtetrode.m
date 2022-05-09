@@ -2,10 +2,6 @@
 % senal promedio (solo funciona con NNx)
 % Hace varios graficos
 
-close all
-clear all
-
-
 % Cargo y defino parametros %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 % Defino directorio
@@ -69,6 +65,9 @@ end
 % Guardo figuras?
 guardar = input('\Guardo? (1 = SI / 0 = NO) : ');
 
+% Inicializo barra de estado
+f = waitbar(0,'Please wait...');
+
 % Cargamos cantidad de trials y tiempo que dura cada uno
 ntrials = params.Ntrials
 tiempo_file = params.tiempo_entre_estimulos
@@ -128,6 +127,10 @@ for t = (1:1:length(tetrodos_list))
     % Indico el nombre del tetrodo a analizar
     puerto_canal_custom = tetrodos_list(t).puerto_canal_custom;
     estimulos_VARchann.VARchann(t).puerto_canal_custom = puerto_canal_custom;
+    
+    % Actualizo waitbar
+    waitbar(t/length(tetrodos_list),f ,...
+        strcat('Procesando :',puerto_canal_custom));
 
     % Levanta senal neuronal y la filtra para obtener: LFP de cada canal del
     % tetrodo , LFP promediando todos los canales y SPIKES de cada canal
@@ -207,6 +210,8 @@ end
 
 clear estimulos estimulos_1chan estimulos_tetrodos
 
+waitbar(t/length(tetrodos_list),f , 'Merge datos para plotear ... ');
+
 % Inicializo struct para plotear mas facil
 plotear = struct();
 
@@ -233,9 +238,17 @@ end
 
 clear song song_times
 
+% Determino cantidad de columnas dependiendo cantidad de plots
+if length(plotear) < 4
+    x4_columnas = false;
+else
+    x4_columnas = true;
+end
+
+waitbar(t/length(tetrodos_list),f , 'Ploteando ...');
 
 % PLOTEO
-plotSimple_song_psth_lfp(plotear, false, true)
+plotSimple_song_psth_lfp(plotear, false, x4_columnas)
 
 suptitle2({datestr(now, 'yyyy-mm-dd'); ...
 string(directorio) ; ...
@@ -243,11 +256,15 @@ estimulos_VARchann.name;
 strcat("ntrials:",string(ntrials), ...
 "  |  t_inter_estimulo:",string(tiempo_file))})
 
+waitbar(t/length(tetrodos_list),f , 'Guardando ...');
 
 % Guardo
 if guardar == 1
     print_pdf(1, directorio,strcat('_PSTH-LFP-VARtetrode_', ...
         estimulos_VARchann.name,'.pdf'))
 end
+
+waitbar(t/length(tetrodos_list),f , 'Completado !');
+
 
 clear estimulos_aux j i

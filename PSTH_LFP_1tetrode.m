@@ -2,10 +2,6 @@
 % se�al promedio (solo funciona con NNx)
 % Hace varios graficos
 
-close all
-clear all
-
-
 % Cargo y defino parametros %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 % Defino directorio

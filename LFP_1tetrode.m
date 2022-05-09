@@ -26,16 +26,30 @@ function [LFP_tetrodo, LFP_canales, spikes_canales]= LFP_1tetrode(...
 %   filtrada para conservar spikes de 1 canal
 
 
-% Define el filtro para LFP y SPIKES
-filt_LFP = designfilt('lowpassiir','DesignMethod','butter',...
-    'HalfPowerFrequency',500,'FilterOrder', 4, ...
-    'SampleRate', frequency_parameters.amplifier_sample_rate);
+
+% Filtro con pasabandas firls
+nyquist = frequency_parameters.amplifier_sample_rate/2;
+lower_filter_bound = 25; % Hz
+upper_filter_bound = 35; % Hz
+transition_width   = 0.2;
+filter_order       = round(3*(frequency_parameters.amplifier_sample_rate/lower_filter_bound));
+
+% create the filter shape (this is explained more in the text around figure 14.4)
+ffrequencies  = [ 0 (1-transition_width)*lower_filter_bound lower_filter_bound upper_filter_bound (1+transition_width)*upper_filter_bound nyquist ]/nyquist;
+idealresponse = [ 0 0 1 1 0 0 ];
+filterweights = firls(filter_order,ffrequencies,idealresponse);
+
+
+
+% % Define el filtro para LFP y SPIKES
+% filt_LFP = designfilt('lowpassiir','DesignMethod','butter',...
+%     'HalfPowerFrequency',500,'FilterOrder', 4, ...
+%     'SampleRate', frequency_parameters.amplifier_sample_rate);
 
 % % Define el filtro para LFP y SPIKES
 % filt_LFP_h = designfilt('highpassiir','DesignMethod','butter',...
-%     'HalfPowerFrequency',25,'FilterOrder', 4, ...
+%     'HalfPowerFrequency',90,'FilterOrder', 4, ...
 %     'SampleRate', frequency_parameters.amplifier_sample_rate);
-
 
 filt_spikes = designfilt('highpassiir','DesignMethod','butter',...
     'HalfPowerFrequency',500,'FilterOrder', 4, ...
@@ -62,9 +76,12 @@ for i = (1:1:4)
         amplifier_channels);
 
     % Aplica el filtro para LFP y SPIKES
-    LFP = filtfilt(filt_LFP, raw);
 %     LFP = filtfilt(filt_LFP_h, raw);
-    
+%     LFP = filtfilt(filt_LFP, LFP);    
+%     
+%     LFP = filtfilt(filt_LFP, raw);
+    LFP = filtfilt(filterweights,1,raw);
+
     spikes = filtfilt(filt_spikes, raw);
 
     % Adjunto traza LFP y SPIKES de este canal a la "lista" de LFP y SPIKES
