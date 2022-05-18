@@ -1,4 +1,4 @@
-function rasters = score_calculator(id_BOS, rasters, frequency_parameters, spike_times, ntrials)
+function rasters = score_calculator(id_BOS, rasters, frequency_parameters, spike_times, ntrials, tiempo_file)
 % Calcula la int_normalizada y la correlacion del protocolo experimental
 %   
 %   Entradas:
@@ -24,7 +24,7 @@ step = 0.001; % 1 ms
 
 % Calculo la sw del BOS para poder hacer correlaciones con el resto
 [sw_data_BOS, sw_times_BOS] = sliding_window(rasters(id_BOS).spikes_norm, frequency_parameters.amplifier_sample_rate, ...
-        t_window, step);
+        t_window, step, tiempo_file);
     
 % Conservo solo la seccion donde se presenta el estimulo auditivo
 duracion_BOS = length(rasters(id_BOS).song) / rasters(id_BOS).freq; % en seg
@@ -57,7 +57,7 @@ for i = (1:1:length(rasters)) % para cada estímulo
     
     % Calculo sliding window
     [sw_data, sw_times] = sliding_window(rasters(i).spikes_norm, frequency_parameters.amplifier_sample_rate, ...
-        t_window, step);
+        t_window, step, tiempo_file);
     
     % Calculo correlación de sw normalizada con la sw normalizada del BOS
     sw_data_norm = sw_data / max(sw_data);
