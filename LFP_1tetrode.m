@@ -1,5 +1,5 @@
-function [LFP_tetrodo, LFP_canales, spikes_canales]= LFP_1tetrode(...
-    directorio,amplifier_channels,frequency_parameters,puerto_canal_custom)
+function [LFP_tetrodo, LFP_canales, spikes_canales, sr]= LFP_1tetrode(...
+    directorio,amplifier_channels,frequency_parameters,puerto_canal_custom, downsample_sr)
 
 % Calcula LFP de un tetrodo especificado (promedia 4 canales)
 %
@@ -16,6 +16,8 @@ function [LFP_tetrodo, LFP_canales, spikes_canales]= LFP_1tetrode(...
 %   nombre del canal debe ser de la forma puerto_canal_custom + _x
 %   donde x es el nombre del canal y varia de 1 a 4
 %
+%   downsample_sr = frecuencia de salida del LFP (se downsamplea)
+% 
 %   OUTPUT:
 %   LFP_tetrodo: (matris Nx1) vector fila con se�al filtrada y promediada 
 %   de los 4 canales del tetrodo
@@ -26,25 +28,24 @@ function [LFP_tetrodo, LFP_canales, spikes_canales]= LFP_1tetrode(...
 %   filtrada para conservar spikes de 1 canal
 
 
-
-% Filtro con pasabandas firls
-nyquist = frequency_parameters.amplifier_sample_rate/2;
-lower_filter_bound = 25; % Hz
-upper_filter_bound = 35; % Hz
-transition_width   = 0.2;
-filter_order       = round(3*(frequency_parameters.amplifier_sample_rate/lower_filter_bound));
-
-% create the filter shape (this is explained more in the text around figure 14.4)
-ffrequencies  = [ 0 (1-transition_width)*lower_filter_bound lower_filter_bound upper_filter_bound (1+transition_width)*upper_filter_bound nyquist ]/nyquist;
-idealresponse = [ 0 0 1 1 0 0 ];
-filterweights = firls(filter_order,ffrequencies,idealresponse);
-
+% % Filtro con pasabandas firls
+% nyquist = frequency_parameters.amplifier_sample_rate/2;
+% lower_filter_bound = 50; % Hz
+% upper_filter_bound = 200; % Hz
+% transition_width   = 0.2;
+% filter_order       = round(3*(frequency_parameters.amplifier_sample_rate/lower_filter_bound));
+% 
+% % create the filter shape (this is explained more in the text around figure 14.4)
+% ffrequencies  = [ 0 (1-transition_width)*lower_filter_bound lower_filter_bound upper_filter_bound (1+transition_width)*upper_filter_bound nyquist ]/nyquist;
+% idealresponse = [ 0 0 1 1 0 0 ];
+% filterweights = firls(filter_order,ffrequencies,idealresponse);
 
 
-% % Define el filtro para LFP y SPIKES
-% filt_LFP = designfilt('lowpassiir','DesignMethod','butter',...
-%     'HalfPowerFrequency',500,'FilterOrder', 4, ...
-%     'SampleRate', frequency_parameters.amplifier_sample_rate);
+
+% Define el filtro para LFP y SPIKES
+filt_LFP = designfilt('lowpassiir','DesignMethod','butter',...
+    'HalfPowerFrequency',400,'FilterOrder', 4, ...
+    'SampleRate', frequency_parameters.amplifier_sample_rate);
 
 % % Define el filtro para LFP y SPIKES
 % filt_LFP_h = designfilt('highpassiir','DesignMethod','butter',...
@@ -55,6 +56,10 @@ filt_spikes = designfilt('highpassiir','DesignMethod','butter',...
     'HalfPowerFrequency',500,'FilterOrder', 4, ...
     'SampleRate',frequency_parameters.amplifier_sample_rate);
     
+
+
+
+
 % Creo objeto donde guardo trazas de LFP y SPIKES
 LFP_canales = [];
 spikes_canales = []; 
@@ -79,10 +84,14 @@ for i = (1:1:4)
 %     LFP = filtfilt(filt_LFP_h, raw);
 %     LFP = filtfilt(filt_LFP, LFP);    
 %     
-%     LFP = filtfilt(filt_LFP, raw);
-    LFP = filtfilt(filterweights,1,raw);
+    LFP = filtfilt(filt_LFP, raw);
+%     LFP = filtfilt(filterweights,1,raw);
 
     spikes = filtfilt(filt_spikes, raw);
+    
+    % Downsampleo LFP pq al pedo tenerlo a 30kHz, lo llevo a downsample_sr
+    factor_conv = int8(frequency_parameters.amplifier_sample_rate / downsample_sr);
+    LFP = downsample(LFP, factor_conv, uint64(factor_conv-1));
 
     % Adjunto traza LFP y SPIKES de este canal a la "lista" de LFP y SPIKES
     LFP_canales = [LFP_canales,LFP];
@@ -92,6 +101,8 @@ end
 
 % Promedio los 4 canales de los tetrodos para obtener un LFP promediado
 LFP_tetrodo = mean(LFP_canales, 2);
+
+sr = downsample_sr;
 
 end
 
