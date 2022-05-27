@@ -78,7 +78,6 @@ clear i
     amplifier_channels, frequency_parameters, puerto_canal_custom, 1000);
 
 
-
 % Genero struct con nombre de los estimulos y el momento de presentacion
 estimulos = find_t0s(estimulos, ntrials, tiempo_file, ...
     board_adc_channels, frequency_parameters, directorio, false);
@@ -134,10 +133,14 @@ song = estimulos(10).song;
 [t, song_env] = song_envelope(song);
 
 
+song_aux = zeros(uint64(tiempo_file*estimulos(10).freq),1);
+song_aux((1:length(song_env)),1) = song_env;
+
 % Calculo MUA (Sliding Window de PSTH)
     % Ventana y step del sliding window
 t_window = 0.015; % 15 ms
-step = 0.001; % 1 ms
+step = 1/estimulos(10).freq;
+% step = 0.001; % 1 ms
 
 i = 10; % id estimulo BOS
 % Para cada canal recorro para calcular promedio psth
@@ -156,6 +159,15 @@ i = 10; % id estimulo BOS
 % Promedio PSTH de todos los canales de este estimulo
 PSTH_avgTetrodo_mean = mean(PSTH_avgTetrodo, 2);
 
+PSTH_avg_aux = zeros(length(song_aux),1);
+PSTH_avg_aux((1:length(PSTH_avgTetrodo_mean)), 1) = PSTH_avgTetrodo_mean;
+
+figure()
+plot(PSTH_avg_aux/max(PSTH_avg_aux));
+hold on 
+plot(song_aux)
+xlim([0 20000])
+title('checkear que tengan MISMA escala en ejeX')
 
 
 % Ploteo
