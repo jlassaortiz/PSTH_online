@@ -1,5 +1,5 @@
 function plot_some_raster_LFP_1tetrode(id_estimulos, id_BOS, ...
-    estimulos_tetrodos, frequency_parameters, tiempo_file, ntrials, thr,...
+    estimulos_tetrodos, frequency_parameters, sr_lfp, tiempo_file, ntrials, thr,...
     directorio, spike_times)
 
 % Plotea el psth y LFP del numero de estimulos indicados
@@ -149,7 +149,7 @@ for i = id_estimulos % para cada est�mulo
         % Calculo y ploteo sliding window para cada estimulo
         [sw_data, sw_times] = sliding_window(estimulos(i).spikes_norm, ...
             frequency_parameters.amplifier_sample_rate, ...
-            t_window, step);
+            t_window, step, tiempo_file);
         
         % Ploteo cada PSTH de cada canal
         plot(sw_times * 1000, sw_data);
@@ -193,8 +193,8 @@ for i = id_estimulos % para cada est�mulo
         
         % Ploteo LFP de cada canal
         plot((1:1: ...
-            tiempo_file * frequency_parameters.amplifier_sample_rate) * ...
-            1000 / frequency_parameters.amplifier_sample_rate, ...
+            tiempo_file * sr_lfp) * ...
+            1000 / sr_lfp, ...
             estimulos(i).LFP_promedio)
         hold on;
         
@@ -217,16 +217,19 @@ for i = id_estimulos % para cada est�mulo
     
     % Calculo tiempos de LFP promedio
     t_LFP = ( 1:1:length(LFP_avgTetrodo_mean) ) * ...
-        1000/frequency_parameters.amplifier_sample_rate;
+        1000/sr_lfp;
     
     % Ploteo LFP promedio del tetrodo
     plot(t_LFP, LFP_avgTetrodo_mean, '-b', 'LineWidth', 2)
+    hold on
+    env = abs(hilbert(LFP_avgTetrodo_mean));
+    plot(t_LFP, env, 'LineWidth', 2)
     title(strcat('corr chann: ', num2str(corr_error_LFP(1,:)), ...
     ' MAE chann: ', num2str(corr_error_LFP(2, :))),...
     'FontSize', 8, 'Position', [limite_eje_x/2, lfp_max*(0.95), 0])
     
     xlim([0 limite_eje_x])
-%     ylim([-2000 2000])
+    ylim([-1.5 1.5])
     xticks([])
 end 
 

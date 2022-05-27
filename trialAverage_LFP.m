@@ -1,5 +1,5 @@
 function t0s_dict = trialAverage_LFP(LFP, t0s_dict, tiempo_file, ...
-    ntrials, frequency_parameters)
+    ntrials, frequency_parameters, sr_lfp)
 
 % "Apila" (promedia) LFP de todos los trials para cada estimulo
 %   
@@ -25,19 +25,30 @@ function t0s_dict = trialAverage_LFP(LFP, t0s_dict, tiempo_file, ...
 for i = (1:1:length(t0s_dict))
     
     % Inicializo lista donde guardo los LFP de los trials de este estimulo
-    allTrials_LFP = zeros(tiempo_file * ...
-        frequency_parameters.amplifier_sample_rate, ntrials);
+    allTrials_LFP = zeros(tiempo_file * sr_lfp, ntrials);
     
     % Para cada trial
     for j = (1:1: ntrials)
         
         % Defino tiempo inicial y final del trial
-        t_inicial = t0s_dict(i).t0s(j);
+        t_inicial = t0s_dict(i).t0s(j) / frequency_parameters.amplifier_sample_rate ;
         t_final = t_inicial + ...
-            tiempo_file * frequency_parameters.amplifier_sample_rate -1 ;
+            tiempo_file;
+        
+        % Paso tiempos a samples (int)
+        t_inicial = uint64(t_inicial*sr_lfp);
+        t_final = uint64(t_final*sr_lfp);
         
         % Busco señal LFP correspondiente a ese trial
         trial_LFP = LFP(t_inicial : t_final, 1);
+        
+        % Acondiciono segmento para que entre justo en allTrials_LFP
+        if length(trial_LFP)>size(allTrials_LFP, 1)
+            trial_LFP = trial_LFP(1:size(allTrials_LFP, 1),1);
+        elseif length(trial_LFP)<size(allTrials_LFP,1)
+            completar = zeros(size(allTrials_LFP,1)-length(trial_LFP),1);
+            trial_LFP = [trial_LFP; completar];
+        end
         
         % Agrego LFP de este trial a la lista de LFPs
         allTrials_LFP(:,j) = trial_LFP;

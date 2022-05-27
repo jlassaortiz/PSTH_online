@@ -2,6 +2,9 @@
 % seï¿½al promedio (solo funciona con NNx)
 % Hace varios graficos
 
+close all
+clear all
+
 % Cargo y defino parametros %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 % Defino directorio
@@ -77,8 +80,35 @@ clear i
 
 % Levanta senal neuronal y la filtra para obtener: LFP de cada canal del
 % tetrodo , LFP promediando todos los canales y SPIKES de cada canal
-[LFP_tetrodo, LFP_canales, spikes_canales]= LFP_1tetrode(directorio,...
-    amplifier_channels, frequency_parameters, puerto_canal_custom);
+[LFP_tetrodo, LFP_canales, spikes_canales, sr_lfp]= LFP_1tetrode(directorio,...
+    amplifier_channels, frequency_parameters, puerto_canal_custom, 1000);
+
+% % Genero n bandas de frecuencia equiespacidadas en log() superpuestas p
+% n = 100; % cantidad de bandas superpuestas equiespaciadas
+% p = 0.2; % superposición de las bandas (0 a 1)
+% lista_bandas = list_multiple_bands(500, p, n, false);
+% 
+% % Inicializo vectores donde voy a guardar
+% LFP_aux = zeros(length(LFP_tetrodo), 1); % vector momentaneo para calculos
+% LFP_suma = zeros(length(LFP_tetrodo), 1); % suma de todas las bandas normalizadas
+% LFP_list = zeros(length(LFP_tetrodo), n); % las bandas por separado
+% 
+% % Filtro y normalizo por bandas y luego vuelvo a sumar
+% % para cada señal de cada canal
+% for c = (1: size(spikes_canales,2))
+%     figure()
+%     for i = (1:size(lista_bandas,1))
+%         % Filtro
+%         LFP_aux = filt_and_normalize(LFP_canales(:,c), lista_bandas(i,1), lista_bandas(i,2), sr_lfp);
+%         % Sumo banda al resto
+%         LFP_suma = LFP_suma + LFP_aux;
+%         fft_plot(LFP_aux, sr_lfp)
+%         hold on
+%     end
+%     LFP_canales(:,c) = LFP_suma;
+%     LFP_suma = zeros(length(LFP_tetrodo), 1);
+% end
+
 
 % Genero struct con nombre de los estimulos y el momento de presentacion
 estimulos = find_t0s(estimulos, ntrials, tiempo_file, ...
@@ -108,17 +138,17 @@ for c = ( 1:1: size(spikes_canales,2) )
 
     % Calculo LFP promediado por estimulo todos los trials
     estimulos = trialAverage_LFP(LFP, estimulos, tiempo_file, ntrials, ...
-        frequency_parameters);
+          frequency_parameters, sr_lfp);
 
     % Calculo scores
     estimulos = score_calculator(id_BOS, estimulos, ...
-        frequency_parameters, spike_times, ntrials);
+        frequency_parameters, spike_times, ntrials, tiempo_file);
     
     % Calculo sliding window para cada estimulo
     for i = (1:length(estimulos))
         [sw_data, sw_times] = sliding_window(estimulos(i).spikes_norm, ...
             frequency_parameters.amplifier_sample_rate, ...
-            t_window, step);
+            t_window, step, tiempo_file);
         psth_sw = [sw_data, sw_times];
         estimulos(i).psth_sw = psth_sw;
     end
@@ -177,11 +207,9 @@ if guardar_txt == 1
         LFP_1tet_BOS)
     
     filename = [directorio '/LFP_1tet_BOS_' puerto_canal_custom '.wav'];
-    
     max_abs = max(abs(LFP_1tet_BOS));
     LFP_1tet_BOS_norm = (LFP_1tet_BOS / max_abs) * 0.9;
-    
-    audiowrite(filename,LFP_1tet_BOS_norm, frequency_parameters.amplifier_sample_rate)
+    audiowrite(filename,LFP_1tet_BOS_norm, sr_lfp)
     
 end
 
@@ -190,7 +218,7 @@ end
 
 % Ploteo Grilla PSTH
 plot_some_raster_LFP_1tetrode(grilla_psth, id_BOS, estimulos_tetrodos, ...
-    frequency_parameters, tiempo_file, ntrials,thr,directorio,spike_times);
+    frequency_parameters, sr_lfp, tiempo_file, ntrials,thr,directorio,spike_times);
 
 suptitle2({datestr(now, 'yyyy-mm-dd'); ...
 string(directorio) ; ...
@@ -198,87 +226,41 @@ strcat('tetrodo = ',string(puerto_canal_custom),"  |  ", ...
 string(thr), "uV", "  |  ", "ntrials:", string(ntrials), "  |  ", ...
 "t_inter_estimulo:", string(tiempo_file)) })
 
+% % Espectrograma. no lo probé aun
+% sample_rate=sr_lfp;
+% window_width=300;
+% [~,f,t,p]=spectrogram(saveme,gausswin(window_width,2.5),round(0.85*window_width),linspace(0,round(sample_rate/2),round(sample_rate/window_width)),sample_rate,'yaxis');
+% %MinThreshold',-110. El minthreshold es opcional, lo uso para limitar la cantidad de gris que aparece.
+% 
+% % Y en general ploteo con esto:
+% figure()
+% imagesc('XData',t,'YData',f,'CData',10*log10(p(1:100,:)));
+% colormap(flipud(gray));
+% ylim([0 10000]);
 
-% sgtitle({datestr(now, 'yyyy-mm-dd'); ...
-% string(directorio) ; ...
-% strcat('tetrodo = ',string(puerto_canal_custom),"  |  ", ...
-% string(thr), "uV", "  |  ", "ntrials:", string(ntrials), "  |  ", ...
-% "t_inter_estimulo:", string(tiempo_file)) }, 'Interpreter','None',...
-% 'FontSize',20)
+% Otra estrategia espectrograma
+figure()
+nwin = 63;
+wind = kaiser(nwin,17);
+nlap = nwin-10;
+nfft = 256;
 
-%%%%%%%%%%%%%%%%% desarrolle hasta aca.
-% Falta ver si puedo calcular corr de PSTH_sw y LFP de estimulos vs BOS
+spectrogram(LFP_1tet_BOS,wind,nlap,nfft,sr_lfp,'yaxis')
+ylim([0 100])
 
-% % Selecciono datos de ese protocolo 
-% estimulos_table = struct2table(estimulos);
-% pasa_altos = estimulos_table(estimulos_table.tipo == 'up' , :);
-% pasa_bajos = estimulos_table(estimulos_table.tipo == 'down' , :);
-% 
-% 
-% % Plotear INT PASA-ALTOS
-% figure();
-% plot(pasa_altos.frec_corte, pasa_altos.int_norm, '-o')
-% title({strcat('INT_PASA-ALTOS_', datestr(now, 'yyyy-mm-dd')); ...
-% string(directorio) ; ...
-% strcat(string(puerto_canal), " = ",string(puerto_canal_custom),"  |  ",...
-% string(thr), "uV", "  |  ", "ntrials:", string(ntrials), "  |  ", ...
-% "t_inter_estimulo:", string(tiempo_file)) }, 'Interpreter','None')
-% legend
-% set(gca,'FontSize',20)
-% 
-% 
-% % Plotear INT PASA-BAJOS
-% figure();
-% plot(pasa_bajos.frec_corte, pasa_bajos.int_norm, '-o')
-% title({strcat('INT_PASA-BAJOS_', datestr(now, 'yyyy-mm-dd')); ...
-% string(directorio) ; ...
-% strcat(string(puerto_canal), " = ",string(puerto_canal_custom),"  |  ", ...
-% string(thr), "uV", "  |  ", "ntrials:", string(ntrials), "  |  ", ...
-% "t_inter_estimulo:", string(tiempo_file)) }, 'Interpreter','None')
-% legend
-% set(gca,'FontSize',20)
-% 
-% 
-% % Plotear CORR PASA-ALTOS
-% figure();
-% plot(pasa_altos.frec_corte, pasa_altos.corr, '-o')
-% title({strcat('CORR_PASA-ALTOS_', datestr(now, 'yyyy-mm-dd')); ...
-% string(directorio) ; ...
-% strcat(string(puerto_canal), " = ",string(puerto_canal_custom),"  |  ", ...
-% string(thr), "uV", "  |  ", "ntrials:", string(ntrials), "  |  ", ...
-% "t_inter_estimulo:", string(tiempo_file)) }, 'Interpreter','None')
-% legend
-% set(gca,'FontSize',20)
-% 
-% 
-% % Plotear CORR PASA-BAJOS
-% figure();
-% plot(pasa_bajos.frec_corte, pasa_bajos.corr, '-o')
-% title({strcat('CORR_PASA-BAJOS_', datestr(now, 'yyyy-mm-dd')); ...
-% string(directorio) ; ...
-% strcat(string(puerto_canal), " = ",string(puerto_canal_custom),"  |  ",...
-% string(thr), "uV", "  |  ", "ntrials:", string(ntrials), "  |  ", ...
-% "t_inter_estimulo:", string(tiempo_file)) }, 'Interpreter','None')
-% legend
-% set(gca,'FontSize',20)
+figure()
+fft_plot(LFP_1tet_BOS,sr_lfp);
 
 
 % Guardo
 if guardar == 1
-%     print_png(1, directorio, strcat('_',string(puerto_canal_custom),...
-%         '_spike-shape_', string(round(thr)), 'uV'))
 
     print_pdf(1, directorio, strcat('_',string(puerto_canal_custom),...
-        '_grilla_PSTH-LFP-tetrode', string(round(thr)), 'uV.pdf'))
+        '_grilla_PSTH-LFP-tetrode_BANDA_rara-30-50Hz_', string(round(thr)), 'uV.pdf'))
     
-%     print_pdf(2, directorio, strcat('_',string(puerto_canal_custom),...
-%         '_INT_pasa-ALTOS', '.pdf'))
-%     print_pdf(3, directorio, strcat('_',string(puerto_canal_custom),...
-%         '_INT_pasa-BAJOS', '.pdf'))
-%     print_pdf(4, directorio, strcat('_',string(puerto_canal_custom),...
-%         '_CORR_pasa-ALTOS', '.pdf'))
-%     print_pdf(5, directorio, strcat('_',string(puerto_canal_custom),...
-%         '_CORR_pasa-BAJOS', '.pdf'))
+    print_pdf(3, directorio, strcat('_',string(puerto_canal_custom),...
+    '_FFT-LFP-tetrode_BANDA_rara-30-50Hz_', string(round(thr)), 'uV.pdf'))
+   
 end
 
 clear estimulos_aux j i  
