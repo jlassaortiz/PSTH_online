@@ -30,69 +30,72 @@ lw = 2;
 
 % LFP
 figure()
-p1 = plot(lfp1, 'LineWidth', lw);
-hold on
+% p1 = plot(lfp1, 'LineWidth', lw);
+% hold on
 p2 = plot(lfp2, 'LineWidth', lw);
 hold on
-p3 = plot(lfp3, 'LineWidth', lw);
+% p3 = plot(lfp3, 'LineWidth', lw);
 % p4 = plot(lfp4, 'LineWidth', lw);
 % p5 = plot(lfp5, 'LineWidth', lw);
-% p6 = plot(lfp6, 'LineWidth', lw);
+p6 = plot(lfp6, 'LineWidth', lw);
 
-p1.Color(4) = alpha;
+% p1.Color(4) = alpha;
 p2.Color(4) = alpha;
-p3.Color(4) = alpha;
+% p3.Color(4) = alpha;
 % p4.Color(4) = alpha;
 % p5.Color(4) = alpha;
+p6.Color(4) = alpha; 
 
 % legend('P2-T2', 'P3-T2', 'P4-T1', 'P1-T2', 'P1-T3');
-legend('P2-T2', 'P3-T2', 'P4-T1');
+legend('P3-T2', 'P1-T1');
 title('LFP banda 25-35Hz promediando tetrodo para el BOS')
 set(gca,'FontSize',25)
 
 
 % LFP env
 figure()
-p11 = plot(env1, 'LineWidth', lw);
-hold on
+% p11 = plot(env1, 'LineWidth', lw);
+% hold on
 p22 = plot(env2, 'LineWidth', lw);
 hold on 
-p33 = plot(env3, 'LineWidth', lw);
+% p33 = plot(env3, 'LineWidth', lw);
 % p44 = plot(env4, 'LineWidth', lw);
 % p55 = plot(env5, 'LineWidth', lw);
-% p66 = plot(env6, 'LineWidth', lw);
+p66 = plot(env6, 'LineWidth', lw);
 
-p11.Color(4) = alpha;
+% p11.Color(4) = alpha;
 p22.Color(4) = alpha;
-p33.Color(4) = alpha;
+% p33.Color(4) = alpha;
 % p44.Color(4) = alpha;
 % p55.Color(4) = alpha;
+p66.Color(4) = alpha;
 
 % legend('P3-T2','P1-T2','P1-T3','P1-T1');
-legend('P2-T2', 'P3-T2', 'P4-T1');
+legend('P3-T2', 'P1-T1');
 title('LFP banda 25-35Hz promediando tetrodo para el BOS')
 set(gca,'FontSize',25)
 
 
 % LFP env normalizacion
 figure()
-p11 = plot(env1/max(env1), 'LineWidth', lw);
-hold on
+% p11 = plot(env1/max(env1), 'LineWidth', lw);
+% hold on
 p22 = plot(env2/max(env2), 'LineWidth', lw);
 hold on 
-p33 = plot(env3/max(env3), 'LineWidth', lw);
+% p33 = plot(env3/max(env3), 'LineWidth', lw);
 % p44 = plot(env4/max(env4), 'LineWidth', lw);
 % p55 = plot(env5/max(env5), 'LineWidth', lw);
-% p66 = plot(env6/max(env6), 'LineWidth', lw);
+p66 = plot(env6/max(env6), 'LineWidth', lw);
 
-p11.Color(4) = alpha;
+% p11.Color(4) = alpha;
 p22.Color(4) = alpha;
-p33.Color(4) = alpha;
+% p33.Color(4) = alpha;
 % p44.Color(4) = alpha;
 % p55.Color(4) = alpha;
+p66.Color(4) = alpha;
 
 % legend('P2-T2', 'P3-T2', 'P4-T1', 'P1-T2', 'P1-T3');
-legend('P2-T2', 'P3-T2', 'P4-T1');
+legend('P3-T2', 'P1-T1');
 title('LFP banda 25-35Hz promediando tetrodo para el BOS')
 set(gca,'FontSize',25)
 
