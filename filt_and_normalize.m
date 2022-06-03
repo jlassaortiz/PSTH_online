@@ -16,17 +16,17 @@ idealresponse = [ 0 0 1 1 0 0 ];
 filterweights = firls(filter_order,ffrequencies,idealresponse);
 
 % aplico filtro
-LFP_filt = filtfilt(filterweights,1,LFP);
+LFP_filt_norm = filtfilt(filterweights,1,LFP);
 
-% calculo transformada de Hilbert
-h = hilbert(LFP_filt);
-
-% para evitar efecto borde, calculo media hilbert recortando inicio y fin señal
-inicio = uint32( length(LFP_filt) * 0.1 );
-fin = uint32( length(LFP_filt) * 0.9 );
-m = median( abs( h(inicio:fin,1) ) );
-
-% normalizo por la media de la amplitud de la banda
-LFP_filt_norm = LFP_filt/m; 
+% % calculo transformada de Hilbert
+% h = hilbert(LFP_filt);
+% 
+% % para evitar efecto borde, calculo media hilbert recortando inicio y fin señal
+% inicio = uint32( length(LFP_filt) * 0.1 );
+% fin = uint32( length(LFP_filt) * 0.9 );
+% m = median( abs( h(inicio:fin,1) ) );
+% 
+% % normalizo por la media de la amplitud de la banda
+% LFP_filt_norm = LFP_filt/m; 
  end
 

@@ -35,7 +35,7 @@ if plot_grilla == 0
 end
 
 % Pregunto si el umbral se determina manualmente o automaticamente
-thr_automatico = input('\Busqueda thr automatica? (1 = SI / 0 = NO) : ');
+thr_automatico = input('\nBusqueda thr automatica? (1 = SI / 0 = NO) : ');
 
 % Definimos manualmente un umbral para deteccion de spikes (en uV)
 if thr_automatico == 0 
@@ -43,10 +43,20 @@ if thr_automatico == 0
 end
 
 % Guardo figuras?
-guardar = input('\Guardo? (1 = SI / 0 = NO) : ');
+guardar = input('\nGuardo? (1 = SI / 0 = NO) : ');
 
 % Guardo txt?
-guardar_txt = input('\Guardo PSTHsw_1tet y LFP_1tet BOS? (1 = SI / 0 = NO) : ');
+guardar_txt = input('\nGuardo PSTHsw_1tet y LFP_1tet BOS? (1 = SI / 0 = NO) : ');
+
+% Analizo por bandas?
+bandas = input('\nFiltro banda particular? (1 = SI / 0 = NO) : ');
+    if bandas == 1
+        b_inf = input('\nLimite inferior (Hz): ');
+        b_sup = input('\nLimite superior (Hz): ');
+    else 
+        b_inf = 0;
+        b_sup = 400;
+    end 
 
 % Cargamos cantidad de trials y tiempo que dura cada uno
 ntrials = params.Ntrials
@@ -81,34 +91,8 @@ clear i
 % Levanta senal neuronal y la filtra para obtener: LFP de cada canal del
 % tetrodo , LFP promediando todos los canales y SPIKES de cada canal
 [LFP_tetrodo, LFP_canales, spikes_canales, sr_lfp]= LFP_1tetrode(directorio,...
-    amplifier_channels, frequency_parameters, puerto_canal_custom, 1000);
-
-% % Genero n bandas de frecuencia equiespacidadas en log() superpuestas p
-% n = 100; % cantidad de bandas superpuestas equiespaciadas
-% p = 0.2; % superposición de las bandas (0 a 1)
-% lista_bandas = list_multiple_bands(500, p, n, false);
-% 
-% % Inicializo vectores donde voy a guardar
-% LFP_aux = zeros(length(LFP_tetrodo), 1); % vector momentaneo para calculos
-% LFP_suma = zeros(length(LFP_tetrodo), 1); % suma de todas las bandas normalizadas
-% LFP_list = zeros(length(LFP_tetrodo), n); % las bandas por separado
-% 
-% % Filtro y normalizo por bandas y luego vuelvo a sumar
-% % para cada señal de cada canal
-% for c = (1: size(spikes_canales,2))
-%     figure()
-%     for i = (1:size(lista_bandas,1))
-%         % Filtro
-%         LFP_aux = filt_and_normalize(LFP_canales(:,c), lista_bandas(i,1), lista_bandas(i,2), sr_lfp);
-%         % Sumo banda al resto
-%         LFP_suma = LFP_suma + LFP_aux;
-%         fft_plot(LFP_aux, sr_lfp)
-%         hold on
-%     end
-%     LFP_canales(:,c) = LFP_suma;
-%     LFP_suma = zeros(length(LFP_tetrodo), 1);
-% end
-
+    amplifier_channels, frequency_parameters, puerto_canal_custom, 1000, ...
+    true, b_inf, b_sup);
 
 % Genero struct con nombre de los estimulos y el momento de presentacion
 estimulos = find_t0s(estimulos, ntrials, tiempo_file, ...
@@ -200,17 +184,15 @@ LFP_1tet_BOS = mean(LFP_1tet_BOS_aux, 2);
 
 if guardar_txt == 1
     
-    csvwrite([directorio '/PSTHsw_1tet_BOS_' puerto_canal_custom '.txt'], ...
-        PSTHsw_1tet_BOS)
+    csvwrite(strcat(directorio, 'PSTHsw_1tet_BOS','_',string(puerto_canal_custom),...
+        '_BANDA-', string(b_inf),'-',string(b_sup) ,'Hz_', ...
+        string(round(thr)), 'uV', '.txt'), ...
+        PSTHsw_1tet_BOS);
     
-    csvwrite([directorio '/LFP_1tet_BOS_' puerto_canal_custom '.txt'], ...
+    csvwrite(strcat(directorio, 'LFP_1tet_BOS','_',string(puerto_canal_custom),...
+        '_BANDA-', string(b_inf),'-',string(b_sup) ,'Hz_', ...
+        string(round(thr)), 'uV', '.txt'), ...
         LFP_1tet_BOS)
-    
-    filename = [directorio '/LFP_1tet_BOS_' puerto_canal_custom '.wav'];
-    max_abs = max(abs(LFP_1tet_BOS));
-    LFP_1tet_BOS_norm = (LFP_1tet_BOS / max_abs) * 0.9;
-    audiowrite(filename,LFP_1tet_BOS_norm, sr_lfp)
-    
 end
 
 
@@ -224,7 +206,8 @@ suptitle2({datestr(now, 'yyyy-mm-dd'); ...
 string(directorio) ; ...
 strcat('tetrodo = ',string(puerto_canal_custom),"  |  ", ...
 string(thr), "uV", "  |  ", "ntrials:", string(ntrials), "  |  ", ...
-"t_inter_estimulo:", string(tiempo_file)) })
+"t_inter_estimulo:", string(tiempo_file), "  |  ", ...
+'BANDA: ', string(b_inf),'-',string(b_sup),'Hz') })
 
 % % Espectrograma. no lo probé aun
 % sample_rate=sr_lfp;
@@ -246,20 +229,21 @@ nlap = nwin-10;
 nfft = 256;
 
 spectrogram(LFP_1tet_BOS,wind,nlap,nfft,sr_lfp,'yaxis')
-ylim([0 100])
+ylim([0 50])
 
-figure()
+figure('DefaultAxesFontSize',18)
 fft_plot(LFP_1tet_BOS,sr_lfp);
+xlim([10 50])
 
 
 % Guardo
 if guardar == 1
 
     print_pdf(1, directorio, strcat('_',string(puerto_canal_custom),...
-        '_grilla_PSTH-LFP-tetrode_BANDA_rara-30-50Hz_', string(round(thr)), 'uV.pdf'))
+        '_grilla_PSTH-LFP-tetrode_BANDA-', string(b_inf),'-',string(b_sup) ,'Hz_', string(round(thr)), 'uV.pdf'))
     
     print_pdf(3, directorio, strcat('_',string(puerto_canal_custom),...
-    '_FFT-LFP-tetrode_BANDA_rara-30-50Hz_', string(round(thr)), 'uV.pdf'))
+    '_FFT-LFP-tetrode_BANDA-', string(b_inf),'-',string(b_sup) ,'Hz_', string(round(thr)), 'uV.pdf'))
    
 end
 

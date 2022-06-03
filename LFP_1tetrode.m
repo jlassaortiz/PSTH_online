@@ -1,5 +1,6 @@
 function [LFP_tetrodo, LFP_canales, spikes_canales, sr]= LFP_1tetrode(...
-    directorio,amplifier_channels,frequency_parameters,puerto_canal_custom, downsample_sr)
+    directorio,amplifier_channels,frequency_parameters,puerto_canal_custom,...
+    downsample_sr, banda, b_inf, b_sup)
 
 % Calcula LFP de un tetrodo especificado (promedia 4 canales)
 %
@@ -70,11 +71,9 @@ for i = (1:1:4)
     LFP = downsample(LFP, factor_conv, uint64(factor_conv-1));
     
     % Filtro banda en particular
-    lower_filter_bound = 30;
-    upper_filter_bound = 50;
-    LFP = filt_and_normalize(LFP,...
-        lower_filter_bound, upper_filter_bound, ...
-        downsample_sr);
+    if banda
+        LFP = filt_and_normalize(LFP, b_inf, b_sup, downsample_sr);
+    end
 
     % Adjunto traza LFP y SPIKES de este canal a la "lista" de LFP y SPIKES
     LFP_canales = [LFP_canales,LFP];
