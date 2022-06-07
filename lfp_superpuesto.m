@@ -1,109 +1,185 @@
 close all
 clear all
 
-directorio = '/Volumes/AUDIOS TEAM/Javi- finch durmierdo (NNx)/zf-JL037-VB/Datos/2021-12-21/zf-JL037-VB_p4_id1_211221_162306/';
 
-lfp1 = readtable(strcat(directorio, 'LFP_1tet_BOS_P2-T2_BANDA-25-35Hz_-71uV.txt'));
-lfp2 = readtable(strcat(directorio, 'LFP_1tet_BOS_P3-T2_BANDA-25-35Hz_-72uV.txt'));
-lfp3 = readtable(strcat(directorio, 'LFP_1tet_BOS_P4-T1_BANDA-25-35Hz_-68uV.txt'));
-lfp4 = readtable(strcat(directorio, 'LFP_1tet_BOS_P1-T2_BANDA-25-35Hz_-67uV.txt'));
-lfp5 = readtable(strcat(directorio, 'LFP_1tet_BOS_P1-T3_BANDA-25-35Hz_-71uV.txt'));
-lfp6 = readtable(strcat(directorio, 'LFP_1tet_BOS_P1-T1_BANDA-25-35Hz_-61uV.txt'));
+%% Cargo los datos 
 
-lfp1 = lfp1{:,1};
-lfp2 = lfp2{:,1};
-lfp3 = lfp3{:,1};
-lfp4 = lfp4{:,1};
-lfp5 = lfp5{:,1};
-lfp6 = lfp6{:,1};
+datos = struct();
+i = 1;
 
-env1 = abs(hilbert(lfp1));
-env2 = abs(hilbert(lfp2));
-env3 = abs(hilbert(lfp3));
-env4 = abs(hilbert(lfp4));
-env5 = abs(hilbert(lfp5));
-env6 = abs(hilbert(lfp6));
+% 1
+dir1 = '/Volumes/AUDIOS TEAM/Javi- finch durmierdo (NNx)/zf-JL037-VB/Datos/2021-12-21/zf-JL037-VB_p4_id1_211221_162306/';
+datos(i).id = '037-VB_p4_id1_211221_P2_T2';
+datos(i).dir = strcat(dir1, 'LFP_1tet_BOS_P2-T2_BANDA-25-35Hz_-71uV.txt');
+i = i + 1; 
 
+% 2
+datos(i).id = '037-VB_p4_id1_211221_P3_T2';
+datos(i).dir = strcat(dir1, 'LFP_1tet_BOS_P3-T2_BANDA-25-35Hz_-72uV.txt');
+i = i + 1; 
+
+% 3
+datos(i).id = '037-VB_p4_id1_211221_P4_T1';
+datos(i).dir = strcat(dir1, 'LFP_1tet_BOS_P4-T1_BANDA-25-35Hz_-68uV.txt');
+i = i + 1; 
+
+% 4
+datos(i).id = '037-VB_p4_id1_211221_P1_T2';
+datos(i).dir = strcat(dir1, 'LFP_1tet_BOS_P1-T2_BANDA-25-35Hz_-67uV.txt');
+i = i + 1; 
+
+% 5
+datos(i).id = '037-VB_p4_id1_211221_P1_T3';
+datos(i).dir = strcat(dir1, 'LFP_1tet_BOS_P1-T3_BANDA-25-35Hz_-71uV.txt');
+i = i + 1; 
+
+% 6
+datos(i).id = '037-VB_p4_id1_211221_P1_T1';
+datos(i).dir = strcat(dir1, 'LFP_1tet_BOS_P1-T1_BANDA-25-35Hz_-61uV.txt');
+i = i + 1; 
+
+% 7
+dir2 = '/Volumes/AUDIOS TEAM/Javi- finch durmierdo (NNx)/zf-JL037-VB/Datos/2021-12-20/zf-JL037-VB_p1_id1_211220_132913/';
+datos(i).id = '037-VB_p1_id1_211220_P2_T3';
+datos(i).dir = strcat(dir2, 'LFP_1tet_BOS_P2-T3_BANDA-25-35Hz_-67uV.txt');
+i = i + 1; 
+
+% 8
+dir3 = '/Volumes/AUDIOS TEAM/Javi- finch durmierdo (NNx)/zf-JL037-VB/Datos/2021-12-21/zf-JL037-VB_p2_id1_211221_140619/';
+datos(i).id = '037-VB_p2_id1_211221_P3_T3';
+datos(i).dir = strcat(dir3, 'LFP_1tet_BOS_P3-T3_BANDA-25-35Hz_-79uV.txt');
+i = i + 1; 
+
+ploteo = [2, 7 , 8];
+
+for j = (1:1:length(datos))
+    
+    % Levanto y guardo LFP
+    lfp_aux = readtable(datos(j).dir);
+    lfp_aux = lfp_aux{:,1}; % paso de table a vector de double
+    datos(j).lfp = lfp_aux;
+    
+    % Calculo y guardo envolvente
+    env_aux = abs(hilbert(lfp_aux));
+    datos(j).env = env_aux;
+    
+end 
+
+
+%% PLOTEO
+
+% Defino alpha (transparencia) y LineWidth
 alpha = 0.50;
 lw = 2;
 
+% Determino umbral (altura min) de picos en la envolvente normalizada (0-1)
+thr = 0.5;
 
-% LFP
+
+% LFP 
 figure()
-% p1 = plot(lfp1, 'LineWidth', lw);
-% hold on
-p2 = plot(lfp2, 'LineWidth', lw);
-hold on
-% p3 = plot(lfp3, 'LineWidth', lw);
-% p4 = plot(lfp4, 'LineWidth', lw);
-% p5 = plot(lfp5, 'LineWidth', lw);
-p6 = plot(lfp6, 'LineWidth', lw);
+leyendas = cell(length(ploteo),1);
+for k = (1:1:length(ploteo))
+    
+    p= plot(datos(ploteo(k)).lfp, 'LineWidth', lw);
+    hold on
 
-% p1.Color(4) = alpha;
-p2.Color(4) = alpha;
-% p3.Color(4) = alpha;
-% p4.Color(4) = alpha;
-% p5.Color(4) = alpha;
-p6.Color(4) = alpha; 
+    p.Color(4) = alpha;
 
-% legend('P2-T2', 'P3-T2', 'P4-T1', 'P1-T2', 'P1-T3');
-legend('P3-T2', 'P1-T1');
+    leyendas{k,1} = datos(ploteo(k)).id;
+    end 
+legend(leyendas, 'Interpreter' , 'none');
 title('LFP banda 25-35Hz promediando tetrodo para el BOS')
 set(gca,'FontSize',25)
 
 
 % LFP env
 figure()
-% p11 = plot(env1, 'LineWidth', lw);
-% hold on
-p22 = plot(env2, 'LineWidth', lw);
-hold on 
-% p33 = plot(env3, 'LineWidth', lw);
-% p44 = plot(env4, 'LineWidth', lw);
-% p55 = plot(env5, 'LineWidth', lw);
-p66 = plot(env6, 'LineWidth', lw);
-
-% p11.Color(4) = alpha;
-p22.Color(4) = alpha;
-% p33.Color(4) = alpha;
-% p44.Color(4) = alpha;
-% p55.Color(4) = alpha;
-p66.Color(4) = alpha;
-
-% legend('P3-T2','P1-T2','P1-T3','P1-T1');
-legend('P3-T2', 'P1-T1');
-title('LFP banda 25-35Hz promediando tetrodo para el BOS')
+for k = (1:1:length(ploteo))
+    
+    % Ploteo envolvente
+    env_aux = datos(ploteo(k)).env;
+    p= plot(datos(ploteo(k)).env, 'LineWidth', lw);
+    hold on
+    
+    p.Color(4) = alpha;
+    
+    end 
+legend(leyendas, 'Interpreter' , 'none');
+title('Envolvente LFP banda 25-35Hz promediando tetrodo para el BOS')
 set(gca,'FontSize',25)
 
 
-% LFP env normalizacion
+% LFP env normalizada
 figure()
-% p11 = plot(env1/max(env1), 'LineWidth', lw);
-% hold on
-p22 = plot(env2/max(env2), 'LineWidth', lw);
-hold on 
-% p33 = plot(env3/max(env3), 'LineWidth', lw);
-% p44 = plot(env4/max(env4), 'LineWidth', lw);
-% p55 = plot(env5/max(env5), 'LineWidth', lw);
-p66 = plot(env6/max(env6), 'LineWidth', lw);
+leyendas_env = cell(2*length(ploteo),1);
+count = 1;
+for k = (1:1:length(ploteo))
+    
+    % Calculo env normalizada y ploteo
+    env_aux = datos(ploteo(k)).env;
+    env_aux = env_aux/max(env_aux);
+    p= plot(env_aux, 'LineWidth', lw);
+    hold on
+    
+    % Encuentro picos con altura mayor a thr
+    [pks, locs] = findpeaks(env_aux);
+    pks_subset = pks > thr;
+    plot(locs(pks_subset,:), pks(pks_subset,:), 'or')
 
-% p11.Color(4) = alpha;
-p22.Color(4) = alpha;
-% p33.Color(4) = alpha;
-% p44.Color(4) = alpha;
-% p55.Color(4) = alpha;
-p66.Color(4) = alpha;
-
-% legend('P2-T2', 'P3-T2', 'P4-T1', 'P1-T2', 'P1-T3');
-legend('P3-T2', 'P1-T1');
-title('LFP banda 25-35Hz promediando tetrodo para el BOS')
+    p.Color(4) = alpha;
+    
+    % Escribo leyendas
+    leyendas_env{count,1} = datos(ploteo(k)).id;
+    leyendas_env{count + 1,1} = strcat('pico > thr-',datos(ploteo(k)).id);
+    count = count + 2; 
+    end 
+legend(leyendas_env, 'Interpreter' , 'none');
+title('Envolvente LFP NORMALIZADA banda 25-35Hz promediando tetrodo para el BOS')
 set(gca,'FontSize',25)
 
 
 % Guardo
-titulo = '_LFP_promedioTetrodo_BOS_ZOOM';
+titulo = '_LFP_promedioTetrodo_BOS';
 
-print_pdf(1, directorio, strcat(titulo, '.pdf'))
-print_pdf(2, directorio, strcat(titulo,'_env', '.pdf'))
-print_pdf(3, directorio, strcat(titulo,'_env-norm', '.pdf'))
+print_pdf(1, dir1, strcat(titulo, '.pdf'))
+print_pdf(2, dir1, strcat(titulo,'_env', '.pdf'))
+print_pdf(3, dir1, strcat(titulo,'_env-norm', '.pdf'))
+
+
+
+
+%% Estrategias comparacion 
+env2_n = env2/max(env2);
+env1_n = env1/max(env1);
+% env1_n = env7/max(env7);
+
+% corr
+corr(env2_n, env1_n)
+
+% cross corr
+figure()
+plot(xcorr(env2_n, env1_n))
+
+% suma diferencia cuadratica media
+sum(abs(env2_n - env1_n))
+
+% find peaks
+[pks2, locs2] = findpeaks(env2_n);
+[pks1, locs1] = findpeaks(env1_n);
+
+thr2 = pks2 > 0.5;
+thr1 = pks1 > 0.5;
+
+figure()
+plot(env1_n)
+hold on
+plot(env2_n)
+plot(locs1(thr1,:), pks1(thr1,:), 'ob')
+plot(locs2(thr2,:), pks2(thr2,:), 'or')
+
+
+
+
+
 
