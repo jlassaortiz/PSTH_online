@@ -134,9 +134,11 @@ for t = (1:1:length(tetrodos_list))
 
     % Levanta senal neuronal y la filtra para obtener: LFP de cada canal del
     % tetrodo , LFP promediando todos los canales y SPIKES de cada canal
-    % PASO MUY LENTO, MEJORAR !
-    [LFP_tetrodo, LFP_canales, spikes_canales]= LFP_1tetrode(directorio,...
-        amplifier_channels, frequency_parameters, puerto_canal_custom);
+    b_inf = 25;
+    b_sup = 35;
+    [LFP_tetrodo, LFP_canales, spikes_canales, sr_lfp]= LFP_1tetrode(directorio,...
+        amplifier_channels, frequency_parameters, puerto_canal_custom, 1000, ...
+        true, b_inf, b_sup);
 
     % Genero struct donde guardo datos de todos los canales
     estimulos_tetrodos = struct();
@@ -163,10 +165,10 @@ for t = (1:1:length(tetrodos_list))
         % Genero objeto con RASTERS de todos los estimulos
         estimulos_1chan = generate_raster(spike_times, estimulos_1chan ,...
             tiempo_file, ntrials, frequency_parameters);
-
+        
         % Calculo LFP promediado por estimulo todos los trials de cada canal
         estimulos_1chan = trialAverage_LFP(LFP, estimulos_1chan, ...
-            tiempo_file, ntrials, frequency_parameters);
+            tiempo_file, ntrials, frequency_parameters, sr_lfp);
 
        % Guardo LFP de cada canal
        LFP_avgTetrodo(:,c) = estimulos_1chan.LFP_promedio;
@@ -178,7 +180,7 @@ for t = (1:1:length(tetrodos_list))
         % Calculo sliding window de cada canal
         [sw_data, sw_times] = sliding_window(estimulos_1chan.spikes_norm, ...
             frequency_parameters.amplifier_sample_rate, ...
-            t_window, step);
+            t_window, step, tiempo_file);   
         psth_sw = [sw_data, sw_times];
 
         % Guardo PSTH de cada canal
@@ -195,7 +197,7 @@ for t = (1:1:length(tetrodos_list))
     % Promedio LFP de todos los canales del tetrodo de este estimulo
     LFP_avgTetrodo = mean(LFP_avgTetrodo, 2);
     LFP_avgTetrodo(:,2) = (0:1:length(LFP_avgTetrodo)-1) / ...
-        frequency_parameters.amplifier_sample_rate;
+        sr_lfp;
     % Agrego vector de tiempos (segundos!)
 
     % Promedio PSTH de todos los canales de este estimulo
@@ -268,3 +270,15 @@ waitbar(t/length(tetrodos_list),f , 'Completado !');
 
 
 clear estimulos_aux j i
+
+
+
+
+
+
+
+for i = (1:16)
+    n = length(estimulos_VARchann.VARchann(i).LFP_tetrodo(:,1));
+    estimulos_VARchann.VARchann(i).LFP_tetrodo(:,2) = (0:1:length(LFP_avgTetrodo)-1) / sr_lfp;
+end
+
