@@ -3,8 +3,8 @@ clear all
 
 %% Cargo los datos 
 
-% Cargo directorios y nombre custom de protocolos a manopla
-directorios = {{'/Volumes/AUDIOS TEAM/Javi- finch durmierdo (NNx)/zf-JL037-VB/Datos/2021-12-20/zf-JL037-VB_p1_id1_211220_132913/',...
+% Cargo directorios y nombre custom de cada protocolos a manopla
+protocolos = {{'/Volumes/AUDIOS TEAM/Javi- finch durmierdo (NNx)/zf-JL037-VB/Datos/2021-12-20/zf-JL037-VB_p1_id1_211220_132913/',...
     '037-VB_p1_id1_211220'}, ...
     {'/Volumes/AUDIOS TEAM/Javi- finch durmierdo (NNx)/zf-JL037-VB/Datos/2021-12-21/zf-JL037-VB_p2_id1_211221_140619/',...
     '037-VB_p2_id1_211221'}, ...
@@ -16,18 +16,23 @@ songs = struct();
 i = 1;
 
 % Cargo nombre_id protocolo, directorios, nombres archivos con lfp y mua
-for j = (1:length(directorios))
+for j = (1:length(protocolos))
     
-    dir_aux = directorios{j}{1};
-    id_aux = directorios{j}{2};
+    dir_aux = protocolos{j}{1};
+    id_aux = protocolos{j}{2};
     
     % guardo cancion
     songs(j).protocolo = id_aux;
     songs(j).sound = carga_songs(dir_aux);
     
+    % inicializo max_lfp y max_mua de cada protocolo
+    max_env_lfp = 0;
+    max_mua = 0; 
+    
     % Guardo archivos con LFP y MUA del BOS
     for p = (1:4)
         for t = (1:4)
+            
             tetrodo = strcat('P', num2str(p),'-', 'T', num2str(t));
 
             id = strcat(id_aux,'_', tetrodo);
@@ -41,57 +46,66 @@ for j = (1:length(directorios))
             datos(i).tetrodo = t;
             datos(i).protocolo = id_aux;
             
+            % Levanto y guardo LFP
+            lfp_aux = readtable(datos(i).file_lfp);
+            lfp_aux = lfp_aux{:,1}; % paso de table a vector de double
+            datos(i).lfp = lfp_aux;   
+    
+            % Calculo y guardo envolvente LFP 
+            env_aux = abs(hilbert(lfp_aux));
+            datos(i).env = env_aux;
+
+            % Calculo y guardo envolvente normalizada LFP 
+            datos(i).env_norm = env_aux / max(env_aux);
+            
+            % Guardo amplitud max del tetrodo y de todos los tetrodos del protocolo
+            datos(i).max_env_lfp = max(env_aux);
+            if max(env_aux) > max_env_lfp
+                max_env_lfp = max(env_aux);
+                max_lfp_id = strcat('P', num2str(p), '-T', num2str(t));
+            end
+
+            % Levanto y guardo MUA
+            mua_aux = readtable(datos(i).file_mua);
+            mua_aux = table2array(mua_aux);
+            datos(i).mua = mua_aux;
+
+            % MUA SUAVIZADA
+            mua_smooth = sgolayfilt(mua_aux(:,1), 4, 129);
+            datos(i).mua_smooth = [mua_smooth, mua_aux(:,2)];
+
+            mua_smooth2 = sgolayfilt(mua_aux(:,1), 4, 65);
+            datos(i).mua_smooth2 = [mua_smooth2, mua_aux(:,2)];
+
+            % Guardo MUA normalizada 
+            datos(i).mua_norm = mua_aux;
+            datos(i).mua_norm(:,1) = mua_aux(:,1)/max(mua_aux(:,1));
+            
+            % Guardo amplitud max del tetrodo y de todos los tetrodos del protocolo
+            datos(i).max_mua = max(mua_aux(:,1));
+            if max(mua_aux(:,1)) > max_mua
+                max_mua = max(mua_aux(:,1));
+                max_mua_id = strcat('P', num2str(p), '-T', num2str(t));
+            end 
+            
             i = i + 1;    
         end 
-    end 
+    end
     
+    % Habiendo calculado el max LFP y MUA de todos los tetrodos, normalizo
+    for k = (i-16 : i -1)
+        datos(k).mua_max_protocolo = max_mua;
+        datos(k).mua_max_protocolo_id = max_mua_id;
+        datos(k).mua_norm_protocolo = (datos(k).mua ./max_mua) .*100;
+        
+        datos(k).env_lfp_max_protocolo = max_env_lfp;
+        datos(k).env_lfp_max_protocolo_id = max_lfp_id;
+        datos(k).env_lfp_norm_protocolo = (datos(k).env ./max_env_lfp) .*100;
+    end   
 end
 
-clear id_aux p t i file_name_lfp file_name_mua tetrodo dir_aux j id
-
-for j = (1:1:length(datos))
-    
-    % Levanto y guardo LFP
-    lfp_aux = readtable(datos(j).file_lfp);
-    lfp_aux = lfp_aux{:,1}; % paso de table a vector de double
-    datos(j).lfp = lfp_aux;   
-    
-    % Calculo y guardo envolvente LFP 
-    env_aux = abs(hilbert(lfp_aux));
-    datos(j).env = env_aux;
-    
-    % Calculo y guardo envolvente normalizada LFP 
-    datos(j).env_norm = env_aux / max(env_aux);
-    
-    % Levanto y guardo MUA
-    mua_aux = readtable(datos(j).file_mua);
-    mua_aux = table2array(mua_aux);
-    datos(j).mua = mua_aux;
-    
-    % MUA SUAVIZADA
-    mua_smooth = sgolayfilt(mua_aux(:,1), 4, 129);
-    datos(j).mua_smooth = [mua_smooth, mua_aux(:,2)];
-
-    mua_smooth2 = sgolayfilt(mua_aux(:,1), 4, 65);
-    datos(j).mua_smooth2 = [mua_smooth2, mua_aux(:,2)];
-        
-    % Guardo MUA normalizada 
-    datos(j).mua_norm = mua_aux;
-    datos(j).mua_norm(:,1) = mua_aux(:,1)/max(mua_aux(:,1));
-    
-%     % Busco picos en envolvente LFP
-%     thr = 0.5;
-%     
-%     % Encuentro picos con altura mayor a thr
-%     [pks, locs] = findpeaks(env_aux);
-%     pks_subset = pks > thr;
-%     plot(locs(pks_subset,:), pks(pks_subset,:), 'or')
-    
-end 
-
-
-
-clear mua_aux env_aux i j mua_smooth mua_smooth2 lfp_aux 
+clear id_aux p t i file_name_lfp file_name_mua tetrodo dir_aux j id max_lfp_id max_mua_id
+clear mua_aux env_aux i j mua_smooth mua_smooth2 lfp_aux k max_lfp max_mua
 
 
 %% Guardo todos los datos
@@ -109,31 +123,15 @@ fin_aux = inicio_aux + 15;
 subset = (inicio_aux:1:fin_aux);
 datos = datos_all(subset);
 
-% lw = 1;
-% close all
-% 
-% plot(datos(10).mua(:,2), datos(10).mua(:,1), 'LineWidth', lw)
-% hold on 
-% lw = 2;
-% plot(datos(10).mua_smooth(:,2), datos(10).mua_smooth(:,1), ':', 'LineWidth', lw)
-% plot(datos(10).mua_smooth2(:,2), datos(10).mua_smooth2(:,1), ':','LineWidth', lw)
-% 
-% xlim([0, 4.5])
-% title(datos(10).id, 'Interpreter' , 'none')
-% legend('normal', ' |  g:4, w:129', ' |  g:, w: 65')
-% set(gca,'FontSize',25)
+clear subset fin_aux inicio_aux
 
 %% Corr Boari_2021
 
+norm = input('\nCorrelacionamos señales normalizadas por max del protocolo? (1 = SI, 0 = NO): ');
+norm = norm == 1;
+
 corr_all_matrix_LFP = zeros(length(datos));
 corr_all_matrix_MUA = zeros(length(datos));
-
-% Busco maximo de todas las señales (lo usare para normalizar)
-lfp_max_all = 0;
-lfp_max_all_id = '';
-
-mua_max_all = 0;
-mua_max_all_id = '';
 
 % Matriz donde guardo valor max de cada señal de cada tetrodo de todo el peine
 lfp_max = zeros(round(sqrt(length(datos))));
@@ -141,59 +139,62 @@ mua_max = zeros(round(sqrt(length(datos))));
 
 for i = (1:1:length(datos))
     
-    % Conservo seccion env lfp durante la presentacion del estimulo auditivo
-    fona_lfp = (1:1:length(datos(i).env))'; % vector de indices lfp
-    fona_lfp = fona_lfp < 4.5 * 1000; % transformo indices a t y me quedo con los menores a 4.5
+    lfp_max(i) = datos(i).max_env_lfp;
     
-    max_aux_LFP = max(datos(i).env(fona_lfp));
-    if max_aux_LFP > lfp_max_all
-        lfp_max_all = max_aux_LFP;
-        lfp_max_all_id = datos(i).id;
-    end
-    
-    lfp_max(i) = max_aux_LFP;
-    
-    
-    % Conservo seccion mua durante la presentacion del estimulo auditivo
-    fona_mua = datos(i).mua(:,2) < 4.5; % 4.5seg. es a ojo por lo que veo en graficos.
-    
-    max_aux_MUA = max(datos(i).mua(fona_mua,1));
-    if max_aux_MUA > mua_max_all
-        mua_max_all = max_aux_MUA;
-        mua_max_all_id = datos(i).id;
-    end
-    
-    mua_max(i) = max_aux_MUA;
+    mua_max(i) = datos(i).max_mua;
     
 end 
 
-clear i rms_aux_LFP rms_aux_MUA 
+clear i 
+
+
+% OJO HARCODEO FEO 
+% Conservo seccion env lfp durante la presentacion del estimulo auditivo
+fona_lfp = (1:1:length(datos(1).env))'; % vector de indices lfp
+fona_lfp = fona_lfp < 4.5 * 1000; % transformo indices a t y me quedo con los menores a 4.5
+% Conservo seccion mua durante la presentacion del estimulo
+fona_mua = datos(1).mua(:,2) < 4.5;
 
 % Calculo corr
 labels = cell(1,length(datos));
+
+peso_mua = zeros(length(datos)^2, 1);
+peso_lfp = zeros(length(datos)^2, 1);
+kk = 1;
+
 for i = (1:1:length(datos))
     
     % Hago lista de id de estimulos para usarlos como label en futuro grafico
     labels(1,i) = {datos(i).id};
-
+    
     for j = (1:1:length(datos))
         % Calculo correlacion entre señales LFP
         if i == j
             corr_all_matrix_LFP(i,j) = 1;
         else
-            corr_all_matrix_LFP(i,j) = weighted_corr(datos(i).env(fona_lfp), ...
-                datos(j).env(fona_lfp), lfp_max_all);
+            if norm
+                corr_all_matrix_LFP(i,j) = weighted_corr(datos(i).env_lfp_norm_protocolo(fona_lfp) , ...
+                    datos(j).env_lfp_norm_protocolo(fona_lfp), 100);
+                
+            else
+                corr_all_matrix_LFP(i,j) = weighted_corr(datos(i).env(fona_lfp), ...
+                    datos(j).env(fona_lfp), datos(j).env_lfp_max_protocolo);
+            end 
         end
-        
-        % Conservo seccion mua durante la presentacion del estimulo
-        fona_mua = datos(i).mua(:,2) < 4.5;
         
         % Calculo correlacion entre señales MUA
         if i == j 
             corr_all_matrix_MUA(i,j) = 1; 
         else 
-            corr_all_matrix_MUA(i,j) = weighted_corr(datos(i).mua(fona_mua,1), ...
-                datos(j).mua(fona_mua,1), mua_max_all);
+            if norm 
+               corr_all_matrix_MUA(i,j) = weighted_corr(datos(i).mua_norm_protocolo(fona_mua,1), ...
+                    datos(j).mua_norm_protocolo(fona_mua,1), 100);
+               kk = kk + 1;
+            else
+                corr_all_matrix_MUA(i,j) = weighted_corr(datos(i).mua(fona_mua,1), ...
+                    datos(j).mua(fona_mua,1), datos(j).mua_max_protocolo);
+                
+            end 
         end
     end
 end
@@ -266,8 +267,6 @@ title('MAX de tetrodos de LFP')
 
 
 %% Normalizo MUA y LFP por max de cada protocolo 
-
-datos
 
 
 
