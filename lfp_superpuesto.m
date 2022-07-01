@@ -40,11 +40,15 @@ for j = (1:length(protocolos))
             file_name_mua = dir(strcat(dir_aux, 'PSTHsw_1tet_BOS_', tetrodo, '_BANDA-25-35Hz_*.txt')).name;
 
             datos(i).id = id;
-            datos(i).file_lfp = strcat(dir_aux, file_name_lfp);
-            datos(i).file_mua = strcat(dir_aux, file_name_mua);
+            datos(i).protocolo = id_aux;
             datos(i).peine = p;
             datos(i).tetrodo = t;
-            datos(i).protocolo = id_aux;
+            
+            datos(i).dir_lfp = dir_aux;
+            datos(i).file_lfp = strcat(dir_aux, file_name_lfp);
+            
+            datos(i).dir_mua = dir_aux;
+            datos(i).file_mua = strcat(dir_aux, file_name_mua);
             
             % Levanto y guardo LFP
             lfp_aux = readtable(datos(i).file_lfp);
@@ -266,10 +270,6 @@ axis tight
 title('MAX de tetrodos de LFP')
 
 
-%% Normalizo MUA y LFP por max de cada protocolo 
-
-
-
 %%
 
 % Saco 1 de la diagonal
@@ -319,10 +319,6 @@ end
 % De datos conservo la columna de correlaciones del tetrodo con mayor
 % amplitud contra el resto
 corr_tet_max_lfp = corr_all_matrix_LFP(:,index_id_max_LFP);
-
-%% Corr inter protocolos
-
-
 
 
 
@@ -407,26 +403,25 @@ for i = (1:length(indiceS_protocolo))
 end 
 
 
-%% Picos 
-
-
-
-%% PLOTEO LFP 30Hz
-
-% Determino umbral (altura min) de picos en la envolvente normalizada (0-1)
-thr = 0.5;
-
+%% PLOTEO LFP, LFP_env, LFP_env_norm_protocolo
 close all
 
 % Elijo quienes plotear
-ploteo = [8, 10, 11];
+ploteo = [7, 22, 45];
+dur_sound = 5*1000; % para determinar xlim()
+
 
 % Guardo figuras?
 guardar = input('\nGuardo? (1 = SI / 0 = NO) : ');
 
+% Defino directorio donde guardo (como son correlaciones de dos archivos
+% distintos, guardo en primer directorio para evitar duplicados
+dir_aux = datos(ploteo(1)).dir_lfp
+
 % Defino alpha (transparencia) y LineWidth
 alpha = 0.50;
 lw = 2;
+
 
 % LFP 
 figure()
@@ -443,6 +438,7 @@ end
 legend(leyendas, 'Interpreter' , 'none');
 title('LFP banda 25-35Hz promediando tetrodo para el BOS')
 set(gca,'FontSize',25)
+xlim([0, dur_sound])
 
 
 % LFP env
@@ -450,7 +446,6 @@ figure()
 for k = (1:1:length(ploteo))
     
     % Ploteo envolvente
-    env_aux = datos(ploteo(k)).env;
     p= plot(datos(ploteo(k)).env, 'LineWidth', lw);
     hold on
     
@@ -459,97 +454,95 @@ end
 legend(leyendas, 'Interpreter' , 'none');
 title('Envolvente LFP banda 25-35Hz promediando tetrodo para el BOS')
 set(gca,'FontSize',25)
+xlim([0, dur_sound])
 
 
-% LFP env normalizada y picos!
+% LFP env normalizada por protocolo
 figure()
-leyendas_env = cell(2*length(ploteo),1);
-count = 1;
 for k = (1:1:length(ploteo))
     
-    % Ploteo env normalizada
-    env_aux = datos(ploteo(k)).env_norm;
-    p= plot(env_aux, 'LineWidth', lw);
+    % Ploteo envolvente
+    p= plot(datos(ploteo(k)).env_lfp_norm_protocolo, 'LineWidth', lw);
     hold on
     
-    % Encuentro picos con altura mayor a thr
-    [pks, locs] = findpeaks(env_aux);
-    pks_subset = pks > thr;
-    plot(locs(pks_subset,:), pks(pks_subset,:), 'or')
-
     p.Color(4) = alpha;
-    
-    % Escribo leyendas
-    leyendas_env{count,1} = datos(ploteo(k)).id;
-    leyendas_env{count + 1,1} = strcat('pico > thr -',datos(ploteo(k)).id);
-    count = count + 2; 
 end 
-legend(leyendas_env, 'Interpreter' , 'none');
-title('Envolvente LFP NORMALIZADA banda 25-35Hz promediando tetrodo para el BOS')
+legend(leyendas, 'Interpreter' , 'none');
+title('Envolvente LFP NORMALIZADA POR PROTOCOLO banda 25-35Hz promediando tetrodo para el BOS')
 set(gca,'FontSize',25)
+xlim([0, dur_sound])
+
+% Guardo
+if guardar
+    titulo = '_LFP_promedioTetrodo_BOS';
+
+    print_pdf(1, dir_aux, strcat(titulo, '.pdf'))
+    print_pdf(2, dir_aux, strcat(titulo,'_env.pdf'))
+    print_pdf(3, dir_aux, strcat(titulo,'_env_NORM-PROTOCOLO.pdf'))
+end
+
+clear directorio 
 
 
+%% PLOTEO MUA, MUA_norm_protocolo
 
-%% PLOTEO MUA
-
-% Determino umbral (altura min) de picos en la envolvente normalizada (0-1)
-thr = 0.5;
+close all
 
 % Elijo quienes plotear
-ploteo = [9, 10, 11];
+ploteo = [7, 28, 42];
 
 % Guardo figuras?
 guardar = input('\nGuardo? (1 = SI / 0 = NO) : ');
+dur_sound = 5;
+
+% Defino directorio donde guardo (como son correlaciones de dos archivos
+% distintos, guardo en primer directorio para evitar duplicados
+dir_aux = datos(ploteo(1)).dir_lfp
 
 % Defino alpha (transparencia) y LineWidth
 alpha = 0.50;
 lw = 2;
 
-% MUA
+
+% MUA 
 figure()
-leyendas = cell(length(ploteo),1);
 for k = (1:1:length(ploteo))
     
-    t = datos(ploteo(k)).mua_smooth(:,2);
-    mua = datos(ploteo(k)).mua_smooth(:,1);
-    p = plot(t , mua , 'LineWidth', lw);
+    % Ploteo envolvente
+    p= plot(datos(ploteo(k)).mua(:,2), datos(ploteo(k)).mua(:,1), 'LineWidth', lw);
     hold on
-
-    p.Color(4) = alpha;
-
+    
     leyendas{k,1} = datos(ploteo(k)).id;
+    
+    p.Color(4) = alpha;
 end 
 legend(leyendas, 'Interpreter' , 'none');
-title('MUA banda 25-35Hz promediando tetrodo para el BOS')
+title('MUA promediando tetrodo para el BOS')
 set(gca,'FontSize',25)
+xlim([0, dur_sound])
 
-% MUA norm
+
+% MUA normalizada por protocolo
 figure()
-leyendas = cell(length(ploteo),1);
 for k = (1:1:length(ploteo))
     
-    t = datos(ploteo(k)).mua_norm(:,2);
-    mua_norm = datos(ploteo(k)).mua_norm(:,1);
-    p = plot(t , mua_norm , 'LineWidth', lw);
+    % Ploteo envolvente
+    p= plot(datos(ploteo(k)).mua_norm_protocolo(:,2), datos(ploteo(k)).mua_norm_protocolo(:,1), 'LineWidth', lw);
     hold on
-
+    
     p.Color(4) = alpha;
-
-    leyendas{k,1} = datos(ploteo(k)).id;
 end 
 legend(leyendas, 'Interpreter' , 'none');
-title('MUA banda 25-35Hz promediando tetrodo para el BOS')
+title('MUA NORMALIZADA POR PROTOCOLO promediando tetrodo para el BOS')
 set(gca,'FontSize',25)
+xlim([0, dur_sound])
 
 
-%% Guardo
+% Guardo
 if guardar
-    titulo = '_LFP_promedioTetrodo_BOS';
-
-    print_pdf(1, dir1, strcat(titulo, '.pdf'))
-    print_pdf(2, dir1, strcat(titulo,'_env.pdf'))
-    print_pdf(3, dir1, strcat(titulo,'_env-norm.pdf'))
-    print_pdf(4, dir1, strcat(titulo, '_mua.pdf'))
+    titulo = '_MUA_promedioTetrodo_BOS';
+    print_pdf(1, dir_aux, strcat(titulo, '.pdf'))
+    print_pdf(2, dir_aux, strcat(titulo,'_NORM-PROTOCOLO.pdf'))
 end 
 
 
