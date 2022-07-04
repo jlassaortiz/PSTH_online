@@ -32,7 +32,10 @@ for j = (1:length(protocolos))
     
     % inicializo max_lfp y max_mua de cada protocolo
     max_env_lfp = 0;
-    max_mua = 0; 
+    max_mua = 0;
+    
+    env_lfp_int_aux = [];
+    mua_int_aux = [];
     
     % Guardo archivos con LFP y MUA del BOS
     for p = (1:4)
@@ -67,17 +70,18 @@ for j = (1:length(protocolos))
             % Calculo integral de envolvente - ruido de la env_LFP
             env_LFP_int = 0;
             noise_aux = 0;
-            kk = 1;
             lim_sound = uint64(dur_song*sr_LFP);
             for k = (1:lim_sound)
                 env_LFP_int = env_LFP_int + env_aux(k,1);
             end
-            for k = (lim_sound:length(env_aux))
+            for k = (lim_sound:lim_sound*2)
                 noise_aux = noise_aux + env_aux(k,1);
             end
             env_LFP_int = env_LFP_int - noise_aux;
             datos(i).env_LFP_int = env_LFP_int;
-
+            env_lfp_int_aux = [env_lfp_int_aux; env_LFP_int];
+            
+            
             % Calculo y guardo envolvente normalizada LFP 
             datos(i).env_norm = env_aux / max(env_aux);
             
@@ -95,11 +99,12 @@ for j = (1:length(protocolos))
             
             % Calculo integral de envolvente - ruido de la MUA
             t_with_sound = mua_aux(:,2) < dur_song;
-            t_without_sound = mua_aux(:,2) > dur_song;
+            t_without_sound = mua_aux(:,2) > dur_song & mua_aux(:,2) < dur_song*2;
             mua_int = sum(mua_aux(t_with_sound,1));
             noise_aux = sum(mua_aux(t_without_sound,1));
             mua_int = mua_int - noise_aux;
-            datos(i).mua_int = mua_int;
+            datos(i).mua_int = mua_int; 
+            mua_int_aux = [mua_int_aux; mua_int];
 
             % MUA SUAVIZADA
             mua_smooth = sgolayfilt(mua_aux(:,1), 4, 129);
@@ -129,6 +134,9 @@ for j = (1:length(protocolos))
         datos(k).mua_max_protocolo_id = max_mua_id;
         datos(k).mua_norm_protocolo = (datos(k).mua ./max_mua) .*100;
         
+        datos(k).mua_int_max_protocolo = max(mua_int_aux);
+        datos(k).env_lfp_int_max_protocolo = max(env_lfp_int_aux);
+        
         datos(k).env_lfp_max_protocolo = max_env_lfp;
         datos(k).env_lfp_max_protocolo_id = max_lfp_id;
         datos(k).env_lfp_norm_protocolo = (datos(k).env ./max_env_lfp) .*100;
@@ -136,7 +144,8 @@ for j = (1:length(protocolos))
 end
 
 clear id_aux p t i file_name_lfp file_name_mua tetrodo dir_aux j id max_lfp_id max_mua_id
-clear mua_aux env_aux i j mua_smooth mua_smooth2 lfp_aux k max_lfp max_mua
+clear mua_aux env_aux i j mua_smooth mua_smooth2 lfp_aux k max_lfp max_mua j noise_aux mua_int
+clear mua_int_aux env_lfp_int_aux env_LFP_int
 
 
 %% Guardo todos los datos
@@ -145,8 +154,9 @@ datos_all = datos;
 
 
 %% Genero sub-set
+close all
 
-protocolo_analizar = 1; % indicar numero id del protocolo a analizar
+protocolo_analizar = 3; % indicar numero id del protocolo a analizar
 
 % Separa automaticamente los datos del protocolo indicado
 inicio_aux = (protocolo_analizar -1)*16 + 1;
@@ -170,9 +180,9 @@ mua_max = zeros(round(sqrt(length(datos))));
 
 for i = (1:1:length(datos))
     
-    lfp_max(i) = datos(i).max_env_lfp;
+    lfp_max(i) = datos(i).env_LFP_int;
     
-    mua_max(i) = datos(i).max_mua;
+    mua_max(i) = datos(i).mua_int;
     
 end 
 
@@ -191,7 +201,6 @@ labels = cell(1,length(datos));
 
 peso_mua = zeros(length(datos)^2, 1);
 peso_lfp = zeros(length(datos)^2, 1);
-kk = 1;
 
 for i = (1:1:length(datos))
     
@@ -204,11 +213,14 @@ for i = (1:1:length(datos))
             corr_all_matrix_LFP(i,j) = 1;
         else
             if norm
-                corr_all_matrix_LFP(i,j) = weighted_corr(datos(i).env_lfp_norm_protocolo(fona_lfp) , ...
-                    datos(j).env_lfp_norm_protocolo(fona_lfp), 100);
+                corr_all_matrix_LFP(i,j) = weighted_corr(datos(i).env(fona_lfp), ...
+                    datos(j).env(fona_lfp), ...
+                    100, ...
+                    100*datos(i).env_LFP_int/datos(i).env_lfp_int_max_protocolo,  ...
+                    100*datos(j).env_LFP_int/datos(j).env_lfp_int_max_protocolo);
             else
                 corr_all_matrix_LFP(i,j) = weighted_corr(datos(i).env(fona_lfp), ...
-                    datos(j).env(fona_lfp), datos(j).env_lfp_max_protocolo);
+                    datos(j).env(fona_lfp), datos(j).env_lfp_int_max_protocolo, datos(i).env_LFP_int,  datos(j).env_LFP_int);
             end 
         end
         
@@ -217,12 +229,14 @@ for i = (1:1:length(datos))
             corr_all_matrix_MUA(i,j) = 1; 
         else 
             if norm 
-               corr_all_matrix_MUA(i,j) = weighted_corr(datos(i).mua_norm_protocolo(fona_mua,1), ...
-                    datos(j).mua_norm_protocolo(fona_mua,1), 100);
-               kk = kk + 1;
+                corr_all_matrix_MUA(i,j) = weighted_corr(datos(i).mua(fona_mua,1), ...
+                    datos(j).mua(fona_mua,1), ...
+                    100, ...
+                    100*datos(i).mua_int/datos(i).mua_int_max_protocolo, ...
+                    100*datos(j).mua_int/datos(j).mua_int_max_protocolo);
             else
                 corr_all_matrix_MUA(i,j) = weighted_corr(datos(i).mua(fona_mua,1), ...
-                    datos(j).mua(fona_mua,1), datos(j).mua_max_protocolo);
+                    datos(j).mua(fona_mua,1), datos(j).mua_int_max_protocolo, datos(i).mua_int, datos(j).mua_int);
                 
             end 
         end
@@ -277,7 +291,7 @@ set(gca, 'YTick', ticks, 'YTickLabel', labels_y);
 set(gca, 'XTick', ticks, 'XTickLabel', labels_x);
 axis equal
 axis tight
-title('MAX de tetrodos de MUA')
+title('INT de tetrodos de MUA (mientras fona - silencio)')
 
 % plot max LFP 
 figure()
@@ -293,7 +307,7 @@ set(gca, 'YTick', ticks, 'YTickLabel', labels_y);
 set(gca, 'XTick', ticks, 'XTickLabel', labels_x);
 axis equal
 axis tight
-title('MAX de tetrodos de LFP')
+title('INT de tetrodos de LFP (mientras fona - silencio)')
 
 
 %%
