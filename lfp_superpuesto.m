@@ -15,6 +15,11 @@ datos = struct();
 songs = struct();
 i = 1;
 
+% CUIDADO HARCODEO %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+dur_song = 4.5; % durancion del estímulo auditivo en 
+sr_LFP = 1000; % sampling rate lfp en Hz
+
+
 % Cargo nombre_id protocolo, directorios, nombres archivos con lfp y mua
 for j = (1:length(protocolos))
     
@@ -58,6 +63,20 @@ for j = (1:length(protocolos))
             % Calculo y guardo envolvente LFP 
             env_aux = abs(hilbert(lfp_aux));
             datos(i).env = env_aux;
+            
+            % Calculo integral de envolvente - ruido de la env_LFP
+            env_LFP_int = 0;
+            noise_aux = 0;
+            kk = 1;
+            lim_sound = uint64(dur_song*sr_LFP);
+            for k = (1:lim_sound)
+                env_LFP_int = env_LFP_int + env_aux(k,1);
+            end
+            for k = (lim_sound:length(env_aux))
+                noise_aux = noise_aux + env_aux(k,1);
+            end
+            env_LFP_int = env_LFP_int - noise_aux;
+            datos(i).env_LFP_int = env_LFP_int;
 
             % Calculo y guardo envolvente normalizada LFP 
             datos(i).env_norm = env_aux / max(env_aux);
@@ -73,6 +92,14 @@ for j = (1:length(protocolos))
             mua_aux = readtable(datos(i).file_mua);
             mua_aux = table2array(mua_aux);
             datos(i).mua = mua_aux;
+            
+            % Calculo integral de envolvente - ruido de la MUA
+            t_with_sound = mua_aux(:,2) < dur_song;
+            t_without_sound = mua_aux(:,2) > dur_song;
+            mua_int = sum(mua_aux(t_with_sound,1));
+            noise_aux = sum(mua_aux(t_without_sound,1));
+            mua_int = mua_int - noise_aux;
+            datos(i).mua_int = mua_int;
 
             % MUA SUAVIZADA
             mua_smooth = sgolayfilt(mua_aux(:,1), 4, 129);
@@ -119,7 +146,7 @@ datos_all = datos;
 
 %% Genero sub-set
 
-protocolo_analizar = 2; % indicar numero id del protocolo a analizar
+protocolo_analizar = 1; % indicar numero id del protocolo a analizar
 
 % Separa automaticamente los datos del protocolo indicado
 inicio_aux = (protocolo_analizar -1)*16 + 1;
@@ -179,7 +206,6 @@ for i = (1:1:length(datos))
             if norm
                 corr_all_matrix_LFP(i,j) = weighted_corr(datos(i).env_lfp_norm_protocolo(fona_lfp) , ...
                     datos(j).env_lfp_norm_protocolo(fona_lfp), 100);
-                
             else
                 corr_all_matrix_LFP(i,j) = weighted_corr(datos(i).env(fona_lfp), ...
                     datos(j).env(fona_lfp), datos(j).env_lfp_max_protocolo);
