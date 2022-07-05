@@ -32,7 +32,7 @@ for j = (1:length(protocolos))
     
     % inicializo max_lfp y max_mua de cada protocolo
     max_env_lfp = 0;
-    max_mua = 0;
+    max_mua_protocolo = 0;
     
     env_lfp_int_aux = [];
     mua_int_aux = [];
@@ -119,8 +119,8 @@ for j = (1:length(protocolos))
             
             % Guardo amplitud max del tetrodo y de todos los tetrodos del protocolo
             datos(i).max_mua = max(mua_aux(:,1));
-            if max(mua_aux(:,1)) > max_mua
-                max_mua = max(mua_aux(:,1));
+            if max(mua_aux(:,1)) > max_mua_protocolo
+                max_mua_protocolo = max(mua_aux(:,1));
                 max_mua_id = strcat('P', num2str(p), '-T', num2str(t));
             end 
             
@@ -130,9 +130,10 @@ for j = (1:length(protocolos))
     
     % Habiendo calculado el max LFP y MUA de todos los tetrodos, normalizo
     for k = (i-16 : i -1)
-        datos(k).mua_max_protocolo = max_mua;
+        datos(k).mua_max_protocolo = max_mua_protocolo;
         datos(k).mua_max_protocolo_id = max_mua_id;
-        datos(k).mua_norm_protocolo = (datos(k).mua ./max_mua) .*100;
+        datos(k).mua_norm_protocolo = datos(k).mua;
+        datos(k).mua_norm_protocolo(:,1) = (datos(k).mua(:,1) ./max_mua_protocolo) .*100;
         
         datos(k).mua_int_max_protocolo = max(mua_int_aux);
         datos(k).env_lfp_int_max_protocolo = max(env_lfp_int_aux);
