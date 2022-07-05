@@ -190,10 +190,6 @@ fona_mua = datos(1).mua(:,2) < 4.5;
 % Calculo corr
 labels = cell(1,length(datos));
 
-peso_mua = zeros(length(datos)^2, 1);
-peso_lfp = zeros(length(datos)^2, 1);
-kk = 1;
-
 for i = (1:1:length(datos))
     
     % Hago lista de id de estimulos para usarlos como label en futuro grafico
@@ -206,7 +202,8 @@ for i = (1:1:length(datos))
         else
             if norm
                 corr_all_matrix_LFP(i,j) = weighted_corr(datos(i).env_lfp_norm_protocolo(fona_lfp) , ...
-                    datos(j).env_lfp_norm_protocolo(fona_lfp), 100);
+                    datos(j).env_lfp_norm_protocolo(fona_lfp), ...
+                    100);
             else
                 corr_all_matrix_LFP(i,j) = weighted_corr(datos(i).env(fona_lfp), ...
                     datos(j).env(fona_lfp), ...
@@ -220,8 +217,8 @@ for i = (1:1:length(datos))
         else 
             if norm 
                corr_all_matrix_MUA(i,j) = weighted_corr(datos(i).mua_norm_protocolo(fona_mua,1), ...
-                    datos(j).mua_norm_protocolo(fona_mua,1), 100);
-               kk = kk + 1;
+                    datos(j).mua_norm_protocolo(fona_mua,1), ...
+                    100);
             else
                 corr_all_matrix_MUA(i,j) = weighted_corr(datos(i).mua(fona_mua,1), ...
                     datos(j).mua(fona_mua,1), ...
@@ -326,7 +323,8 @@ min_corr_MUA = min(corr_all_matrix_MUA,[],'all')
 min_corr_pair_MUA = {r, c ; datos(r).id, datos(c).id}
 
 
-%% Conservo solo las corr del tetrodo con mayor amplitud 
+%% CORR en funcion de la distancia entre tetrodos
+% Conservo solo las corr del tetrodo con mayor amplitud 
 % Además calculo distancia del tetrodo con mayor amplitud al resto
 
 % Dejo este proyecto en stand by
