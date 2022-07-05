@@ -32,7 +32,7 @@ for j = (1:length(protocolos))
     
     % inicializo max_lfp y max_mua de cada protocolo
     max_env_lfp = 0;
-    max_mua = 0; 
+    max_mua_protocolo = 0; 
     
     % Guardo archivos con LFP y MUA del BOS
     for p = (1:4)
@@ -110,12 +110,12 @@ for j = (1:length(protocolos))
 
             % Guardo MUA normalizada 
             datos(i).mua_norm = mua_aux;
-            datos(i).mua_norm(:,1) = mua_aux(:,1)/max(mua_aux(:,1));
+            datos(i).mua_norm(:,1) = mua_aux(:,1) ./ max(mua_aux(:,1));
             
             % Guardo amplitud max del tetrodo y de todos los tetrodos del protocolo
             datos(i).max_mua = max(mua_aux(:,1));
-            if max(mua_aux(:,1)) > max_mua
-                max_mua = max(mua_aux(:,1));
+            if max(mua_aux(:,1)) > max_mua_protocolo
+                max_mua_protocolo = max(mua_aux(:,1));
                 max_mua_id = strcat('P', num2str(p), '-T', num2str(t));
             end 
             
@@ -125,9 +125,10 @@ for j = (1:length(protocolos))
     
     % Habiendo calculado el max LFP y MUA de todos los tetrodos, normalizo
     for k = (i-16 : i -1)
-        datos(k).mua_max_protocolo = max_mua;
+        datos(k).mua_max_protocolo = max_mua_protocolo;
         datos(k).mua_max_protocolo_id = max_mua_id;
-        datos(k).mua_norm_protocolo = (datos(k).mua ./max_mua) .*100;
+        datos(k).mua_norm_protocolo = datos(k).mua;
+        datos(k).mua_norm_protocolo(:,1) = (datos(k).mua(:,1) ./max_mua_protocolo) .*100;
         
         datos(k).env_lfp_max_protocolo = max_env_lfp;
         datos(k).env_lfp_max_protocolo_id = max_lfp_id;
@@ -208,7 +209,8 @@ for i = (1:1:length(datos))
                     datos(j).env_lfp_norm_protocolo(fona_lfp), 100);
             else
                 corr_all_matrix_LFP(i,j) = weighted_corr(datos(i).env(fona_lfp), ...
-                    datos(j).env(fona_lfp), datos(j).env_lfp_max_protocolo);
+                    datos(j).env(fona_lfp), ...
+                    max(datos(i).env_lfp_max_protocolo, datos(j).env_lfp_max_protocolo));
             end 
         end
         
@@ -222,14 +224,12 @@ for i = (1:1:length(datos))
                kk = kk + 1;
             else
                 corr_all_matrix_MUA(i,j) = weighted_corr(datos(i).mua(fona_mua,1), ...
-                    datos(j).mua(fona_mua,1), datos(j).mua_max_protocolo);
-                
+                    datos(j).mua(fona_mua,1), ...
+                    max(datos(i).mua_max_protocolo, datos(j).mua_max_protocolo));
             end 
         end
     end
 end
-
-
 
 
 clear i j 
@@ -535,7 +535,7 @@ figure()
 for k = (1:1:length(ploteo))
     
     % Ploteo envolvente
-    p= plot(datos(ploteo(k)).mua(:,2), datos(ploteo(k)).mua(:,1), 'LineWidth', lw);
+    p = plot(datos(ploteo(k)).mua(:,2), datos(ploteo(k)).mua(:,1), 'LineWidth', lw);
     hold on
     
     leyendas{k,1} = datos(ploteo(k)).id;
