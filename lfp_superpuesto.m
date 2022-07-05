@@ -33,6 +33,7 @@ for j = (1:length(protocolos))
     % inicializo max_lfp y max_mua de cada protocolo
     max_env_lfp = 0;
     max_mua_protocolo = 0; 
+    max_mua_protocolo_smooth = 0;
     
     % Guardo archivos con LFP y MUA del BOS
     for p = (1:4)
@@ -102,11 +103,8 @@ for j = (1:length(protocolos))
             datos(i).mua_int = mua_int;
 
             % MUA SUAVIZADA
-            mua_smooth = sgolayfilt(mua_aux(:,1), 4, 129);
+            mua_smooth = sgolayfilt(mua_aux(:,1), 4, 65);
             datos(i).mua_smooth = [mua_smooth, mua_aux(:,2)];
-
-            mua_smooth2 = sgolayfilt(mua_aux(:,1), 4, 65);
-            datos(i).mua_smooth2 = [mua_smooth2, mua_aux(:,2)];
 
             % Guardo MUA normalizada 
             datos(i).mua_norm = mua_aux;
@@ -119,6 +117,14 @@ for j = (1:length(protocolos))
                 max_mua_id = strcat('P', num2str(p), '-T', num2str(t));
             end 
             
+            % Guardo amplitud max del tetrodo y de todos los tetrodos del
+            % protocolo SMOOTH
+            datos(i).max_mua_smooth = max(mua_smooth(:,1));
+            if max(mua_smooth(:,1)) > max_mua_protocolo_smooth
+                max_mua_protocolo_smooth = max(mua_smooth(:,1));
+                max_mua_id_smooth = strcat('P', num2str(p), '-T', num2str(t));
+            end
+            
             i = i + 1;    
         end 
     end
@@ -129,6 +135,11 @@ for j = (1:length(protocolos))
         datos(k).mua_max_protocolo_id = max_mua_id;
         datos(k).mua_norm_protocolo = datos(k).mua;
         datos(k).mua_norm_protocolo(:,1) = (datos(k).mua(:,1) ./max_mua_protocolo) .*100;
+
+        datos(k).mua_max_protocolo_smooth = max_mua_protocolo_smooth;
+        datos(k).mua_max_protocolo_id_smooth = max_mua_id_smooth;        
+        datos(k).mua_norm_protocolo_smooth = datos(k).mua_smooth;
+        datos(k).mua_norm_protocolo_smooth(:,1) = (datos(k).mua_smooth(:,1) ./max_mua_protocolo_smooth) .*100;
         
         datos(k).env_lfp_max_protocolo = max_env_lfp;
         datos(k).env_lfp_max_protocolo_id = max_lfp_id;
@@ -216,13 +227,13 @@ for i = (1:1:length(datos))
             corr_all_matrix_MUA(i,j) = 1; 
         else 
             if norm 
-               corr_all_matrix_MUA(i,j) = weighted_corr(datos(i).mua_norm_protocolo(fona_mua,1), ...
-                    datos(j).mua_norm_protocolo(fona_mua,1), ...
+               corr_all_matrix_MUA(i,j) = weighted_corr(datos(i).mua_norm_protocolo_smooth(fona_mua,1), ...
+                    datos(j).mua_norm_protocolo_smooth(fona_mua,1), ...
                     100);
             else
-                corr_all_matrix_MUA(i,j) = weighted_corr(datos(i).mua(fona_mua,1), ...
-                    datos(j).mua(fona_mua,1), ...
-                    max(datos(i).mua_max_protocolo, datos(j).mua_max_protocolo));
+                corr_all_matrix_MUA(i,j) = weighted_corr(datos(i).mua_smooth(fona_mua,1), ...
+                    datos(j).mua_smooth(fona_mua,1), ...
+                    max(datos(i).mua_max_protocolo_smooth, datos(j).mua_max_protocolo_smooth));
             end 
         end
     end
