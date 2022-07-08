@@ -68,7 +68,6 @@ for j = (1:length(protocolos))
             % Calculo integral de envolvente - ruido de la env_LFP
             env_LFP_int = 0;
             noise_aux = 0;
-            kk = 1;
             lim_sound = uint64(dur_song*sr_LFP);
             for k = (1:lim_sound)
                 env_LFP_int = env_LFP_int + env_aux(k,1);
@@ -149,6 +148,7 @@ end
 
 clear id_aux p t i file_name_lfp file_name_mua tetrodo dir_aux j id max_lfp_id max_mua_id
 clear mua_aux env_aux i j mua_smooth mua_smooth2 lfp_aux k max_lfp max_mua
+clear noise_aux mua_int max_mua_protocolo max_mua_protocolo_smooth max_env_lfp max_mua_id_smooth
 
 
 %% Guardo todos los datos
@@ -227,13 +227,13 @@ for i = (1:1:length(datos))
             corr_all_matrix_MUA(i,j) = 1; 
         else 
             if norm 
-               corr_all_matrix_MUA(i,j) = weighted_corr(datos(i).mua_norm_protocolo_smooth(fona_mua,1), ...
-                    datos(j).mua_norm_protocolo_smooth(fona_mua,1), ...
+               corr_all_matrix_MUA(i,j) = weighted_corr(datos(i).mua_norm_protocolo(fona_mua,1), ...
+                    datos(j).mua_norm_protocolo(fona_mua,1), ...
                     100);
             else
-                corr_all_matrix_MUA(i,j) = weighted_corr(datos(i).mua_smooth(fona_mua,1), ...
-                    datos(j).mua_smooth(fona_mua,1), ...
-                    max(datos(i).mua_max_protocolo_smooth, datos(j).mua_max_protocolo_smooth));
+                corr_all_matrix_MUA(i,j) = weighted_corr(datos(i).mua(fona_mua,1), ...
+                    datos(j).mua(fona_mua,1), ...
+                    max(datos(i).mua_max_protocolo, datos(j).mua_max_protocolo));
             end 
         end
     end
@@ -302,6 +302,8 @@ set(gca, 'XTick', ticks, 'XTickLabel', labels_x);
 axis equal
 axis tight
 title('MAX de tetrodos de LFP')
+
+clear ticks 
 
 
 %%
@@ -551,19 +553,14 @@ for k = (1:1:length(ploteo))
     leyendas{count,1} = datos(ploteo(k)).id;
     count = count +1;
     
-    % Ploteo envolvente
-    p = plot(datos(ploteo(k)).mua_smooth(:,2), datos(ploteo(k)).mua_smooth(:,1),':', 'LineWidth', lw);
-    hold on
-    
-   leyendas{count,1} = datos(ploteo(k)).id;
-   count = count + 1;
-    
     p.Color(4) = alpha;
 end 
 legend(leyendas, 'Interpreter' , 'none');
 title('MUA promediando tetrodo para el BOS')
 set(gca,'FontSize',25)
 xlim([0, dur_sound])
+
+clear count
 
 
 % MUA normalizada por protocolo
