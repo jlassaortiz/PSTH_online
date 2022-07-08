@@ -268,7 +268,7 @@ set(gca, 'YTick', ticks, 'YTickLabel', labels);
 set(gca, 'XTick', ticks, 'XTickLabel', labels, 'XTickLabelRotation',45);
 axis equal
 axis tight
-title('correlacion pesada MUA')
+title('correlacion pesada MUA SMOOTH')
 
 
 % plot max MUA 
@@ -285,7 +285,7 @@ set(gca, 'YTick', ticks, 'YTickLabel', labels_y);
 set(gca, 'XTick', ticks, 'XTickLabel', labels_x);
 axis equal
 axis tight
-title('MAX de tetrodos de MUA')
+title('MAX de tetrodos de MUA SMOOTH')
 
 % plot max LFP 
 figure()
@@ -541,13 +541,22 @@ lw = 2;
 
 % MUA 
 figure()
+count = 1;
 for k = (1:1:length(ploteo))
     
     % Ploteo envolvente
     p = plot(datos(ploteo(k)).mua(:,2), datos(ploteo(k)).mua(:,1), 'LineWidth', lw);
     hold on
     
-    leyendas{k,1} = datos(ploteo(k)).id;
+    leyendas{count,1} = datos(ploteo(k)).id;
+    count = count +1;
+    
+    % Ploteo envolvente
+    p = plot(datos(ploteo(k)).mua_smooth(:,2), datos(ploteo(k)).mua_smooth(:,1),':', 'LineWidth', lw);
+    hold on
+    
+   leyendas{count,1} = datos(ploteo(k)).id;
+   count = count + 1;
     
     p.Color(4) = alpha;
 end 
