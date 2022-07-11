@@ -158,7 +158,7 @@ datos_all = datos;
 
 %% Genero sub-set
 
-protocolo_analizar = 1; % indicar numero id del protocolo a analizar
+protocolo_analizar = 2; % indicar numero id del protocolo a analizar
 
 % Separa automaticamente los datos del protocolo indicado
 inicio_aux = (protocolo_analizar -1)*16 + 1;
@@ -268,7 +268,7 @@ set(gca, 'YTick', ticks, 'YTickLabel', labels);
 set(gca, 'XTick', ticks, 'XTickLabel', labels, 'XTickLabelRotation',45);
 axis equal
 axis tight
-title('correlacion pesada MUA SMOOTH')
+title('correlacion pesada MUA')
 
 
 % plot max MUA
@@ -285,7 +285,7 @@ set(gca, 'YTick', ticks, 'YTickLabel', labels_y);
 set(gca, 'XTick', ticks, 'XTickLabel', labels_x);
 axis equal
 axis tight
-title('MAX de tetrodos de MUA SMOOTH')
+title('MAX de tetrodos de MUA')
 
 % plot max LFP
 figure()
@@ -338,7 +338,7 @@ min_corr_pair_MUA = {r, c ; datos(r).id, datos(c).id}
 
 %% CORR en funcion de la distancia entre tetrodos
 % Conservo solo las corr del tetrodo con mayor amplitud
-% Adem�s calculo distancia del tetrodo con mayor amplitud al resto
+% Ademas calculo distancia del tetrodo con mayor amplitud al resto
 
 % Dejo este proyecto en stand by
 
@@ -523,10 +523,15 @@ clear directorio
 
 %% PLOTEO MUA, MUA_norm_protocolo
 
-close all
+% close all
+% 
+% % Elijo quienes plotear
+% ploteo = [7, 28, 42];
 
-% Elijo quienes plotear
-ploteo = [7, 28, 42];
+% ploteo = [7, 6, 16];
+% ploteo = [12, 11, 6];
+ploteo = [7, 28];
+
 
 % Guardo figuras?
 guardar = input('\nGuardo? (1 = SI / 0 = NO) : ');
