@@ -49,6 +49,7 @@ for j = (1:length(protocolos))
             datos(i).protocolo = id_aux;
             datos(i).peine = p;
             datos(i).tetrodo = t;
+            datos(i).coordinates = [(p-1)*200 , (t-1)*150];
 
             datos(i).dir_lfp = dir_aux;
             datos(i).file_lfp = strcat(dir_aux, file_name_lfp);
@@ -158,7 +159,7 @@ datos_all = datos;
 
 %% Genero sub-set
 
-protocolo_analizar = 2; % indicar numero id del protocolo a analizar
+protocolo_analizar = 3; % indicar numero id del protocolo a analizar
 
 % Separa automaticamente los datos del protocolo indicado
 inicio_aux = (protocolo_analizar -1)*16 + 1;
@@ -247,7 +248,7 @@ figure()
 imagesc(corr_all_matrix_LFP)
 colormap(gca,'parula');
 colorbar();
-caxis([0,1]); % or [-1,1]
+caxis([0.5,1]); % or [-1,1]
 ticks = 1:1:length(datos);
 set(gca,'TickLabelInterpreter','none')
 set(gca, 'YTick', ticks, 'YTickLabel', labels);
@@ -261,7 +262,7 @@ figure()
 imagesc(corr_all_matrix_MUA)
 colormap(gca,'parula');
 colorbar();
-caxis([0,1]); % or [-1,1]
+caxis([0.5,1]); % or [-1,1]
 ticks = 1:1:length(datos);
 set(gca,'TickLabelInterpreter','none')
 set(gca, 'YTick', ticks, 'YTickLabel', labels);
@@ -337,28 +338,43 @@ min_corr_pair_MUA = {r, c ; datos(r).id, datos(c).id}
 
 
 %% CORR en funcion de la distancia entre tetrodos
-% Conservo solo las corr del tetrodo con mayor amplitud
-% Ademas calculo distancia del tetrodo con mayor amplitud al resto
 
-% Dejo este proyecto en stand by
+close all
 
-% Busco indice del tetrodo con mayor amplitud de lfp
-index_id_max_LFP = 0;
+% Busco indice del tetrodo con mayor amplitud de MUA
+index_max_mua = find([datos.max_mua] == datos(1).mua_max_protocolo);
+
+col_corr_max_mua = corr_all_matrix_MUA(:,index_max_mua);
+
+col_posiciones = zeros(length(datos),2);
 for i = (1:length(datos))
+    x = datos(i).coordinates(1);
+    y = datos(i).coordinates(2);
+    v = [x,y];
+    col_posiciones(i,:) = v;
+end 
 
-    id_aux = datos(i).id;
+col_distancias_max_mua = zeros(length(datos),1);
+v1 = col_posiciones(index_max_mua,:);
+for i = (1:length(datos))
+    v2 = col_posiciones(i,:);
+    d = distancia(v1,v2);
+    col_distancias_max_mua(i) = d;
+end 
+% Ajustamos a modelo lineal con MCO
+lm = fitlm(col_distancias_max_mua, col_corr_max_mua);
+lm.Coefficients
 
-    if id_aux == lfp_max_all_id
-        index_id_max_LFP = i;
-    end
-end
+p = plot(lm);
+set(p,'LineWidth',5,'MarkerSize', 20);
+xlabel('distancia al tetrodo max amplitud MUA (um)')
+ylabel('corr al tetrodo max amplitud MUA')
+title('dist vs corr al tetrodo de max amplitud MUA')
+set(gca,'FontSize',30)
 
-% De datos conservo la columna de correlaciones del tetrodo con mayor
-% amplitud contra el resto
-corr_tet_max_lfp = corr_all_matrix_LFP(:,index_id_max_LFP);
-
-
-
+titulo = ['_dist_vs_corr_max-', datos(1).mua_max_protocolo_id, '_'];
+dir_aux = datos(1).dir_mua;
+print_pdf(1, dir_aux, strcat(titulo, '.pdf'))
 
 
 %% SONG vs MUA y LFP (CALCULOS)
