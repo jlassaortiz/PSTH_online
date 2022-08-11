@@ -169,6 +169,126 @@ datos = datos_all(subset);
 
 clear subset fin_aux inicio_aux
 
+
+%% Corr de un canal de un protocolo contra resto de los canales
+
+% Para un solo protocolo, busco el canal de mayor amplitud y calcula la
+% corr de este canal contra el resto. Grafico las corr en una tabla que
+% respeta la forma del NNx.
+
+tet_max_ampl_mua = datos(1).mua_max_protocolo_id;
+tet_max_ampl_lfp = datos(1).env_lfp_max_protocolo_id;
+
+i_max_mua = find(contains({datos.id}, strcat(datos(1).protocolo, '_', tet_max_ampl_mua )));
+i_max_lfp =  find(contains({datos.id}, strcat(datos(1).protocolo, '_', tet_max_ampl_lfp )));
+
+% norm = input('\nCorrelacionamos seniales normalizadas por max del protocolo? (1 = SI, 0 = NO): ');
+% norm = norm == 1;
+
+corr_all_matrix_LFP = zeros(sqrt(length(datos)));
+corr_all_matrix_MUA = zeros(sqrt(length(datos)));
+
+
+% % Matriz donde guardo valor max de cada senial de cada tetrodo de todo el peine
+% lfp_max = zeros(round(sqrt(length(datos))));
+% mua_max = zeros(round(sqrt(length(datos))));
+% 
+% for i = (1:1:length(datos))
+% 
+%     lfp_max(i) = datos(i).max_env_lfp;
+% 
+%     mua_max(i) = datos(i).max_mua;
+% 
+% end
+% 
+% clear i
+
+
+% OJO HARCODEO FEO
+% Conservo seccion env lfp durante la presentacion del estimulo auditivo
+fona_lfp = (1:1:length(datos(1).env))'; % vector de indices lfp
+fona_lfp = fona_lfp < 4.5 * 1000; % transformo indices a t y me quedo con los menores a 4.5
+% Conservo seccion mua durante la presentacion del estimulo
+fona_mua = datos(1).mua(:,2) < 4.5;
+
+% Calculo corr
+count = 1;
+for col = (1:1:4)
+
+    for fila = (4:-1:1)
+        
+        % Calculo correlacion entre se�ales LFP
+        corr_all_matrix_LFP(fila,col) = weighted_corr(datos(count).env_lfp_norm_protocolo(fona_lfp) , ...
+            datos(i_max_lfp).env_lfp_norm_protocolo(fona_lfp), ...
+            100);
+
+        % Calculo correlacion entre se�ales MUA
+       corr_all_matrix_MUA(fila,col) = weighted_corr(datos(count).mua_norm_protocolo(fona_mua,1), ...
+            datos(i_max_mua).mua_norm_protocolo(fona_mua,1), ...
+            100);
+        
+        count = count + 1;
+    end
+end
+
+
+clear i j
+
+
+labels_x = {'T4 | 600um', 'T3 | 400um', 'T2 | 200um', 'T1 | 0um'};
+labels_y = {'P1 | 0um', 'P2 | 200um', 'P3 | 400um', 'P4 | 600um'};
+
+% plot LFP
+figure()
+x = repmat(1:4,4,1); % generate x-coordinates
+y = x'; % generate y-coordinates
+% Generate Labels
+t = num2cell(round(corr_all_matrix_LFP, 2)); % extact values into cells
+t = cellfun(@num2str, t, 'UniformOutput', false); % convert to string
+
+imagesc(corr_all_matrix_LFP)
+colormap(gca,'parula');
+colorbar();
+text(x(:), y(:), t, 'HorizontalAlignment', 'Center') % Draw Image and Label Pixels
+% caxis([0.5,1]); % or [-1,1]
+caxis([0,1])
+ticks = 1:1:length(datos);
+set(gca,'TickLabelInterpreter','none')
+set(gca, 'YTick', ticks, 'YTickLabel', labels_x);
+set(gca, 'XTick', ticks, 'XTickLabel', labels_y, 'XTickLabelRotation',45);
+axis equal
+axis tight
+title({datos(1).protocolo;'correlacion pesada LFP'}, 'Interpreter', 'None')
+
+
+% plot MUA
+figure()
+x = repmat(1:4,4,1); % generate x-coordinates
+y = x'; % generate y-coordinates
+% Generate Labels
+t = num2cell(round(corr_all_matrix_MUA,2)); % extact values into cells
+t = cellfun(@num2str, t, 'UniformOutput', false); % convert to string
+
+imagesc(corr_all_matrix_MUA)
+colormap(gca,'parula');
+colorbar();
+text(x(:), y(:), t, 'HorizontalAlignment', 'Center') % Draw Image and Label Pixels
+% caxis([0.5,1]); % or [-1,1]
+caxis([0,1])
+ticks = 1:1:length(datos);
+set(gca,'TickLabelInterpreter','none')
+set(gca, 'YTick', ticks, 'YTickLabel', labels_x);
+set(gca, 'XTick', ticks, 'XTickLabel', labels_y, 'XTickLabelRotation',45);
+axis equal
+axis tight
+title({datos(1).protocolo;'correlacion pesada MUA'}, 'Interpreter', 'None')
+
+
+print_png(1, datos(1).dir_lfp, strcat('_corr_lfp_tet_max'))
+print_png(2, datos(1).dir_mua, strcat('_corr_mua_tet_max'))
+
+
+
 %% Corr Boari_2021
 
 norm = input('\nCorrelacionamos se�ales normalizadas por max del protocolo? (1 = SI, 0 = NO): ');
