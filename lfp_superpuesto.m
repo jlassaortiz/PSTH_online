@@ -159,7 +159,7 @@ datos_all = datos;
 
 %% Genero sub-set
 
-protocolo_analizar = 3; % indicar numero id del protocolo a analizar
+protocolo_analizar = 1; % indicar numero id del protocolo a analizar
 
 % Separa automaticamente los datos del protocolo indicado
 inicio_aux = (protocolo_analizar -1)*16 + 1;
@@ -250,8 +250,7 @@ imagesc(corr_all_matrix_LFP)
 colormap(gca,'parula');
 colorbar();
 text(x(:), y(:), t, 'HorizontalAlignment', 'Center') % Draw Image and Label Pixels
-% caxis([0.5,1]); % or [-1,1]
-caxis([0,1])
+caxis([0,1]); % or [-1,1]
 ticks = 1:1:length(datos);
 set(gca,'TickLabelInterpreter','none')
 set(gca, 'YTick', ticks, 'YTickLabel', labels_x);
@@ -273,8 +272,7 @@ imagesc(corr_all_matrix_MUA)
 colormap(gca,'parula');
 colorbar();
 text(x(:), y(:), t, 'HorizontalAlignment', 'Center') % Draw Image and Label Pixels
-% caxis([0.5,1]); % or [-1,1]
-caxis([0,1])
+caxis([0,1]); % or [-1,1]
 ticks = 1:1:length(datos);
 set(gca,'TickLabelInterpreter','none')
 set(gca, 'YTick', ticks, 'YTickLabel', labels_x);
