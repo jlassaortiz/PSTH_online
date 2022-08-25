@@ -196,8 +196,95 @@ if guardar_txt == 1
 end
 
 
+% Cuantifiaciones LFP_30Hz y estímulos aud %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+LFP_mean = struct();
+MUA_mean = struct();
+count = 1;
+
+% Para cada estimulo seleccionado
+for i = grilla_psth
+    
+    % Guardo datos de interes de cada estimulo
+    LFP_mean(count).name = estimulos_tetrodos(1).canal(i).name;
+    LFP_mean(count).dir = estimulos_tetrodos(1).canal(i).dir;
+    LFP_mean(count).song = estimulos_tetrodos(1).canal(i).song;
+    LFP_mean(count).song_freq = estimulos_tetrodos(1).canal(i).freq;
+    MUA_mean(count).name = estimulos_tetrodos(1).canal(i).name;
+    MUA_mean(count).dir = estimulos_tetrodos(1).canal(i).dir;
+    MUA_mean(count).song = estimulos_tetrodos(1).canal(i).song;  
+    MUA_mean(count).song_freq = estimulos_tetrodos(1).canal(i).freq;
+
+    
+    % Inicializo vectores donde guardo señales de cada canal
+    LFP_aux = zeros(length(estimulos_tetrodos(1).canal(i).LFP_promedio),4);
+    MUA_aux = zeros(length(estimulos_tetrodos(1).canal(i).psth_sw(:,2)),4);
+    
+    % Para cada canal de un tetrodo
+    for c = (1:4)
+        LFP_aux(:,c) = estimulos_tetrodos(1).canal(i).LFP_promedio;
+        MUA_aux = estimulos_tetrodos(1).canal(i).psth_sw(:,2);
+    end 
+    
+    % Promedio señales de los 4 canales del tetrodo
+    LFP_aux = mean(LFP_aux, 2);
+    MUA_aux = mean(MUA_aux, 2);
+    MUA_aux = horzcat(estimulos_tetrodos(1).canal(i).psth_sw(:,1), MUA_aux);
+    
+    % Agrego señales promediadas por tetrodo
+    LFP_mean(count).LFP_tet = LFP_aux;
+    MUA_mean(count).MUA_tet = MUA_aux;
+    
+    % Calculo score de LFP con estimulo y post-estimulo
+    t_sil = 4.5*sr_lfp;
+    h = abs(hilbert(LFP_aux));
+    LFP_score_aud = mean(h(1:t_sil,1));
+    LFP_score_sil = mean(h(t_sil:t_sil*2,1));
+    
+    LFP_mean(count).LFP_score_aud = LFP_score_aud;
+    LFP_mean(count).LFP_score_sil = LFP_score_sil;
+    LFP_mean(count).LFP_score_dif = LFP_score_aud - LFP_score_sil;
+    LFP_mean(count).LFP_env = h;
+    
+    count = count + 1;
+    clear LFP_aux MUA_aux
+end 
+
+for i = (1:length(grilla_psth))
+    figure()
+    subplot(3, 1, 1)
+    t_song = (1:length(LFP_mean(i).song))/LFP_mean(i).song_freq;
+    plot(t_song, LFP_mean(i).song, 'black');
+    xlim([0, 10])
+    diferencia = LFP_mean(i).LFP_score_dif;
+    texto = ['diferencia: ' , num2str(diferencia)];
+    title({[LFP_mean(i).name,' | ',puerto_canal_custom]; texto}, ...
+    'Interpreter', 'none');
+    
+    subplot(3, 1, [2,3])
+    plot(LFP_mean(i).LFP_env, 'blue');
+    hold on
+    yline(LFP_mean(i).LFP_score_aud ,'r', {'FONACION'})
+    yline(LFP_mean(i).LFP_score_sil, 'r:', {'NO FONACION'})
+end
+
+
+print_pdf(1, directorio, strcat('_',string(puerto_canal_custom),...
+    '_CON_power_LFP-', string(b_inf),'-',string(b_sup),...
+    'Hz_',string(round(thr)), 'uV.pdf'))
+
+print_pdf(2, directorio, strcat('_',string(puerto_canal_custom),...
+    '_BOS_power_LFP-', string(b_inf),'-',string(b_sup),...
+    'Hz_',string(round(thr)), 'uV.pdf'))
+
+print_pdf(3, directorio, strcat('_',string(puerto_canal_custom),...
+    '_REV_power_LFP-', string(b_inf),'-',string(b_sup),...
+    'Hz_',string(round(thr)), 'uV.pdf'))
+
+
+
 % PLOTEO %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
+close all
 % Ploteo Grilla PSTH
 plot_some_raster_LFP_1tetrode(grilla_psth, id_BOS, estimulos_tetrodos, ...
     frequency_parameters, sr_lfp, tiempo_file, ntrials,thr,directorio,spike_times);
@@ -209,17 +296,6 @@ string(thr), "uV", "  |  ", "ntrials:", string(ntrials), "  |  ", ...
 "t_inter_estimulo:", string(tiempo_file), "  |  ", ...
 'BANDA: ', string(b_inf),'-',string(b_sup),'Hz') })
 
-% % Espectrograma. no lo probé aun
-% sample_rate=sr_lfp;
-% window_width=300;
-% [~,f,t,p]=spectrogram(saveme,gausswin(window_width,2.5),round(0.85*window_width),linspace(0,round(sample_rate/2),round(sample_rate/window_width)),sample_rate,'yaxis');
-% %MinThreshold',-110. El minthreshold es opcional, lo uso para limitar la cantidad de gris que aparece.
-% 
-% % Y en general ploteo con esto:
-% figure()
-% imagesc('XData',t,'YData',f,'CData',10*log10(p(1:100,:)));
-% colormap(flipud(gray));
-% ylim([0 10000]);
 
 % Otra estrategia espectrograma
 figure()
@@ -240,11 +316,15 @@ xlim([10 50])
 if guardar == 1
 
     print_pdf(1, directorio, strcat('_',string(puerto_canal_custom),...
-        '_grilla_PSTH-LFP-tetrode_BANDA-', string(b_inf),'-',string(b_sup) ,'Hz_', string(round(thr)), 'uV.pdf'))
+        '_grilla_PSTH-LFP-tetrode_BANDA-', string(b_inf),'-',string(b_sup),...
+        'Hz_', string(round(thr)), 'uV.pdf'))
     
     print_pdf(3, directorio, strcat('_',string(puerto_canal_custom),...
-    '_FFT-LFP-tetrode_BANDA-', string(b_inf),'-',string(b_sup) ,'Hz_', string(round(thr)), 'uV.pdf'))
+    '_FFT-LFP-tetrode_BANDA-', string(b_inf),'-',string(b_sup) ,'Hz_', ...
+    string(round(thr)), 'uV.pdf'))
    
 end
 
 clear estimulos_aux j i  
+
+beep
