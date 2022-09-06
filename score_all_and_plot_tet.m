@@ -426,16 +426,16 @@ print_pdf(2, dir_aux, '_MEAN_INT_pasa_BAJOS.pdf')
 print_pdf(3, dir_aux, '_MEAN_DIF_pasa_ALTOS.pdf')
 print_pdf(4, dir_aux, '_MEAN_DIF_pasa_BAJOS.pdf')
 
-% clear i j k apt apt_id bandas c corr_aux dif_avg diff_altos_avg diff_bajos_avg
-% clear e estimulos estimulos_table estimulos_tetrodos estimulos_tetrodos_avg
-% clear guardar i int_altos_avg int_aux int_bajos_avg leyendas LFP LFP_1tet_BOS
-% clear LFP_1tet_BOS_aux lfp_aux LFP_canales LFP_mean LFP_score_aud LFP_score_sil
-% clear MUA_mean params params_analisis pasa_altos pasa_bajos plot_grilla psth_aux
-% clear psth_aux2 PSTHsw_1tet_BOS PSTHsw_1tet_BOS_aux raw_filtered size_sw 
-% clear spike_times sr_lfp step sw_data sw_times t_aux t_psth t_sil t_window
-% clear thr thr_automatico amplifier_channels board_adc_channels directorio
-% clear frequency_parameters l_aux LFP_tetrodo list_apt puerto_canal_custom t_PSTH
-% clear ans dir_list_apt spikes_canales
+clear i j k apt apt_id bandas c corr_aux dif_avg diff_altos_avg diff_bajos_avg
+clear e estimulos estimulos_table estimulos_tetrodos estimulos_tetrodos_avg
+clear guardar i int_altos_avg int_aux int_bajos_avg leyendas LFP LFP_1tet_BOS
+clear LFP_1tet_BOS_aux lfp_aux LFP_canales LFP_mean LFP_score_aud LFP_score_sil
+clear MUA_mean params params_analisis pasa_altos pasa_bajos plot_grilla psth_aux
+clear psth_aux2 PSTHsw_1tet_BOS PSTHsw_1tet_BOS_aux raw_filtered size_sw 
+clear spike_times sr_lfp step sw_data sw_times t_aux t_psth t_sil t_window
+clear thr thr_automatico amplifier_channels board_adc_channels directorio
+clear frequency_parameters l_aux LFP_tetrodo list_apt puerto_canal_custom t_PSTH
+clear ans dir_list_apt spikes_canales
 
 
 save([dir_aux 'estimulos_apt.mat'], 'estimulos_apt')
