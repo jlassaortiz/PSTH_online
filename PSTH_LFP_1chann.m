@@ -120,6 +120,7 @@ filt_LFP = designfilt('lowpassiir','DesignMethod','butter',...
 % Aplica filtros
 raw_filtered = filtfilt(filt_spikes, raw);
 LFP = filtfilt(filt_LFP, raw);
+sr_lfp = frequency_parameters.amplifier_sample_rate;
 
 clear filt_spikes
 
@@ -142,11 +143,11 @@ estimulos = generate_raster(spike_times, estimulos , tiempo_file, ...
 
 % Calculo LFP promediado por estimulo todos los trials
 estimulos = trialAverage_LFP(LFP, estimulos, tiempo_file, ntrials, ...
-    frequency_parameters);
+    frequency_parameters, sr_lfp);
 
 % Calculo scores
 estimulos = score_calculator(id_BOS, estimulos, frequency_parameters, ...
-    spike_times, ntrials);
+    spike_times, ntrials, tiempo_file);
 
 % Calculo sliding window para cada estimulo
 t_window = 0.015; % 15 ms
@@ -154,7 +155,7 @@ step = 0.001; % 1 ms
 for i = (1:length(estimulos))
     [sw_data, sw_times] = sliding_window(estimulos(i).spikes_norm, ...
         frequency_parameters.amplifier_sample_rate, ...
-        t_window, step);
+        t_window, step, tiempo_file);
     psth_sw = [sw_data, sw_times];
     estimulos(i).psth_sw = psth_sw;
 end
