@@ -192,27 +192,15 @@ for apt = (1:height(list_apt))
 
     for c = 1:4 
         l_aux = length(estimulos_tetrodos(c).canal(id_BOS).psth_sw(:,1));
-        PSTHsw_1tet_BOS_aux(1:l_aux,c) = estimulos_tetrodos(c).canal(id_BOS).psth_sw(:,1);
-        LFP_1tet_BOS_aux(:,c) = estimulos_tetrodos(c).canal(id_BOS).LFP_promedio;
+        PSTHsw_1tet_BOS_aux(1:l_aux,c) = ...
+            estimulos_tetrodos(c).canal(id_BOS).psth_sw(:,1);
+        LFP_1tet_BOS_aux(:,c) = ...
+            estimulos_tetrodos(c).canal(id_BOS).LFP_promedio;
     end 
 
     PSTHsw_1tet_BOS = mean(PSTHsw_1tet_BOS_aux, 2);
     PSTHsw_1tet_BOS(:,2) = t_PSTH;
     LFP_1tet_BOS = mean(LFP_1tet_BOS_aux, 2);
-
-
-%     if guardar_txt == 1
-% 
-%         csvwrite(strcat(directorio, 'PSTHsw_1tet_BOS','_',string(puerto_canal_custom),...
-%             '_BANDA-', string(b_inf),'-',string(b_sup) ,'Hz_', ...
-%             string(round(thr)), 'uV', '.txt'), ...
-%             PSTHsw_1tet_BOS);
-% 
-%         csvwrite(strcat(directorio, 'LFP_1tet_BOS','_',string(puerto_canal_custom),...
-%             '_BANDA-', string(b_inf),'-',string(b_sup) ,'Hz_', ...
-%             string(round(thr)), 'uV', '.txt'), ...
-%             LFP_1tet_BOS)
-%     end
 
     % Cuantifiaciones LFP_30Hz y estímulos aud %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     LFP_mean = struct();
@@ -336,39 +324,8 @@ for apt = (1:height(list_apt))
         estimulos_tetrodos_avg(e).LFP_score_sil_tet = LFP_mean(e).LFP_score_sil; 
         estimulos_tetrodos_avg(e).LFP_score_dif_tet = LFP_mean(e).LFP_score_dif;
         estimulos_tetrodos_avg(e).LFP_env_tet = LFP_mean(e).LFP_env;
-    end 
-    
-    
-    
+    end  
     estimulos_apt(apt).apt = estimulos_tetrodos_avg;
-
-    %%%%%%%%%%%%%%%%%%%%
-% 
-%     close all
-%     % Ploteo Grilla PSTH
-%     plot_some_raster_LFP_1tetrode(grilla_psth, id_BOS, estimulos_tetrodos, ...
-%         frequency_parameters, sr_lfp, tiempo_file, ntrials,thr,directorio,spike_times);
-% 
-%     suptitle2({datestr(now, 'yyyy-mm-dd'); ...
-%     string(directorio) ; ...
-%     strcat('tetrodo = ',string(puerto_canal_custom),"  |  ", ...
-%     string(thr), "uV", "  |  ", "ntrials:", string(ntrials), "  |  ", ...
-%     "t_inter_estimulo:", string(tiempo_file), "  |  ", ...
-%     'BANDA: ', string(b_inf),'-',string(b_sup),'Hz') })
-% 
-%     % Otra estrategia espectrograma
-%     figure()
-%     nwin = 63;
-%     wind = kaiser(nwin,17);
-%     nlap = nwin-10;
-%     nfft = 256;
-% 
-%     spectrogram(LFP_1tet_BOS,wind,nlap,nfft,sr_lfp,'yaxis')
-%     ylim([0 50])
-% 
-%     figure('DefaultAxesFontSize',18)
-%     fft_plot(LFP_1tet_BOS,sr_lfp);
-%     xlim([10 50])
 end
 
 beep
@@ -412,7 +369,8 @@ for apt = (1:length(estimulos_apt))
     title({strcat('INT_PASA-BAJOS_', datestr(now, 'yyyy-mm-dd')); ...
     string(directorio) ; ...
     strcat(string(puerto_canal_custom), "  " , string(thr), "uV", "  ntrials:",...
-    string(ntrials), "  t_inter_estimulo:", string(tiempo_file)) }, 'Interpreter','None')
+    string(ntrials), "  t_inter_estimulo:", string(tiempo_file)) }, ...
+    'Interpreter','None')
     int_bajos_avg(:,apt) = pasa_bajos.int_norm_tet;
 
     % Plotear DIF PASA-ALTOS
@@ -433,7 +391,8 @@ for apt = (1:length(estimulos_apt))
     title({strcat('DIF_PASA-BAJOS_', datestr(now, 'yyyy-mm-dd')); ...
     string(directorio) ; ...
     strcat(string(puerto_canal_custom), "  " , string(thr), "uV", "  ntrials:",...
-    string(ntrials), "  t_inter_estimulo:", string(tiempo_file)) }, 'Interpreter','None')
+    string(ntrials), "  t_inter_estimulo:", string(tiempo_file)) }, ...
+    'Interpreter','None')
     diff_bajos_avg(:,apt) = pasa_bajos.LFP_score_dif_tet;    
     
 end
