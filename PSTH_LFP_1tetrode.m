@@ -199,20 +199,19 @@ end
 % Cuantifiaciones LFP_30Hz y estímulos aud %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 LFP_mean = struct();
 MUA_mean = struct();
-count = 1;
 
 % Para cada estimulo seleccionado
-for i = grilla_psth
+for i = (1:length(estimulos_tetrodos(1).canal))
     
     % Guardo datos de interes de cada estimulo
-    LFP_mean(count).name = estimulos_tetrodos(1).canal(i).name;
-    LFP_mean(count).dir = estimulos_tetrodos(1).canal(i).dir;
-    LFP_mean(count).song = estimulos_tetrodos(1).canal(i).song;
-    LFP_mean(count).song_freq = estimulos_tetrodos(1).canal(i).freq;
-    MUA_mean(count).name = estimulos_tetrodos(1).canal(i).name;
-    MUA_mean(count).dir = estimulos_tetrodos(1).canal(i).dir;
-    MUA_mean(count).song = estimulos_tetrodos(1).canal(i).song;  
-    MUA_mean(count).song_freq = estimulos_tetrodos(1).canal(i).freq;
+    LFP_mean(i).name = estimulos_tetrodos(1).canal(i).name;
+    LFP_mean(i).dir = estimulos_tetrodos(1).canal(i).dir;
+    LFP_mean(i).song = estimulos_tetrodos(1).canal(i).song;
+    LFP_mean(i).song_freq = estimulos_tetrodos(1).canal(i).freq;
+    MUA_mean(i).name = estimulos_tetrodos(1).canal(i).name;
+    MUA_mean(i).dir = estimulos_tetrodos(1).canal(i).dir;
+    MUA_mean(i).song = estimulos_tetrodos(1).canal(i).song;  
+    MUA_mean(i).song_freq = estimulos_tetrodos(1).canal(i).freq;
 
     
     % Inicializo vectores donde guardo señales de cada canal
@@ -221,8 +220,8 @@ for i = grilla_psth
     
     % Para cada canal de un tetrodo
     for c = (1:4)
-        LFP_aux(:,c) = estimulos_tetrodos(1).canal(i).LFP_promedio;
-        MUA_aux = estimulos_tetrodos(1).canal(i).psth_sw(:,2);
+        LFP_aux(:,c) = estimulos_tetrodos(c).canal(i).LFP_promedio;
+        MUA_aux = estimulos_tetrodos(c).canal(i).psth_sw(:,2);
     end 
     
     % Promedio señales de los 4 canales del tetrodo
@@ -231,8 +230,8 @@ for i = grilla_psth
     MUA_aux = horzcat(estimulos_tetrodos(1).canal(i).psth_sw(:,1), MUA_aux);
     
     % Agrego señales promediadas por tetrodo
-    LFP_mean(count).LFP_tet = LFP_aux;
-    MUA_mean(count).MUA_tet = MUA_aux;
+    LFP_mean(i).LFP_tet = LFP_aux;
+    MUA_mean(i).MUA_tet = MUA_aux;
     
     % Calculo score de LFP con estimulo y post-estimulo
     t_sil = 4.5*sr_lfp;
@@ -240,16 +239,15 @@ for i = grilla_psth
     LFP_score_aud = mean(h(1:t_sil,1));
     LFP_score_sil = mean(h(t_sil:t_sil*2,1));
     
-    LFP_mean(count).LFP_score_aud = LFP_score_aud;
-    LFP_mean(count).LFP_score_sil = LFP_score_sil;
-    LFP_mean(count).LFP_score_dif = LFP_score_aud - LFP_score_sil;
-    LFP_mean(count).LFP_env = h;
+    LFP_mean(i).LFP_score_aud = LFP_score_aud;
+    LFP_mean(i).LFP_score_sil = LFP_score_sil;
+    LFP_mean(i).LFP_score_dif = LFP_score_aud - LFP_score_sil;
+    LFP_mean(i).LFP_env = h;
     
-    count = count + 1;
     clear LFP_aux MUA_aux
 end 
 
-for i = (1:length(grilla_psth))
+for i = (1:length(LFP_mean))
     figure()
     subplot(3, 1, 1)
     t_song = (1:length(LFP_mean(i).song))/LFP_mean(i).song_freq;
@@ -272,17 +270,59 @@ print_pdf(1, directorio, strcat('_',string(puerto_canal_custom),...
     '_CON_power_LFP-', string(b_inf),'-',string(b_sup),...
     'Hz_',string(round(thr)), 'uV.pdf'))
 
-print_pdf(2, directorio, strcat('_',string(puerto_canal_custom),...
+print_pdf(10, directorio, strcat('_',string(puerto_canal_custom),...
     '_BOS_power_LFP-', string(b_inf),'-',string(b_sup),...
     'Hz_',string(round(thr)), 'uV.pdf'))
 
-print_pdf(3, directorio, strcat('_',string(puerto_canal_custom),...
+print_pdf(13, directorio, strcat('_',string(puerto_canal_custom),...
     '_REV_power_LFP-', string(b_inf),'-',string(b_sup),...
     'Hz_',string(round(thr)), 'uV.pdf'))
 
-
+close all
 
 % PLOTEO %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+estimulos_tetrodos_avg = estimulos;
+estimulos_tetrodos_avg = rmfield(estimulos_tetrodos_avg, ...
+    {'t0s', 'spikes_norm','trials_id', 'LFP_promedio', 'int_norm', ...
+    'corr', 'psth_sw'});
+
+% para cada estimulo
+for e = (1:length(estimulos_tetrodos(1).canal()))
+    
+    lfp_aux = zeros(length(estimulos_tetrodos(1).canal(1).LFP_promedio),4);
+    int_aux = zeros(1,4);
+    corr_aux = zeros(1,4);
+    psth_aux = zeros(length(estimulos_tetrodos(1).canal(1).psth_sw(:,1)),4);
+
+    % para cada canal
+    for c = (1:length(estimulos_tetrodos))
+        lfp_aux(:,c) = estimulos_tetrodos(c).canal(e).LFP_promedio;
+        int_aux(1,c) = estimulos_tetrodos(c).canal(e).int_norm;
+        corr_aux(1,c) = estimulos_tetrodos(c).canal(e).corr;
+        psth_aux(:,c) = estimulos_tetrodos(c).canal(e).psth_sw(:,1);
+    end 
+    
+    % Promedio los 4 canales
+    estimulos_tetrodos_avg(e).LFP_promedio_tet = mean(lfp_aux, 2);
+    estimulos_tetrodos_avg(e).int_norm_tet = mean(int_aux, 2);
+    estimulos_tetrodos_avg(e).corr_tet = mean(corr_aux, 2);
+    psth_aux = mean(psth_aux, 2);
+    
+   
+    % Agrego vector de tiempos a PSTH_SW
+    t_aux = estimulos_tetrodos(1).canal(1).psth_sw(:,2);
+    psth_aux2 = horzcat(psth_aux, t_aux);
+    estimulos_tetrodos_avg(e).psth_sw_tet = psth_aux2;
+    
+    % Para cada estimulo agrego cuantificaciones de power LFP
+    estimulos_tetrodos_avg(e).LFP_score_aud_tet =  LFP_mean(e).LFP_score_aud;
+    estimulos_tetrodos_avg(e).LFP_score_sil_tet = LFP_mean(e).LFP_score_sil; 
+    estimulos_tetrodos_avg(e).LFP_score_dif_tet = LFP_mean(e).LFP_score_dif;
+    estimulos_tetrodos_avg(e).LFP_env_tet = LFP_mean(e).LFP_env;
+end 
+
+
+%%%%%%%%%%%%%%%%%%%%
 
 close all
 % Ploteo Grilla PSTH
@@ -295,7 +335,6 @@ strcat('tetrodo = ',string(puerto_canal_custom),"  |  ", ...
 string(thr), "uV", "  |  ", "ntrials:", string(ntrials), "  |  ", ...
 "t_inter_estimulo:", string(tiempo_file), "  |  ", ...
 'BANDA: ', string(b_inf),'-',string(b_sup),'Hz') })
-
 
 % Otra estrategia espectrograma
 figure()
@@ -312,6 +351,60 @@ fft_plot(LFP_1tet_BOS,sr_lfp);
 xlim([10 50])
 
 
+
+% PLOTEO INT PASA ALTOS/BAJOS %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+estimulos_table = struct2table(estimulos_tetrodos_avg);
+
+% Selecciono datos de ese protocolo 
+pasa_altos = estimulos_table(estimulos_table.tipo == 'up' , :);
+pasa_bajos = estimulos_table(estimulos_table.tipo == 'down' , :);
+
+% Plotear INT PASA-ALTOS
+figure();
+plot(pasa_altos.frec_corte, pasa_altos.int_norm_tet, '-o')
+title({strcat('INT_PASA-ALTOS_', datestr(now, 'yyyy-mm-dd')); ...
+string(directorio) ; ...
+strcat(string(puerto_canal_custom), "  " , string(thr), "uV",...
+"  ntrials:", string(ntrials), "  t_inter_estimulo:", string(tiempo_file)) }, ...
+'Interpreter','None')
+legend
+
+% Plotear INT PASA-BAJOS
+figure();
+plot(pasa_bajos.frec_corte, pasa_bajos.int_norm_tet, '-o')
+title({strcat('INT_PASA-BAJOS_', datestr(now, 'yyyy-mm-dd')); ...
+string(directorio) ; ...
+strcat(string(puerto_canal_custom), "  " , string(thr), "uV", "  ntrials:",...
+string(ntrials), "  t_inter_estimulo:", string(tiempo_file)) }, 'Interpreter','None')
+legend
+
+% Plotear DIF PASA-ALTOS
+figure();
+plot(pasa_altos.frec_corte, pasa_altos.LFP_score_dif_tet, '-o')
+title({strcat('DIF_PASA-ALTOS_', datestr(now, 'yyyy-mm-dd')); ...
+string(directorio) ; ...
+strcat(string(puerto_canal_custom), "  " , string(thr), "uV",...
+"  ntrials:", string(ntrials), "  t_inter_estimulo:", string(tiempo_file)) }, ...
+'Interpreter','None')
+legend
+
+% Plotear DIF PASA-BAJOS
+figure();
+plot(pasa_bajos.frec_corte, pasa_bajos.LFP_score_dif_tet, '-o')
+title({strcat('DIF_PASA-BAJOS_', datestr(now, 'yyyy-mm-dd')); ...
+string(directorio) ; ...
+strcat(string(puerto_canal_custom), "  " , string(thr), "uV", "  ntrials:",...
+string(ntrials), "  t_inter_estimulo:", string(tiempo_file)) }, 'Interpreter','None')
+legend
+
+
+
+% Ploteo diff power en funcion de freq corte %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+
+
 % Guardo
 if guardar == 1
 
@@ -322,6 +415,16 @@ if guardar == 1
     print_pdf(3, directorio, strcat('_',string(puerto_canal_custom),...
     '_FFT-LFP-tetrode_BANDA-', string(b_inf),'-',string(b_sup) ,'Hz_', ...
     string(round(thr)), 'uV.pdf'))
+
+    print_pdf(4, directorio, strcat('_',string(puerto_canal_custom),...
+        '_INT_pasa-ALTOS', '.pdf'))
+    print_pdf(5, directorio, strcat('_',string(puerto_canal_custom),...
+        '_INT_pasa-BAJOS', '.pdf'))
+    
+    print_pdf(6, directorio, strcat('_',string(puerto_canal_custom),...
+        '_DIF_pasa-ALTOS', '.pdf'))
+    print_pdf(7, directorio, strcat('_',string(puerto_canal_custom),...
+        '_DIF_pasa-BAJOS', '.pdf'))
    
 end
 
