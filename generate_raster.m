@@ -22,6 +22,7 @@ for i = (1:1:length(t0s_dict))
     % estimulo y el id del trial
     spikes_norm = ones(1,1);
     trial_id = ones(1,1);
+    spike_trial_aux = struct();
     
     % Para cada trial
     for j = (1:1: ntrials)
@@ -48,11 +49,24 @@ for i = (1:1:length(t0s_dict))
         % Apendeo el numero de trial a la lista de trial_id del estimulo
         trial_id = vertcat(trial_id, trial);
         
+        % Apendeo los spikes normalizados de esa presentacion aparete
+        spike_trial_aux(j).spikes = spikes_trial;
+        
+        t_window = 0.015; % 15 ms
+        step = 0.001; % 1 ms
+        limite = tiempo_file;
+        [sliding_window_data, sliding_window_tiempo] = sliding_window( ...
+            spikes_trial, frequency_parameters.amplifier_sample_rate,...
+            t_window, step, limite);
+
+        spike_trial_aux(j).sw =[sliding_window_data, sliding_window_tiempo];
+        
     end
     
     % Guardo los spikes y los trial_id de este estimulo
     t0s_dict(i).spikes_norm = spikes_norm(2:end); % elimino el primer cero
     t0s_dict(i).trials_id = trial_id(2:end); % elimino el primer cero
+    t0s_dict(i).spikes_trials = spike_trial_aux;
     
 end
 
