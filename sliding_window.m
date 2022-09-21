@@ -10,7 +10,7 @@ function [sliding_window_data, sliding_window_tiempo] = sliding_window( ...
 % fs = frecuencia de sampleo de 'data'
 % t_window = tamaño de la ventana de la SW (en seg.)
 % step = tamaño del paso de corrimiento de la SW (en seg.)
-% t_total = largo del tiempo que se esta integrando (en seg.)u 
+% limite = largo del tiempo que se esta integrando (en seg.)
 
 
 % Calculo el tamaño final de: sliding_window_data y sliding_window_tiempo
