@@ -123,11 +123,11 @@ for c = ( 1:1: size(spikes_canales,2) )
     % Calculo LFP promediado por estimulo todos los trials
     estimulos = trialAverage_LFP(LFP, estimulos, tiempo_file, ntrials, ...
           frequency_parameters, sr_lfp);
-
+    
     % Calculo scores
     estimulos = score_calculator(id_BOS, estimulos, ...
         frequency_parameters, spike_times, ntrials, tiempo_file);
-    
+
     % Calculo sliding window para cada estimulo
     for i = (1:length(estimulos))
         [sw_data, sw_times] = sliding_window(estimulos(i).spikes_norm, ...
@@ -413,16 +413,18 @@ if guardar == 1
         'Hz_', string(round(thr)), 'uV.pdf'))
     
     print_pdf(3, directorio, strcat('_',string(puerto_canal_custom),...
-    '_FFT-LFP-tetrode_BANDA-', string(b_inf),'-',string(b_sup) ,'Hz_', ...
-    string(round(thr)), 'uV.pdf'))
+        '_FFT-LFP-tetrode_BANDA-', string(b_inf),'-',string(b_sup) ,'Hz_', ...
+        string(round(thr)), 'uV.pdf'))
 
     print_pdf(4, directorio, strcat('_',string(puerto_canal_custom),...
         '_INT_pasa-ALTOS', '.pdf'))
+    
     print_pdf(5, directorio, strcat('_',string(puerto_canal_custom),...
         '_INT_pasa-BAJOS', '.pdf'))
     
     print_pdf(6, directorio, strcat('_',string(puerto_canal_custom),...
         '_DIF_pasa-ALTOS', '.pdf'))
+    
     print_pdf(7, directorio, strcat('_',string(puerto_canal_custom),...
         '_DIF_pasa-BAJOS', '.pdf'))
    
