@@ -1,4 +1,5 @@
-function estimulos = find_t0s(estimulos, ntrials, tiempo_file, board_adc_channels, frequency_parameters, directorio, plotear) 
+function estimulos = find_t0s(estimulos, ntrials, tiempo_file, ...
+    board_adc_channels, frequency_parameters, directorio, plotear, trials) 
 
 % Genero diccionario con nombre de archivos de auido y tiempos en que se presentaron 
 %
@@ -90,9 +91,6 @@ estimulos_log = readtable(horzcat(directorio, estimulos_log_info.name),'Delimite
 
 clear estimulos_log_info
 
-% struct donde guardo el nombre del estimulo y los t0s
-t0s_dictionary = struct;
-
 % Recorro cada uno de los nombres de los estimulos presentados
 for i = (1:1:length(estimulos))
     % Tomo el nombre de uno de los estimulos
@@ -109,6 +107,9 @@ for i = (1:1:length(estimulos))
     
   % Guardo el nombre del estimulo y los t0s en que se presento
   estimulos(i).t0s = t0s(logical(orden));
+  
+  % Guardo subset de trials que me interesa
+  estimulos(i).t0s = estimulos(i).t0s(trials);
     
 end 
 
