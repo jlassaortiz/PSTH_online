@@ -187,8 +187,8 @@ for e = (1:length(estimulos))
     spikes_por_t = zeros(ntrials,1);
     for i = (1:ntrials)
         n = length(estimulos(e).spikes_trials(i).spikes);
-        spikes_por_t(i,1) = n;
-        spikes_por_t(i,2) = i;
+        spikes_por_t(i,1) = n; % guardo cantidad spikes
+        spikes_por_t(i,2) = i; % guardo numero de trial
     end 
     % separo trials si son mayor o menor que el punto medio de la
     % diferencia entre el trial con mas spikes y el de menos spikes
@@ -387,12 +387,14 @@ legend
 
 % Plot auxiliar
 figure()
+estimulo_aux = 12;
+estimulo_aux_name = estimulos(estimulo_aux).name;
 plot(estimulos(10).psth_sw_trial_avg(:,1), 'Linewidth', 3)
 hold on
-plot(estimulos(12).psth_sw_trial_avg(:,1), 'Linewidth', 3)
-title({directorio;[puerto_canal_custom, ' | BOS vs BOS_5-5_DOWN']}, ...
+plot(estimulos(estimulo_aux).psth_sw_trial_avg(:,1), 'Linewidth', 3)
+title({directorio;[puerto_canal_custom, ' | BOS vs ' , estimulo_aux_name]}, ...
     'Interpreter', 'None')
-legend({'BOS','BOS 5.5 UP'})
+legend({'BOS', estimulo_aux_name}, 'Interpreter', 'None')
 
 
 
