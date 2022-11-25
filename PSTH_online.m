@@ -19,7 +19,7 @@ end
 sabana = input('\n¿Ploteo sabanas? (1 = SI / 0 = NO) : ');
 
 % Carga vector con parametros del analisis de datos
-params_info = dir(horzcat(directorio, '*parametros*.txt'));
+params_info = dir(horzcat(directorio, 'parametros.txt'));
 params = readtable(horzcat(directorio,params_info.name),'Delimiter','\t','ReadVariableNames',false);
 clear params_info
 
