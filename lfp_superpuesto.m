@@ -3,6 +3,9 @@ clear all
 
 %% Cargo los datos
 
+% HACER GRAFICOS DE CORRELACION (CUADRICULAS) MUY DESORDENADO Y HARCODEADO!
+% OJO!
+
 % Cargo directorios y nombre custom de cada protocolos a manopla
 protocolos = {{'/Volumes/AUDIOS TEAM/Javi- finch durmierdo (NNx)/zf-JL037-VB/Datos/2021-12-20/zf-JL037-VB_p1_id1_211220_132913/',...
     '037-VB_p1_id1_211220'}, ...
@@ -235,7 +238,7 @@ end
 clear i j
 
 
-labels_x = {'T4 | 600um', 'T3 | 400um', 'T2 | 200um', 'T1 | 0um'};
+labels_x = {'T4 | 450um', 'T3 | 300um', 'T2 | 150um', 'T1 | 0um'};
 labels_y = {'P1 | 0um', 'P2 | 200um', 'P3 | 400um', 'P4 | 600um'};
 
 % plot LFP
@@ -283,7 +286,7 @@ title({datos(1).protocolo;'correlacion pesada MUA'}, 'Interpreter', 'None')
 
 
 print_png(1, datos(1).dir_lfp, strcat('_corr_lfp_tet_max'))
-print_png(2, datos(1).dir_mua, strcat('_corr_mua_tet_max'))
+print_pdf(2, datos(1).dir_mua, strcat('_corr_mua_tet_max'))
 
 
 
