@@ -112,7 +112,7 @@ spike_times = find_spike_times(raw_filtered, thr, frequency_parameters);
 estimulos = generate_raster(spike_times, estimulos , tiempo_file, ntrials, frequency_parameters);
 
 % Calculo scores
-estimulos = score_calculator(id_BOS, estimulos, frequency_parameters, spike_times, ntrials);
+estimulos = score_calculator(id_BOS, estimulos, frequency_parameters, spike_times, ntrials, tiempo_file);
 
 % Ploteo spike shapes
 plot_spikes_shapes(raw_filtered, spike_times, thr, frequency_parameters, directorio)
