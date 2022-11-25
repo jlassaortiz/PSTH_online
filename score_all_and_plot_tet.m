@@ -143,9 +143,11 @@ for apt = (1:height(list_apt))
         estimulos = trialAverage_LFP(LFP, estimulos, tiempo_file, ntrials, ...
               frequency_parameters, sr_lfp);
 
+%         ntrials = 5;
         % Calculo scores
         estimulos = score_calculator(id_BOS, estimulos, ...
             frequency_parameters, spike_times, ntrials, tiempo_file);
+%         ntrials = 20;
 
         % Calculo sliding window para cada estimulo
         for i = (1:length(estimulos))
@@ -309,6 +311,7 @@ for apt = (1:height(list_apt))
 
         % Promedio los 4 canales
         estimulos_tetrodos_avg(e).LFP_promedio_tet = mean(lfp_aux, 2);
+        estimulos_tetrodos_avg(e).int_norm_chan = int_aux;
         estimulos_tetrodos_avg(e).int_norm_tet = mean(int_aux, 2);
         estimulos_tetrodos_avg(e).corr_tet = mean(corr_aux, 2);
         psth_aux = mean(psth_aux, 2);
@@ -356,9 +359,7 @@ for apt = (1:length(estimulos_apt))
     plot(pasa_altos.frec_corte, pasa_altos.int_norm_tet, '-o')
     hold on
     title({strcat('INT_PASA-ALTOS_', datestr(now, 'yyyy-mm-dd')); ...
-    string(directorio) ; ...
-    strcat(string(puerto_canal_custom), "  " , string(thr), "uV",...
-    "  ntrials:", string(ntrials), "  t_inter_estimulo:", string(tiempo_file))}, ...
+    string(dir_aux)}, ...
     'Interpreter','None')
     int_altos_avg(:,apt) = pasa_altos.int_norm_tet; 
     
@@ -367,9 +368,7 @@ for apt = (1:length(estimulos_apt))
     plot(pasa_bajos.frec_corte, pasa_bajos.int_norm_tet, '-o')
     hold on
     title({strcat('INT_PASA-BAJOS_', datestr(now, 'yyyy-mm-dd')); ...
-    string(directorio) ; ...
-    strcat(string(puerto_canal_custom), "  " , string(thr), "uV", "  ntrials:",...
-    string(ntrials), "  t_inter_estimulo:", string(tiempo_file)) }, ...
+    string(dir_aux)}, ...
     'Interpreter','None')
     int_bajos_avg(:,apt) = pasa_bajos.int_norm_tet;
 
@@ -378,9 +377,7 @@ for apt = (1:length(estimulos_apt))
     plot(pasa_altos.frec_corte, pasa_altos.LFP_score_dif_tet, '-o')
     hold on
     title({strcat('DIF_PASA-ALTOS_', datestr(now, 'yyyy-mm-dd')); ...
-    string(directorio) ; ...
-    strcat(string(puerto_canal_custom), "  " , string(thr), "uV",...
-    "  ntrials:", string(ntrials), "  t_inter_estimulo:", string(tiempo_file)) }, ...
+    string(dir_aux)}, ...
     'Interpreter','None')
     diff_altos_avg(:,apt) = pasa_altos.LFP_score_dif_tet;
 
@@ -389,9 +386,7 @@ for apt = (1:length(estimulos_apt))
     plot(pasa_bajos.frec_corte, pasa_bajos.LFP_score_dif_tet, '-o')
     hold on
     title({strcat('DIF_PASA-BAJOS_', datestr(now, 'yyyy-mm-dd')); ...
-    string(directorio) ; ...
-    strcat(string(puerto_canal_custom), "  " , string(thr), "uV", "  ntrials:",...
-    string(ntrials), "  t_inter_estimulo:", string(tiempo_file)) }, ...
+    string(dir_aux)}, ...
     'Interpreter','None')
     diff_bajos_avg(:,apt) = pasa_bajos.LFP_score_dif_tet;    
     
@@ -410,7 +405,7 @@ legend(leyendas, 'Interpreter', 'None')
 
 figure(2);
 plot(pasa_altos.frec_corte, int_bajos_avg, '-o', 'Linewidth', 6)
-legend(leyendas, 'Interpreter', 'None')
+legend(leyendas, 'Interpreter', 'None', 'Location','northwest')
 
 figure(3);
 plot(pasa_altos.frec_corte, diff_altos_avg, '-o', 'Linewidth', 6)
@@ -418,7 +413,7 @@ legend(leyendas, 'Interpreter', 'None')
 
 figure(4);
 plot(pasa_altos.frec_corte, diff_bajos_avg, '-o', 'Linewidth', 6)
-legend(leyendas, 'Interpreter', 'None')
+legend(leyendas, 'Interpreter', 'None', 'Location','northwest')
 
 % Guardo
 print_pdf(1, dir_aux, '_MEAN_INT_pasa_ALTOS.pdf')
@@ -433,11 +428,11 @@ clear LFP_1tet_BOS_aux lfp_aux LFP_canales LFP_mean LFP_score_aud LFP_score_sil
 clear MUA_mean params params_analisis pasa_altos pasa_bajos plot_grilla psth_aux
 clear psth_aux2 PSTHsw_1tet_BOS PSTHsw_1tet_BOS_aux raw_filtered size_sw 
 clear spike_times sr_lfp step sw_data sw_times t_aux t_psth t_sil t_window
-clear thr thr_automatico amplifier_channels board_adc_channels directorio
+clear thr thr_automatico amplifier_channels board_adc_channels
 clear frequency_parameters l_aux LFP_tetrodo list_apt puerto_canal_custom t_PSTH
 clear ans dir_list_apt spikes_canales
 
 
-save([dir_aux 'estimulos_apt.mat'], 'estimulos_apt')
+save([dir_aux datestr(now, 'yyyy-mm-dd_HH_MM_SS') '_estimulos_apt.mat'], 'estimulos_apt')
 
 beep

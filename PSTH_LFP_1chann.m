@@ -79,6 +79,16 @@ guardar = input('\nGuardo? (1 = SI / 0 = NO) : ');
 % Guardo txt?
 guardar_txt = input('\nGuardo PSTH_sw y LFP_promedio BOS? (1 = SI / 0 = NO) : ');
 
+% Analizo por bandas?
+bandas = input('\nFiltro banda particular? (1 = SI / 0 = NO) : ');
+    if bandas == 1
+        b_inf = input('\nLimite inferior (Hz): ');
+        b_sup = input('\nLimite superior (Hz): ');
+    else 
+        b_inf = 0;
+        b_sup = 400;
+    end 
+
 % Cargamos cantidad de trials y tiempo que dura cada uno
 ntrials = params.Ntrials
 tiempo_file = params.tiempo_entre_estimulos
@@ -118,15 +128,18 @@ filt_LFP = designfilt('lowpassiir','DesignMethod','butter',...
     'SampleRate', frequency_parameters.amplifier_sample_rate);
 
 % Aplica filtros
+downsample_sr = 10000; % Hz
 raw_filtered = filtfilt(filt_spikes, raw);
-LFP = filtfilt(filt_LFP, raw);
-sr_lfp = frequency_parameters.amplifier_sample_rate;
+LFP = LFP_1channel(raw, frequency_parameters, ...
+    downsample_sr, bandas, b_inf, b_sup);
+
+sr_lfp = downsample_sr;
 
 clear filt_spikes
 
 % Genero struct con nombre de los estimulos y el momento de presentacion
 estimulos = find_t0s(estimulos, ntrials, tiempo_file, ...
-    board_adc_channels, frequency_parameters, directorio, false);
+    board_adc_channels, frequency_parameters, directorio, false, (1:ntrials));
 
 % Definimos umbral de deteccion de spikes
 if thr_automatico == 1
@@ -194,7 +207,7 @@ string(thr), "uV", "  |  ", "ntrials:", string(ntrials), "  |  ",...
 
 % Ploteo Grilla PSTH
 plot_some_raster_LFP_1channel(grilla_psth, id_BOS, estimulos, estimulos,...
-    frequency_parameters, tiempo_file, ntrials, puerto_canal, thr, ...
+    frequency_parameters,sr_lfp, tiempo_file, ntrials, puerto_canal, thr, ...
     directorio, spike_times);
 
 suptitle2({datestr(now, 'yyyy-mm-dd'); ...
