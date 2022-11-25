@@ -59,7 +59,7 @@ figure()
 % Para no ver tanta actividad espontanea grafico 75% mas de lo que dura BOS
 % limite_eje_x = (1000* length(estimulos_tetrodos(1).canal(id_BOS).song) /...
 %     estimulos_tetrodos(1).canal(id_BOS).freq) * 1.75;
-limite_eje_x = tiempo_file * 1000;
+limite_eje_x = tiempo_file * 1000 * 0.75;
 
 % Formula para armar grilla segun la cantidad de estimulos a analizar
 if mod(length(id_estimulos), 3) == 0
