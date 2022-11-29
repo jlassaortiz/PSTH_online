@@ -20,7 +20,8 @@ sabana = input('\n¿Ploteo sabanas? (1 = SI / 0 = NO) : ');
 
 % Carga vector con parametros del analisis de datos
 params_info = dir(horzcat(directorio, 'parametros.txt'));
-params = readtable(horzcat(directorio,params_info.name),'Delimiter','\t','ReadVariableNames',false);
+params = readtable(horzcat(directorio,params_info.name),'Delimiter','\t',...
+    'ReadVariableNames',false);
 clear params_info
 
 % Cargo valores de puerto-canal
@@ -66,7 +67,8 @@ raw_filtered = filtfilt(filt_spikes, raw);
 clear puerto canal filt_spikes raw
 
 % Genero diccionario con nombre de los estimulos y el momento de presentacion
-t0s_dictionary = find_t0s(estimulos, ntrials, tiempo_file, board_adc_channels, frequency_parameters, directorio, false);
+t0s_dictionary = find_t0s(estimulos, ntrials, tiempo_file, board_adc_channels, ...
+    frequency_parameters, directorio, false);
 
     
 % Definimos un umbral para threshold cutting de manera automatica (en uV)
@@ -79,7 +81,8 @@ clear thr_automatico
 spike_times = find_spike_times(raw_filtered, thr, frequency_parameters);
 
 % Genero objeto con raster de todos los estimulos
-rasters = generate_raster(spike_times, t0s_dictionary, tiempo_file, ntrials, frequency_parameters);
+rasters = generate_raster(spike_times, t0s_dictionary, tiempo_file, ntrials, ...
+    frequency_parameters);
 
 % Evaluo desempleño de los distintos estimulos
 dict_score = score_calculator(id_BOS, estimulos, rasters, frequency_parameters);
@@ -95,7 +98,8 @@ end
 plot_spikes_shapes(raw_filtered, spike_times, thr, frequency_parameters, directorio)
 
 % Grafica raster de todos los estimulos
-plot_some_raster(grilla_psth, id_BOS, estimulos, rasters, frequency_parameters, tiempo_file, ntrials, puerto_canal, thr, directorio)
+plot_some_raster(grilla_psth, id_BOS, estimulos, rasters, ...
+    frequency_parameters, tiempo_file, ntrials, puerto_canal, thr, directorio)
 
 % Ploteo sabana (x4 plots)
 if sabana == 1
