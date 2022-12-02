@@ -35,7 +35,7 @@ for j = (1:1:height(directorios))
     directorio = horzcat(char(directorios.Var2(j)), '/') % directorio protocolo
     
     % Carga vector con parametros del analisis de datos
-    params_info = dir(horzcat(directorio, '*parametros*.txt'));
+    params_info = dir(horzcat(directorio, 'parametros.txt'));
     params = readtable(horzcat(directorio,params_info.name),'Delimiter','\t','ReadVariableNames',false);
     clear params_info
 
