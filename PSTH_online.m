@@ -34,6 +34,8 @@ clear puerto canal
 ntrials = str2num(char(params.Var2(3)))
 tiempo_file = str2num(char(params.Var2(4)))
 
+trials = (1:ntrials);
+
 % Especifico numero de id del BOS
 id_BOS = str2num(char(params.Var2(5)))
 
@@ -68,7 +70,7 @@ clear puerto canal filt_spikes raw
 
 % Genero diccionario con nombre de los estimulos y el momento de presentacion
 t0s_dictionary = find_t0s(estimulos, ntrials, tiempo_file, board_adc_channels, ...
-    frequency_parameters, directorio, false);
+    frequency_parameters, directorio, false, trials);
 
     
 % Definimos un umbral para threshold cutting de manera automatica (en uV)
@@ -85,7 +87,8 @@ rasters = generate_raster(spike_times, t0s_dictionary, tiempo_file, ntrials, ...
     frequency_parameters);
 
 % Evaluo desempleño de los distintos estimulos
-dict_score = score_calculator(id_BOS, estimulos, rasters, frequency_parameters);
+dict_score = score_calculator(id_BOS, rasters, frequency_parameters, ...
+    spike_times, ntrials, tiempo_file);
 
 % Transformo alguno de los resultados en grillas (si quiero graficar sabanas)
 if sabana == 1
@@ -99,7 +102,8 @@ plot_spikes_shapes(raw_filtered, spike_times, thr, frequency_parameters, directo
 
 % Grafica raster de todos los estimulos
 plot_some_raster(grilla_psth, id_BOS, estimulos, rasters, ...
-    frequency_parameters, tiempo_file, ntrials, puerto_canal, thr, directorio)
+    frequency_parameters, tiempo_file, ntrials, puerto_canal, thr, ...
+    directorio, spike_times)
 
 % Ploteo sabana (x4 plots)
 if sabana == 1

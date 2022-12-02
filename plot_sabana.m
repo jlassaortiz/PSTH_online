@@ -14,7 +14,7 @@ Z1 = mat_scores(:,3);
 Z2 = mat_scores(:,4);
 
 % Plot sabana INTEGRAL
-[xq,yq] = meshgrid(1:0.1:3);
+[xq,yq] = meshgrid(1:0.1:max(mat_scores(:,1)));
 z = griddata(X,Y,Z1,xq,yq,'natural');
 figure()
 plot3(X,Y,Z1,'mo')
@@ -25,7 +25,7 @@ xlabel(ejeX_fila)
 title({'integral', directorio}, 'Interpreter','None')
 
 % Plot sabana CORRELACION
-[xq,yq] = meshgrid(1:0.1:3);
+[xq,yq] = meshgrid(1:0.1:max(mat_scores(:,1)));
 z = griddata(X,Y,Z2,xq,yq,'natural');
 figure()
 plot3(X,Y,Z2,'mo')

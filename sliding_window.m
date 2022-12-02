@@ -1,20 +1,21 @@
-function [sliding_window_data, sliding_window_tiempo] = sliding_window(data, fs, t_window, step)
+function [sliding_window_data, sliding_window_tiempo] = sliding_window( ...
+    data, fs, t_window, step, limite)
 
 % Toma un vector unidimensional y le calcula la slinding window (SW)
-% con los parametros de tamaño de ventana (en seg.) y tamaño del paso  
-% especificados(en seg.). Además necesita que se especifique la frecuencia 
+% con los parametros de tama?o de ventana (en seg.) y tama?o del paso  
+% especificados(en seg.). Adem?s necesita que se especifique la frecuencia 
 % de sampleo del vector unidimensional.
 %
 % data = vector unidimensional al que se le va a calcular la SW
 % fs = frecuencia de sampleo de 'data'
-% t_window = tamaño de la ventana de la SW (en seg.)
-% step = tamaño del paso de corrimiento de la SW (en seg.)
+% t_window = tama?o de la ventana de la SW (en seg.)
+% step = tama?o del paso de corrimiento de la SW (en seg.)
+% limite = largo del tiempo que se esta integrando (en seg.)
 
 
-% Calculo el tamaño final de: sliding_window_data y sliding_window_tiempo
+% Calculo el tama?o final de: sliding_window_data y sliding_window_tiempo
 tf = t_window;
 n = 0;
-limite = max(data)/fs;
 
 while tf <= limite
 

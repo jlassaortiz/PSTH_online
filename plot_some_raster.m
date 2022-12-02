@@ -1,4 +1,6 @@
-function plot_some_raster(id_estimulos, id_BOS, estimulos, rasters, frequency_parameters, tiempo_file, ntrials, puerto_canal, thr, directorio)
+function plot_some_raster(id_estimulos, id_BOS, estimulos, rasters, ...
+    frequency_parameters, tiempo_file, ntrials, puerto_canal, thr, directorio,...
+    spike_times)
 
 % plot_raster plotea el raster y psth del numero de estimulos indicados
 %   Detailed explanation goes here
@@ -34,11 +36,12 @@ j = 0;
 k = 0;
 
 % Calculo scores de cada estimulo
-dict_score = score_calculator(id_BOS, estimulos, rasters, frequency_parameters);
+dict_score = score_calculator(id_BOS, rasters, frequency_parameters, ...
+    spike_times, ntrials, tiempo_file);
 
 % Calculo la sw del BOS para poder hacer correlaciones con el resto
 [sw_data_BOS, sw_times_BOS] = sliding_window(rasters(id_BOS).spikes_norm, frequency_parameters.amplifier_sample_rate, ...
-        t_window, step);
+        t_window, step, tiempo_file);
     
 % Conservo solo la seccion donde se presenta el estimulo auditivo
 duracion_BOS = length(estimulos(id_BOS).song) / estimulos(id_BOS).freq; 
@@ -85,7 +88,7 @@ for i = id_estimulos % para cada estímulo
     
     % Calculo sliding window para cada estimulo
     [sw_data, sw_times] = sliding_window(rasters(i).spikes_norm, frequency_parameters.amplifier_sample_rate, ...
-        t_window, step);
+        t_window, step, tiempo_file);
     plot(sw_times * 1000, sw_data, '-b');
     plot(sw_times_BOS * 1000 , sw_data_BOS, '-r');
     

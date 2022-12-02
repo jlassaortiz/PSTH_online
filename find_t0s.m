@@ -1,4 +1,5 @@
-function t0s_dictionary = find_t0s(estimulos, ntrials, tiempo_file, board_adc_channels, frequency_parameters, directorio, plotear) 
+function estimulos = find_t0s(estimulos, ntrials, tiempo_file, ...
+    board_adc_channels, frequency_parameters, directorio, plotear, trials) 
 
 % Genero diccionario con nombre de archivos de auido y tiempos en que se presentaron 
 %
@@ -85,13 +86,10 @@ clear pks lcs test found a ans bpf umbral;
 
 
 % CARGA EL VECTOR CON EL ORDEN DE LOS ESTIMULOS
-estimulos_log_info = dir(horzcat(directorio, '*estimulos*.txt'));
+estimulos_log_info = dir(horzcat(directorio, 'estimulos.txt'));
 estimulos_log = readtable(horzcat(directorio, estimulos_log_info.name),'Delimiter','\t','ReadVariableNames',false);
 
 clear estimulos_log_info
-
-% struct donde guardo el nombre del estimulo y los t0s
-t0s_dictionary = struct;
 
 % Recorro cada uno de los nombres de los estimulos presentados
 for i = (1:1:length(estimulos))
@@ -108,10 +106,11 @@ for i = (1:1:length(estimulos))
     end
     
   % Guardo el nombre del estimulo y los t0s en que se presento
-  t0s_dictionary(i).id_estimulo = estimulo;
-  t0s_dictionary(i).t0s = t0s(logical(orden));
+  estimulos(i).t0s = t0s(logical(orden));
+  
+  % Guardo subset de trials que me interesa
+  estimulos(i).t0s = estimulos(i).t0s(trials);
     
 end 
 
 end
-
