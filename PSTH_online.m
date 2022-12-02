@@ -18,6 +18,11 @@ end
 % Plot sabana?
 sabana = input('\n¿Ploteo sabanas? (1 = SI / 0 = NO) : ');
 
+if sabana == 1
+    % NO hay sabana entonces no hay diag?
+    no_diag = input('\n¿Ploteo NO diag? (1 = SI / 0 = NO) : ');
+end
+
 % Carga vector con parametros del analisis de datos
 params_info = dir(horzcat(directorio, 'parametros.txt'));
 params = readtable(horzcat(directorio,params_info.name),'Delimiter','\t',...
@@ -108,6 +113,16 @@ plot_some_raster(grilla_psth, id_BOS, estimulos, rasters, ...
 % Ploteo sabana (x4 plots)
 if sabana == 1
     plot_sabana(mat_scores, directorio, ejeY_col, ejeX_fila)
+    
+    if no_diag == 1
+    figure()
+    plot(mat_scores(:,1), mat_scores(:,3))
+    xticks([1 2 3 4 5])
+    xticklabels({'0.5', '1.0', '1.5', '2.0', '2.5'})
+    xlabel('Lambda')
+    ylabel('INT')
+    title('INT vs id lambda')
+    end
 end
 
 % Guardo
@@ -119,4 +134,10 @@ if sabana == 1
     print_pdf(4, directorio, strcat('_sabana_CORR_', string(round(thr)), 'uV.pdf'))
     print_pdf(5, directorio, strcat('_CORTE_sabana_INT_', string(round(thr)), 'uV.pdf'))
     print_pdf(6, directorio, strcat('_CORTE_sabana_CORR_', string(round(thr)), 'uV.pdf'))
+    
+    if no_diag == 1
+    print_pdf(7, directorio, strcat('_INT_vs_lambda', string(round(thr)), 'uV.pdf'))
+    end
+
 end
+
