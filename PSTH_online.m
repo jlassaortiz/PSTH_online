@@ -39,7 +39,7 @@ clear puerto canal
 ntrials = str2num(char(params.Var2(3)))
 tiempo_file = str2num(char(params.Var2(4)))
 
-trials = (1:ntrials);
+trials = (11:20);
 
 % Especifico numero de id del BOS
 id_BOS = str2num(char(params.Var2(5)))
@@ -77,7 +77,8 @@ clear puerto canal filt_spikes raw
 t0s_dictionary = find_t0s(estimulos, ntrials, tiempo_file, board_adc_channels, ...
     frequency_parameters, directorio, false, trials);
 
-    
+ntrials = length(trials)
+
 % Definimos un umbral para threshold cutting de manera automatica (en uV)
 if thr_automatico == 1
     thr = find_thr(raw_filtered, t0s_dictionary, tiempo_file, frequency_parameters);
