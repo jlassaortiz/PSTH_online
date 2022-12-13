@@ -103,7 +103,10 @@ if plot_grilla == 1
 end
 
 % Genero songs.mat a partir de las canciones
-estimulos = carga_songs(directorio);    
+estimulos = carga_songs(directorio);  
+
+% Calculo cuanto dura el BOS en segundos (seg)
+dur_BOS = length(estimulos(id_BOS).song)/estimulos(id_BOS).freq;
 
 % Cargo id_estimulos 
 for i = (1:1:length(estimulos))
@@ -183,6 +186,76 @@ if guardar_txt == 1
     csvwrite([directorio '/LFP_1chann_BOS_' puerto_canal_custom '.txt'],...
         estimulos(id_BOS).LFP_promedio)
 end
+
+
+
+
+% Cuantifiaciones LFP_30Hz y estímulos aud %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+LFP_mean = struct();
+MUA_mean = struct();
+
+% Para cada estimulo
+for i = (1:length(estimulos))
+    
+    % Guardo datos de interes de cada estimulo
+    LFP_mean(i).name = estimulos(i).name;
+    LFP_mean(i).dir = estimulos(i).dir;
+    LFP_mean(i).song = estimulos(i).song;
+    LFP_mean(i).song_freq = estimulos(i).freq;
+    MUA_mean(i).name = estimulos(i).name;
+    MUA_mean(i).dir = estimulos(i).dir;
+    MUA_mean(i).song = estimulos(i).song;  
+    MUA_mean(i).song_freq = estimulos(i).freq;
+
+    LFP_mean(i).LFP =estimulos(i).LFP_promedio;
+    MUA_mean(i).MUA = estimulos(i).psth_sw;
+    
+    % Genero var aux para que quede mas prolijo el codigo
+    LFP_aux =  LFP_mean(i).LFP;
+    
+    % Calculo score de LFP con estimulo y post-estimulo
+    t_sil = dur_BOS * sr_lfp ;
+    h = abs(hilbert(LFP_aux));
+    LFP_score_aud = mean(h(1:t_sil,1));
+    LFP_score_sil = mean(h(t_sil:t_sil*2,1));
+    
+    LFP_mean(i).LFP_score_aud = LFP_score_aud;
+    LFP_mean(i).LFP_score_sil = LFP_score_sil;
+    LFP_mean(i).LFP_score_dif = LFP_score_aud - LFP_score_sil;
+    LFP_mean(i).LFP_env = h;
+    
+    clear LFP_aux MUA_aux
+end 
+
+for i = (1:length(LFP_mean))
+    figure()
+    subplot(3, 1, 1)
+    t_song = (1:length(LFP_mean(i).song))/LFP_mean(i).song_freq;
+    plot(t_song, LFP_mean(i).song, 'black');
+    xlim([0, 10])
+    diferencia = LFP_mean(i).LFP_score_dif;
+    texto = ['diferencia: ' , num2str(diferencia)];
+    title({[LFP_mean(i).name,' | ',puerto_canal_custom]; texto}, ...
+    'Interpreter', 'none');
+    
+    subplot(3, 1, [2,3])
+    plot(LFP_mean(i).LFP_env, 'blue');
+    hold on
+    yline(LFP_mean(i).LFP_score_aud ,'r', {'FONACION'})
+    yline(LFP_mean(i).LFP_score_sil, 'r:', {'NO FONACION'})
+end
+
+
+for i = (1:length(grilla_psth))
+    print_pdf(i, directorio, strcat('_',string(puerto_canal_custom),...
+        '_power_LFP-', string(b_inf),'-',string(b_sup),'Hz_',...
+        'estim_', string(i), ...
+        string(round(thr)), 'uV.pdf'))
+end 
+
+close all
+
+
 
 
 % PLOTEO %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
