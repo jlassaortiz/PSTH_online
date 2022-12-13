@@ -11,7 +11,7 @@ directorio_params = horzcat(directorio_params , '/');
 guardar_graf_protocolos_ind = input('Guardo graf sabanas de cada protocolo individual? (1 = SI / 0 = NO) : ');
 
 % Carga vector con parametros del analisis de datos
-params_info = dir(horzcat(directorio_params, '*parametros*.txt'));
+params_info = dir(horzcat(directorio_params, 'parametros.txt'));
 params = readtable(horzcat(directorio_params,params_info.name),'Delimiter','\t','ReadVariableNames',false);
 
 % Posicion del primer directorio en el archivo de parametros
@@ -48,6 +48,8 @@ for j = (1:1:height(directorios))
     % Cargamos cantidad de trials y tiempo que dura cada uno
     ntrials = str2num(char(params.Var2(3)))
     tiempo_file = str2num(char(params.Var2(4)))
+    
+    trials = (1:ntrials);
 
     % Especifico numero de id del BOS
     id_BOS = str2num(char(params.Var2(5)))
@@ -83,8 +85,9 @@ for j = (1:1:height(directorios))
     clear filt_spikes
 
     % Genero diccionario con nombre de los estimulos y el momento de presentacion
-    t0s_dictionary = find_t0s(estimulos, ntrials, tiempo_file, board_adc_channels, frequency_parameters, directorio, false);
-
+    t0s_dictionary = find_t0s(estimulos, ntrials, tiempo_file, board_adc_channels, ...
+        frequency_parameters, directorio, false, trials);
+    
     % Definimos umbral de deteccion de spikes
     thr = find_thr(raw_filtered, t0s_dictionary, tiempo_file, frequency_parameters);
 
@@ -94,8 +97,9 @@ for j = (1:1:height(directorios))
     % Genero objeto con raster de todos los estimulos
     rasters = generate_raster(spike_times, t0s_dictionary, tiempo_file, ntrials, frequency_parameters);
 
-    % Calculo scores
-    dict_score = score_calculator(id_BOS, estimulos, rasters, frequency_parameters);
+    % Evaluo desempleño de los distintos estimulos
+    dict_score = score_calculator(id_BOS, rasters, frequency_parameters, ...
+    spike_times, ntrials, tiempo_file);
     
     % Selecciono scores con los que me quedo y hago matriz para graficar
     [mat_scores, cell_estimulos] = scores_struct2mat(grilla_sabana,dict_score);
@@ -109,9 +113,10 @@ for j = (1:1:height(directorios))
     % Sabana x4: integral y correlacion
     plot_sabana(mat_scores, directorio, ejeY_col, ejeX_fila); % Hace 4 plots
 
-    % Grilla de PSTH
-    plot_some_raster(grilla_psth, id_BOS,  estimulos, ...
-        rasters, frequency_parameters, 6, ntrials, puerto_canal, thr, directorio)
+    % Grafica raster de todos los estimulos
+    plot_some_raster(grilla_psth, id_BOS, estimulos, rasters, ...
+    frequency_parameters, tiempo_file, ntrials, puerto_canal, thr, ...
+    directorio, spike_times)
     
     % Guardo todo en el directorio del protocolo
     if guardar_graf_protocolos_ind == 1
