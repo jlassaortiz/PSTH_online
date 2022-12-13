@@ -39,7 +39,8 @@ clear puerto canal
 ntrials = str2num(char(params.Var2(3)))
 tiempo_file = str2num(char(params.Var2(4)))
 
-trials = (11:20);
+trials = (1:ntrials);
+% trials = (11:20)
 
 % Especifico numero de id del BOS
 id_BOS = str2num(char(params.Var2(5)))
