@@ -18,7 +18,7 @@ end
 
 legends{length(legends) +1} = 'avg';
 
-[xq,yq] = meshgrid(1:0.1:3);
+[xq,yq] = meshgrid(1:0.1:max(score_total(1).grilla_scores(:,1)));
 z = griddata(mat_avg(:,1),mat_avg(:,2),mat_avg(:,3),xq,yq,'natural');
 scatter3(mat_avg(:,1), mat_avg(:,2), mat_avg(:,3), 100, 'ro', 'filled')
 mesh(xq,yq,z)
@@ -45,7 +45,7 @@ end
 
 legends{length(legends) +1} = 'avg';
 
-[xq,yq] = meshgrid(1:0.1:3);
+[xq,yq] = meshgrid(1:0.1:max(score_total(1).grilla_scores(:,1)));
 z = griddata(mat_avg(:,1),mat_avg(:,2),mat_avg(:,4),xq,yq,'natural');
 scatter3(mat_avg(:,1), mat_avg(:,2), mat_avg(:,4), 100, 'ro', 'filled')
 mesh(xq,yq,z)
