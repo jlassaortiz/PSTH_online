@@ -22,7 +22,7 @@ legends{length(legends) +1} = 'avg';
 z = griddata(mat_avg(:,1),mat_avg(:,2),mat_avg(:,3),xq,yq,'natural');
 scatter3(mat_avg(:,1), mat_avg(:,2), mat_avg(:,3), 100, 'ro', 'filled')
 mesh(xq,yq,z)
-legend(legends)
+legend(legends, 'Interpreter','None')
 ylabel(ejeY_col)
 xlabel(ejeX_fila)
 title('integral', 'Interpreter','None')
@@ -49,7 +49,7 @@ legends{length(legends) +1} = 'avg';
 z = griddata(mat_avg(:,1),mat_avg(:,2),mat_avg(:,4),xq,yq,'natural');
 scatter3(mat_avg(:,1), mat_avg(:,2), mat_avg(:,4), 100, 'ro', 'filled')
 mesh(xq,yq,z)
-legend(legends)
+legend(legends, 'Interpreter','None')
 ylabel(ejeY_col)
 xlabel(ejeX_fila)
 title('correlacion', 'Interpreter','None')
