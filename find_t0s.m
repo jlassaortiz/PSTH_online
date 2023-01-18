@@ -13,6 +13,7 @@ function estimulos = find_t0s(estimulos, ntrials, tiempo_file, ...
 %   directorio = (str) directorio donde estan los datos
 %   plotear = (bool) indica si se plotea canal analogico junto con la posicion 
 %   de los t0s
+%   trials = (mat) subset trials de interes
 %
 %   Salida:
 %   t0s_dictionary (struct)
