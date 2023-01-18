@@ -81,6 +81,7 @@ for apt = (1:height(list_apt))
     % Cargamos cantidad de trials y tiempo que dura cada uno
     ntrials = params.Ntrials
     tiempo_file = params.tiempo_entre_estimulos
+    trials = (1:ntrials) % subset trials de interes, hardcodeado guardo todos
 
     % Especifico numero de id del BOS y REV
     id_BOS = params_analisis.id_bos(1)
@@ -115,7 +116,7 @@ for apt = (1:height(list_apt))
 
     % Genero struct con nombre de los estimulos y el momento de presentacion
     estimulos = find_t0s(estimulos, ntrials, tiempo_file, ...
-        board_adc_channels, frequency_parameters, directorio, false);
+        board_adc_channels, frequency_parameters, directorio, false, trials);
 
     % Genero struct donde guardo datos de todos los canales
     estimulos_tetrodos = struct();
