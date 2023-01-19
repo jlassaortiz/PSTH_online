@@ -47,6 +47,7 @@ list_apt = readtable(horzcat(dir_aux,dir_list_apt.name),'Delimiter',',',...
 
 estimulos_apt = struct()
 
+% apt : para cada Ave, Protocolo, Tetrodo (con buena señal)
 for apt = (1:height(list_apt))
     
     apt_id = char(list_apt.leyenda(apt))
