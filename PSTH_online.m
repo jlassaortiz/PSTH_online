@@ -39,8 +39,12 @@ clear puerto canal
 ntrials = str2num(char(params.Var2(3)))
 tiempo_file = str2num(char(params.Var2(4)))
 
+% Debo especificar que trial va a conservar para analisis (harcodeo que
+% analice todos)
 trials = (1:ntrials);
+% trials = (1:10)
 % trials = (11:20)
+
 
 % Especifico numero de id del BOS
 id_BOS = str2num(char(params.Var2(5)))
