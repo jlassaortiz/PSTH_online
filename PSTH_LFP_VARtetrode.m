@@ -72,6 +72,9 @@ f = waitbar(0,'Please wait...');
 ntrials = params.Ntrials
 tiempo_file = params.tiempo_entre_estimulos
 
+% Harcodeo con que trials me quedo (todos)
+trials = (1:ntrials);
+
 % Especifico numero de id del BOS y REV
 id_BOS = params_analisis.id_bos(1)
 
@@ -111,7 +114,7 @@ clear i
 
 % Genero struct con nombre de los estimulos y el momento de presentacion
 estimulos = find_t0s(estimulos, ntrials, tiempo_file, ...
-    board_adc_channels, frequency_parameters, directorio, false);
+    board_adc_channels, frequency_parameters, directorio, false, trials);
 
 % Conservo solo el estimulo de interes
 estimulos = estimulos(estimulo_ID);
