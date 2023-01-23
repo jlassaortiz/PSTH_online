@@ -63,7 +63,9 @@ ntrials = params.Ntrials
 tiempo_file = params.tiempo_entre_estimulos
 
 % Cargamos lista de trials que queremos analizar
-trials = 1:10
+trials = 1:ntrials
+% trials = 1:10
+% trials = 11:20
 
 % Especifico numero de id del BOS y REV
 id_BOS = params_analisis.id_bos(1)
@@ -242,7 +244,7 @@ for i = (1:length(estimulos_tetrodos(1).canal))
     MUA_mean(i).MUA_tet = MUA_aux;
     
     % Calculo score de LFP con estimulo y post-estimulo
-    t_sil = int8(dur_BOS*sr_lfp);
+    t_sil = int64(dur_BOS*sr_lfp);
     h = abs(hilbert(LFP_aux));
     LFP_score_aud = mean(h(1:t_sil,1));
     LFP_score_sil = mean(h(t_sil:t_sil*2,1));
