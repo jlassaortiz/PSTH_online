@@ -230,7 +230,7 @@ for i = id_estimulos % para cada est�mulo
     'FontSize', 8, 'Position', [limite_eje_x/2, lfp_max*(0.95), 0])
     
     xlim([0 limite_eje_x])
-    ylim([-10 10])
+    ylim([-20 20])
     xticks([])
 end 
 
