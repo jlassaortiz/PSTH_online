@@ -98,7 +98,8 @@ raw_filtered = filtfilt(filt_spikes, raw);
 clear filt_spikes
 
 % Genero diccionario con nombre de los estimulos y el momento de presentacion
-estimulos = find_t0s(estimulos, ntrials, tiempo_file, board_adc_channels, frequency_parameters, directorio, false);
+estimulos = find_t0s(estimulos, ntrials, tiempo_file, board_adc_channels, ...
+    frequency_parameters, directorio, false);
 
 % Definimos umbral de deteccion de spikes
 if thr_automatico == 1
@@ -124,7 +125,8 @@ string(thr), "uV", "  |  ", "ntrials:", string(ntrials), "  |  ",...
 "t_inter_estimulo:", string(tiempo_file)) })
 
 % Ploteo Grilla PSTH
-plot_some_raster(grilla_psth, id_BOS, estimulos, estimulos, frequency_parameters, tiempo_file, ntrials, puerto_canal, thr, directorio, spike_times);
+plot_some_raster(grilla_psth, id_BOS, estimulos, estimulos, frequency_parameters, ...
+    tiempo_file, ntrials, puerto_canal, thr, directorio, spike_times);
 
 suptitle2({datestr(now, 'yyyy-mm-dd'); ...
 string(directorio) ; ...
@@ -145,7 +147,8 @@ figure();
 plot(pasa_altos.frec_corte, pasa_altos.int_norm, '-o')
 title({strcat('INT_PASA-ALTOS_', datestr(now, 'yyyy-mm-dd')); ...
 string(directorio) ; ...
-strcat(string(puerto_canal), "  " , string(thr), "uV", "  ntrials:", string(ntrials), "  t_inter_estimulo:", string(tiempo_file)) }, 'Interpreter','None')
+strcat(string(puerto_canal), "  " , string(thr), "uV", "  ntrials:", string(ntrials),...
+"  t_inter_estimulo:", string(tiempo_file)) }, 'Interpreter','None')
 legend
 
 % Plotear INT PASA-BAJOS
@@ -153,7 +156,8 @@ figure();
 plot(pasa_bajos.frec_corte, pasa_bajos.int_norm, '-o')
 title({strcat('INT_PASA-BAJOS_', datestr(now, 'yyyy-mm-dd')); ...
 string(directorio) ; ...
-strcat(string(puerto_canal), "  " , string(thr), "uV", "  ntrials:", string(ntrials), "  t_inter_estimulo:", string(tiempo_file)) }, 'Interpreter','None')
+strcat(string(puerto_canal), "  " , string(thr), "uV", "  ntrials:", string(ntrials),...
+"  t_inter_estimulo:", string(tiempo_file)) }, 'Interpreter','None')
 legend
 
 
@@ -162,7 +166,8 @@ figure();
 plot(pasa_altos.frec_corte, pasa_altos.corr, '-o')
 title({strcat('CORR_PASA-ALTOS_', datestr(now, 'yyyy-mm-dd')); ...
 string(directorio) ; ...
-strcat(string(puerto_canal), "  " , string(thr), "uV", "  ntrials:", string(ntrials), "  t_inter_estimulo:", string(tiempo_file)) }, 'Interpreter','None')
+strcat(string(puerto_canal), "  " , string(thr), "uV", "  ntrials:", string(ntrials),...
+"  t_inter_estimulo:", string(tiempo_file)) }, 'Interpreter','None')
 legend
 
 % Plotear CORR PASA-BAJOS
@@ -170,7 +175,8 @@ figure();
 plot(pasa_bajos.frec_corte, pasa_bajos.corr, '-o')
 title({strcat('CORR_PASA-BAJOS_', datestr(now, 'yyyy-mm-dd')); ...
 string(directorio) ; ...
-strcat(string(puerto_canal), "  " , string(thr), "uV", "  ntrials:", string(ntrials), "  t_inter_estimulo:", string(tiempo_file)) }, 'Interpreter','None')
+strcat(string(puerto_canal), "  " , string(thr), "uV", "  ntrials:", string(ntrials), ...
+"  t_inter_estimulo:", string(tiempo_file)) }, 'Interpreter','None')
 legend
 
 
