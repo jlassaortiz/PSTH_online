@@ -242,7 +242,7 @@ for i = (1:length(estimulos_tetrodos(1).canal))
     MUA_mean(i).MUA_tet = MUA_aux;
     
     % Calculo score de LFP con estimulo y post-estimulo
-    t_sil = dur_BOS*sr_lfp;
+    t_sil = int8(dur_BOS*sr_lfp);
     h = abs(hilbert(LFP_aux));
     LFP_score_aud = mean(h(1:t_sil,1));
     LFP_score_sil = mean(h(t_sil:t_sil*2,1));
