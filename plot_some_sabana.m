@@ -31,7 +31,7 @@ end
 errl = Z_mean - Z_std;
 errh = Z_mean + Z_std;
 
-    
+
 plot3(X,Y,Z_mean, 'k*', 'MarkerSize',20 );
 plot3([X(:),X(:)]', [Y(:),Y(:)]', [errl(:),errh(:)]', '-r','LineWidth',5) 
 
@@ -39,8 +39,8 @@ plot3([X(:),X(:)]', [Y(:),Y(:)]', [errl(:),errh(:)]', '-r','LineWidth',5)
 legends{length(legends) +1} = 'avg';
 
 [xq,yq] = meshgrid(1:0.1:max(score_total(1).grilla_scores(:,1)));
-z = griddata(mat_avg(:,1),mat_avg(:,2),mat_avg(:,3),xq,yq,'natural');
-scatter3(mat_avg(:,1), mat_avg(:,2), mat_avg(:,3), 100, 'ro', 'filled')
+z = griddata(X,Y,Z_mean,xq,yq,'natural');
+scatter3(X,Y,Z_mean, 100, 'ro', 'filled')
 mesh(xq,yq,z)
 legend(legends, 'Interpreter','None')
 ylabel(ejeY_col)
