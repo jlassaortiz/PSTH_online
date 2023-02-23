@@ -26,7 +26,7 @@ Z_std = zeros(size(Z_all, 1), 1);
 Z_mean = zeros(size(Z_all, 1), 1);
 for fila = (1:1:size(Z_all, 1))
     Z_std(fila,1) = std(Z_all(fila, :))/sqrt(length(Z_all));
-    Z_mean(fila,1) = median(Z_all(fila, :));
+    Z_mean(fila,1) = mean(Z_all(fila, :));
 end 
 errl = Z_mean - Z_std;
 errh = Z_mean + Z_std;
