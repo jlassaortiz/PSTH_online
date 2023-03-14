@@ -12,7 +12,7 @@ function estimulos = carga_songs(directorio)
 %   estimulos.song = (vector columna) señal de sonido en formato matriz de matlab
 %   estimulos.freq = (double) frecuencia de sampleo del archivo de audio
 
-files = dir(strcat(directorio,'*.wav'));
+files = dir(strcat(directorio,'zf*.wav'));
 n = length(files);
 
 % Cargo todos los estimulos y el nombre de los archivos en un struct
