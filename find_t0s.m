@@ -29,8 +29,21 @@ num_samples_analog = fileinfo_analog.bytes/(num_channels_analog * 2); % uint16 =
 fid = fopen(horzcat(directorio,'analogin.dat'), 'r');
 analog = fread(fid, [num_channels_analog, num_samples_analog], 'uint16');
 fclose(fid);
+analog_raw = analog;
 analog = analog * 0.000050354; % convert to volts
 analog = analog';
+
+% % Codigo util si se quiere "eliminar" una seccion del analog
+% % No se corta la señal sino se la "achata" a la media
+% inicio = 2.67e7;
+% fin = 2.695e7;
+% analog_new = analog_raw;
+% analog_new(inicio:fin) = mean(analog_raw(1,inicio:fin)) * ones(1,length(analog_raw(1,inicio:fin)));
+% fileID = fopen('analogin_new.dat','w');
+% fwrite(fileID,analog_new,'uint16');
+% fclose(fileID);
+% figure()
+% plot(analog_new)
 
 % IDENTIFICA TIEMPOS EN QUE COMENZO CADA ESTIMULO
 % Armo el vector de los t_0 en los que se presento cada estimulo.
