@@ -20,7 +20,7 @@ sabana = input('\n¿Ploteo sabanas? (1 = SI / 0 = NO) : ');
 
 if sabana == 1
     % NO hay sabana entonces no hay diag?
-    no_diag = input('\n¿Ploteo NO diag? (1 = SI / 0 = NO) : ');
+    no_diag = input('\n¿Ploteo diag ext? (1 = SI / 0 = NO) : ');
 end
 
 % Carga vector con parametros del analisis de datos
