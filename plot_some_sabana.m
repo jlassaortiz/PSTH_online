@@ -16,7 +16,24 @@ Y  = score_total(i).grilla_scores(:,2);
 Z1 = score_total(i).grilla_scores(:,3);
 Z_all(:,i) = Z1;
 
-plot3(X,Y,Z1,'o')
+if i < 3
+    plot3(X,Y,Z1,'o', 'MarkerSize',18,'LineWidth',2)
+    hold on
+else
+    plot3(X,Y,Z1,'.', 'MarkerSize',25,'LineWidth',2)
+    hold on
+end
+legends{i} = score_total(i).id;
+
+end
+
+for i = (1:1:length(score_total))  
+X  = score_total(i).grilla_scores(:,1);
+Y  = score_total(i).grilla_scores(:,2);
+Z1 = score_total(i).grilla_scores(:,3);
+Z_all(:,i) = Z1;
+
+plot3(X,Y,Z1,'-')
 legends{i} = score_total(i).id;
 hold on
 end
@@ -32,7 +49,8 @@ errl = Z_mean - Z_std;
 errh = Z_mean + Z_std;
 
 
-plot3(X,Y,Z_mean, 'k*', 'MarkerSize',20 );
+plot3(X,Y,Z_mean, 'k.', 'MarkerSize',20 );
+plot3(X,Y,Z_mean, 'k-', 'LineWidth', 7 );
 plot3([X(:),X(:)]', [Y(:),Y(:)]', [errl(:),errh(:)]', '-r','LineWidth',5) 
 
 
