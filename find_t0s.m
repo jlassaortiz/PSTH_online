@@ -33,18 +33,6 @@ analog_raw = analog;
 analog = analog * 0.000050354; % convert to volts
 analog = analog';
 
-% % Codigo util si se quiere "eliminar" una seccion del analog
-% % No se corta la señal sino se la "achata" a la media
-% inicio = 2.67e7;
-% fin = 2.695e7;
-% analog_new = analog_raw;
-% analog_new(inicio:fin) = mean(analog_raw(1,inicio:fin)) * ones(1,length(analog_raw(1,inicio:fin)));
-% fileID = fopen('analogin_new.dat','w');
-% fwrite(fileID,analog_new,'uint16');
-% fclose(fileID);
-% figure()
-% plot(analog_new)
-
 % IDENTIFICA TIEMPOS EN QUE COMENZO CADA ESTIMULO
 % Armo el vector de los t_0 en los que se presento cada estimulo.
 % Pre-acondiciono la senal analogica
@@ -55,8 +43,28 @@ analog_filt = filtfilt(bpf,analog);
 
 clear analog
 
+% % Codigo util si se quiere "eliminar" una seccion del analog
+% % No se corta la señal sino se la "achata" a la media
+% figure()
+% plot(analog_raw)
+% figure()
+% plot(analog_filt)
+% hold on
+% yline(0.1, '-r')
+% 
+% inicio = 4.12e7;
+% fin = 4.18e7;
+% analog_new = analog_raw;
+% analog_new(inicio:fin) = mean(analog_raw(1,inicio:fin)) * ones(1,length(analog_raw(1,inicio:fin)));
+% fileID = fopen(horzcat(directorio,'analogin_new.dat'),'w');
+% fwrite(fileID,analog_new,'uint16');
+% fclose(fileID);
+% figure()
+% plot(analog_new)
+
+
 % Identifico con un umbral los timestamps de analog_filt donde ocurren los estimulos
-umbral = 0.05;
+umbral = 0.1; 
 locs_estimulos = find(analog_filt > umbral);
 
 % Inicializo vector donde voy a guardar t0s
