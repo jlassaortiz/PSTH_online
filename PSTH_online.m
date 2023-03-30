@@ -80,7 +80,11 @@ clear puerto canal filt_spikes raw
 
 % Genero diccionario con nombre de los estimulos y el momento de presentacion
 t0s_dictionary = find_t0s(estimulos, ntrials, tiempo_file, board_adc_channels, ...
-    frequency_parameters, directorio, false, trials);
+    frequency_parameters, directorio, true, trials);
+
+print_png(1, directorio, '_t0s')
+
+close all
 
 ntrials = length(trials)
 
