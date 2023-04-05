@@ -16,11 +16,14 @@ Y  = score_total(i).grilla_scores(:,2);
 Z1 = score_total(i).grilla_scores(:,3);
 Z_all(:,i) = Z1;
 
-if i < 3
-    plot3(X,Y,Z1,'o', 'MarkerSize',18,'LineWidth',2)
+if i < 11
+    plot3(X,Y,Z1,'.r', 'MarkerSize',18,'LineWidth',2)
+    hold on
+elseif (i > 10 && i < 18)
+    plot3(X,Y,Z1,'.g', 'MarkerSize',18,'LineWidth',2)
     hold on
 else
-    plot3(X,Y,Z1,'.', 'MarkerSize',25,'LineWidth',2)
+    plot3(X,Y,Z1,'.b', 'MarkerSize',25,'LineWidth',2)
     hold on
 end
 legends{i} = score_total(i).id;
@@ -33,7 +36,17 @@ Y  = score_total(i).grilla_scores(:,2);
 Z1 = score_total(i).grilla_scores(:,3);
 Z_all(:,i) = Z1;
 
-plot3(X,Y,Z1,'-')
+if i < 11
+    plot3(X,Y,Z1,'-r', 'MarkerSize',18,'LineWidth',2)
+    hold on
+elseif (i > 10 && i < 18)
+    plot3(X,Y,Z1,'-g', 'MarkerSize',18,'LineWidth',2)
+    hold on
+else
+    plot3(X,Y,Z1,'-b', 'MarkerSize',25,'LineWidth',2)
+    hold on
+end
+
 legends{i} = score_total(i).id;
 hold on
 end
