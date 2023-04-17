@@ -80,7 +80,9 @@ for i = (1:1: ntrials * length(estimulos))
         
     else   
         % Uso el t0s anterior como referencia para buscar el siguiente
-        condicion = locs_estimulos > (t0s(i-1,1) + tiempo_file * frequency_parameters.board_adc_sample_rate) - 1.0 * frequency_parameters.board_adc_sample_rate ;
+        condicion = locs_estimulos > (t0s(i-1,1) + ...
+            tiempo_file * frequency_parameters.board_adc_sample_rate) - ...
+            1.0 * frequency_parameters.board_adc_sample_rate ;
         t_umbral = locs_estimulos(logical(condicion));
 
         % Conservo solo el primer elemento que supera el umbral
