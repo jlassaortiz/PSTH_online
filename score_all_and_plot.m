@@ -150,7 +150,7 @@ xticklabels({'0.5', '1.0', '1.5', '2.0', '2.5'})
 xlabel('Lambda')
 ylabel('INT')
 title('INT vs id lambda')
-view(0,0)
+% view(0,0)
 
 plot_sabana(mat_avg, directorio_params, ejeY_col, ejeX_fila);
 

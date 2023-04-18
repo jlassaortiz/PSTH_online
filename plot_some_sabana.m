@@ -16,40 +16,43 @@ Y  = score_total(i).grilla_scores(:,2);
 Z1 = score_total(i).grilla_scores(:,3);
 Z_all(:,i) = Z1;
 
-if i < 11
-    plot3(X,Y,Z1,'.r', 'MarkerSize',18,'LineWidth',2)
-    hold on
-elseif (i > 10 && i < 18)
-    plot3(X,Y,Z1,'.g', 'MarkerSize',18,'LineWidth',2)
-    hold on
-else
-    plot3(X,Y,Z1,'.b', 'MarkerSize',25,'LineWidth',2)
-    hold on
-end
-legends{i} = score_total(i).id;
-
-end
-
-for i = (1:1:length(score_total))  
-X  = score_total(i).grilla_scores(:,1);
-Y  = score_total(i).grilla_scores(:,2);
-Z1 = score_total(i).grilla_scores(:,3);
-Z_all(:,i) = Z1;
-
-if i < 11
-    plot3(X,Y,Z1,'-r', 'MarkerSize',18,'LineWidth',2)
-    hold on
-elseif (i > 10 && i < 18)
-    plot3(X,Y,Z1,'-g', 'MarkerSize',18,'LineWidth',2)
-    hold on
-else
-    plot3(X,Y,Z1,'-b', 'MarkerSize',25,'LineWidth',2)
-    hold on
-end
-
-legends{i} = score_total(i).id;
+plot3(X,Y,Z1,'.', 'MarkerSize',18,'LineWidth',2)
 hold on
+
+% if i < 11
+%     plot3(X,Y,Z1,'.r', 'MarkerSize',18,'LineWidth',2)
+%     hold on
+% elseif (i > 10 && i < 18)
+%     plot3(X,Y,Z1,'.g', 'MarkerSize',18,'LineWidth',2)
+%     hold on
+% else
+%     plot3(X,Y,Z1,'.b', 'MarkerSize',25,'LineWidth',2)
+%     hold on
+% end
+legends{i} = score_total(i).id;
+
 end
+
+% for i = (1:1:length(score_total))  
+% X  = score_total(i).grilla_scores(:,1);
+% Y  = score_total(i).grilla_scores(:,2);
+% Z1 = score_total(i).grilla_scores(:,3);
+% Z_all(:,i) = Z1;
+% 
+% if i < 11
+%     plot3(X,Y,Z1,'-r', 'MarkerSize',18,'LineWidth',2)
+%     hold on
+% elseif (i > 10 && i < 18)
+%     plot3(X,Y,Z1,'-g', 'MarkerSize',18,'LineWidth',2)
+%     hold on
+% else
+%     plot3(X,Y,Z1,'-b', 'MarkerSize',25,'LineWidth',2)
+%     hold on
+% end
+% 
+% legends{i} = score_total(i).id;
+% hold on
+% end
 
 % Calculo error
 Z_std = zeros(size(Z_all, 1), 1);
@@ -63,7 +66,7 @@ errh = Z_mean + Z_std;
 
 
 plot3(X,Y,Z_mean, 'k.', 'MarkerSize',20 );
-plot3(X,Y,Z_mean, 'k-', 'LineWidth', 7 );
+% plot3(X,Y,Z_mean, 'k-', 'LineWidth', 7 );
 plot3([X(:),X(:)]', [Y(:),Y(:)]', [errl(:),errh(:)]', '-r','LineWidth',5) 
 
 
