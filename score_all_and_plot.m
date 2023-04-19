@@ -8,11 +8,16 @@ directorio_params = input('Directorio parametros: ','s');
 directorio_params = horzcat(directorio_params , '/');
 
 % Guardo graficos sabanas de cada protocolo individual?
-guardar_graf_protocolos_ind = input('Guardo graf sabanas de cada protocolo individual? (1 = SI / 0 = NO) : ');
+guardar_graf_protocolos_ind = ...
+    input('\nGuardo graf sabanas de cada protocolo individual? (1 = SI / 0 = NO) : ');
+
+% Grafico sabana o diag extendida?
+no_diag = input('\n¿Ploteo diag ext? (1 = SI / 0 = NO) : ');
 
 % Carga vector con parametros del analisis de datos
 params_info = dir(horzcat(directorio_params, 'parametros.txt'));
-params = readtable(horzcat(directorio_params,params_info.name),'Delimiter','\t','ReadVariableNames',false);
+params = readtable(horzcat(directorio_params,params_info.name),'Delimiter','\t', ...
+    'ReadVariableNames',false);
 
 % Posicion del primer directorio en el archivo de parametros
 d = 10;
@@ -36,7 +41,8 @@ for j = (1:1:height(directorios))
     
     % Carga vector con parametros del analisis de datos
     params_info = dir(horzcat(directorio, 'parametros.txt'));
-    params = readtable(horzcat(directorio,params_info.name),'Delimiter','\t','ReadVariableNames',false);
+    params = readtable(horzcat(directorio,params_info.name),'Delimiter','\t', ...
+        'ReadVariableNames',false);
     clear params_info
 
     % Cargo valores de puerto-canal
@@ -64,7 +70,6 @@ for j = (1:1:height(directorios))
 
     char(params.Var1(9))
     ejeY_col  = char(params.Var2(9))
-
     
     % Genero songs.mat a partir de las canciones
     estimulos = carga_songs(directorio);
@@ -95,7 +100,8 @@ for j = (1:1:height(directorios))
     spike_times = find_spike_times(raw_filtered, thr, frequency_parameters);
 
     % Genero objeto con raster de todos los estimulos
-    rasters = generate_raster(spike_times, t0s_dictionary, tiempo_file, ntrials, frequency_parameters);
+    rasters = generate_raster(spike_times, t0s_dictionary, tiempo_file, ntrials, ...
+        frequency_parameters);
 
     % Evaluo desempleño de los distintos estimulos
     dict_score = score_calculator(id_BOS, rasters, frequency_parameters, ...
@@ -108,7 +114,8 @@ for j = (1:1:height(directorios))
     score_total(j).id  = char(directorios.Var1(j)); % nombre corto protocolo
     score_total(j).dir = char(directorios.Var2(j)); % directorio protocolo
     score_total(j).grilla_scores = mat_scores; % array con valores XYZ para graficar
-    score_total(j).grilla_nombre_estimulos = cell_estimulos; % cell con nombre de estimulos para no perderles el restro
+    score_total(j).grilla_nombre_estimulos = cell_estimulos; 
+    % nombre estimulos para no perderles rastro
    
     % Sabana x4: integral y correlacion
     plot_sabana(mat_scores, directorio, ejeY_col, ejeX_fila); % Hace 4 plots
@@ -144,13 +151,53 @@ mat_avg = mat_avg / length(score_total);
 % Ploteo
 plot_some_sabana(score_total, mat_avg, ejeX_fila, ejeY_col);
 
-% figure(1)
-% xticks([1 2 3 4 5])
-% xticklabels({'0.5', '1.0', '1.5', '2.0', '2.5'})
-% xlabel('Lambda')
-% ylabel('INT')
-% title('INT vs id lambda')
-% view(0,0)
+if no_diag == 1
+    figure(1)
+    hold on
+    for i = (1:1:length(score_total))  
+        X  = score_total(i).grilla_scores(:,1);
+        Y  = score_total(i).grilla_scores(:,2);
+        Z1 = score_total(i).grilla_scores(:,3);
+        Z_all(:,i) = Z1;
+
+        plot3(X,Y,Z1,'-')
+        
+        % if i < 11
+        %     plot3(X,Y,Z1,'-r', 'MarkerSize',18,'LineWidth',2)
+        %     hold on
+        % elseif (i > 10 && i < 18)
+        %     plot3(X,Y,Z1,'-g', 'MarkerSize',18,'LineWidth',2)
+        %     hold on
+        % else
+        %     plot3(X,Y,Z1,'-b', 'MarkerSize',25,'LineWidth',2)
+        %     hold on
+        % end
+        hold on
+    end
+    
+    % Calculo error
+    Z_std = zeros(size(Z_all, 1), 1);
+    Z_mean = zeros(size(Z_all, 1), 1);
+    for fila = (1:1:size(Z_all, 1))
+        Z_std(fila,1) = std(Z_all(fila, :))/sqrt(length(Z_all));
+        Z_mean(fila,1) = mean(Z_all(fila, :));
+    end 
+    errl = Z_mean - Z_std;
+    errh = Z_mean + Z_std;
+
+    plot3(X,Y,Z_mean, 'k.', 'MarkerSize',20 );
+    plot3(X,Y,Z_mean, 'k-', 'LineWidth', 5 );
+    plot3([X(:),X(:)]', [Y(:),Y(:)]', [errl(:),errh(:)]', '-r','LineWidth',5) 
+    
+    xticks([1 2 3 4 5])
+    xticklabels({'0.5', '1.0', '1.5', '2.0', '2.5'})
+    xlabel('Lambda')
+    ylabel('INT')
+    title('INT vs id lambda')
+    view(0,0)
+ 
+end
+
 
 plot_sabana(mat_avg, directorio_params, ejeY_col, ejeX_fila);
 

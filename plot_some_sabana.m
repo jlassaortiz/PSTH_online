@@ -10,6 +10,8 @@ figure()
 Z_all = zeros(length(score_total(1).grilla_scores(:,4)), ...
     length(score_total(1)) );
 
+
+
 for i = (1:1:length(score_total))  
 X  = score_total(i).grilla_scores(:,1);
 Y  = score_total(i).grilla_scores(:,2);
@@ -38,6 +40,8 @@ end
 % Y  = score_total(i).grilla_scores(:,2);
 % Z1 = score_total(i).grilla_scores(:,3);
 % Z_all(:,i) = Z1;
+% 
+% plot3(X,Y,Z1,'-')
 % 
 % if i < 11
 %     plot3(X,Y,Z1,'-r', 'MarkerSize',18,'LineWidth',2)
