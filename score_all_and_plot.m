@@ -144,12 +144,12 @@ mat_avg = mat_avg / length(score_total);
 % Ploteo
 plot_some_sabana(score_total, mat_avg, ejeX_fila, ejeY_col);
 
-figure(1)
-xticks([1 2 3 4 5])
-xticklabels({'0.5', '1.0', '1.5', '2.0', '2.5'})
-xlabel('Lambda')
-ylabel('INT')
-title('INT vs id lambda')
+% figure(1)
+% xticks([1 2 3 4 5])
+% xticklabels({'0.5', '1.0', '1.5', '2.0', '2.5'})
+% xlabel('Lambda')
+% ylabel('INT')
+% title('INT vs id lambda')
 % view(0,0)
 
 plot_sabana(mat_avg, directorio_params, ejeY_col, ejeX_fila);

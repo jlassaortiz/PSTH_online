@@ -19,10 +19,10 @@ Z_all(:,i) = Z1;
 plot3(X,Y,Z1,'.', 'MarkerSize',18,'LineWidth',2)
 hold on
 
-% if i < 11
+% if i <= 14
 %     plot3(X,Y,Z1,'.r', 'MarkerSize',18,'LineWidth',2)
 %     hold on
-% elseif (i > 10 && i < 18)
+% elseif (i > 14 && i < 24)
 %     plot3(X,Y,Z1,'.g', 'MarkerSize',18,'LineWidth',2)
 %     hold on
 % else
