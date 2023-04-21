@@ -148,7 +148,80 @@ end
 mat_avg = mat_avg / length(score_total);
 
 
-% Ploteo
+
+
+
+% Guardo todos los datos ! %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+if no_diag == 1  % guardo datos de Diagonal Extendida
+    score_total_toTable(score_total, directorio_params);
+
+else % guardo datos de Grilla/Sabana
+
+    sabana_INT_table = struct();
+
+    % Inicializo contador que va a determinar el numero de fila de mi tabla
+    % final 'sabana_INT_table'
+    fila = 0;
+
+    % para cada protocolo
+    for p = (1:1:length({score_total.id}))
+
+        % para cada estimulo
+        for e = (1:length(score_total(p).grilla_scores(:,1)))
+
+            x = score_total(p).grilla_scores(e,1);
+            y = score_total(p).grilla_scores(e,2);
+
+            % genero estimulo_id generico basado en tamaño cabeza y cuello
+            if x == 1
+                ca = 'caCh';
+            elseif x == 2
+                ca = 'caNo';
+            else
+                ca = 'caGr';
+            end
+            if y == 1
+                cu = 'cuCh';
+            elseif y == 2
+                cu = 'cuNo';
+            else 
+                cu = 'cuGr';
+            end
+
+            estimulo_id = strcat(ca, '_', cu);
+
+            % levanto valor del INT para estimulo e
+            INT = score_total(p).grilla_scores(e,3);
+
+            % actualizo numero fila y guardo la data
+            fila = fila + 1;
+
+            % guardo nombre protocolo
+            sabana_INT_table(fila).protocolo = score_total(p).id;
+
+            % guardo nombre del estimulo
+            sabana_INT_table(fila).estimulo_id = estimulo_id;
+
+            % guardo valor INT
+            sabana_INT_table(fila).INT = INT;
+
+            clear x y ca cu estimulo_id INT
+        end 
+    end 
+    clear p e fila
+
+    writetable(struct2table(sabana_INT_table), strcat(directorio_params, ...
+        datestr(now, 'yyyy-mm-dd_HH_MM_SS'),'_tabla_all_datos.csv'));
+end
+
+
+
+
+
+
+
+% Ploteo %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 plot_some_sabana(score_total, mat_avg, ejeX_fila, ejeY_col);
 
 if no_diag == 1
