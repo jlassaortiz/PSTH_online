@@ -132,6 +132,7 @@ if sabana == 1
     xlabel('Lambda')
     ylabel('INT')
     title('INT vs id lambda')
+    ylim([-0.2, 1.2])
     end
 end
 

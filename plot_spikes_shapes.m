@@ -1,9 +1,10 @@
-function plot_spikes_shapes(raw_filtered, spike_times, thr, frequency_parameters, directorio)
+function plot_spikes_shapes(raw_filtered, spike_times, thr, ...
+    frequency_parameters, directorio)
 
 % Plotea spike shapes, ISI y raw data filtrada
 % Necesita:
 % 1) la se�al neuronal filtrada
-% 2) los time stamps (en samples NO en unidades de tiempo) donde estan los spikes 
+% 2) los time stamps (en samples NO en unidades de tiempo) donde estan spikes 
 % 3) el umbral en uV
 % 4) el objeto frequency_parameters generado por read_Intan_RHD2000_file.m
 % 5) directorio donde estan los archivos de datos analizados
@@ -17,7 +18,9 @@ for i = 1:length(spike_times)
     if spike_times(i)<(5E-3)*frequency_parameters.amplifier_sample_rate
         continue
     end
-    spike_samples(:,i) = raw_filtered((spike_times(i)-(0.8E-3)*frequency_parameters.amplifier_sample_rate):(spike_times(i)+(0.8E-3)*frequency_parameters.amplifier_sample_rate));
+    spike_samples(:,i) = raw_filtered((spike_times(i)-(0.8E-3)* ...
+        frequency_parameters.amplifier_sample_rate):(spike_times(i)+(0.8E-3)* ...
+        frequency_parameters.amplifier_sample_rate));
 end
 
 if length(spike_samples) > limite
@@ -32,7 +35,8 @@ end
 %%%%%%%%%%
 
 figure();
-time_scale = (1/frequency_parameters.amplifier_sample_rate)*(0:1:(length(raw_filtered)-1));
+time_scale = (1/frequency_parameters.amplifier_sample_rate)* ...
+             (0:1:(length(raw_filtered)-1));
 
 % Raw data y umbral
 h(1)=subplot(2,2,[1 2]);
@@ -55,7 +59,8 @@ xlabel('seg')
 
 % Spikes
 h(2)=subplot(2,2,3);
-t = (0:1:length(spike_samples(:,1)) -1)/frequency_parameters.amplifier_sample_rate * 1000;
+t = (0:1:length(spike_samples(:,1)) -1)/ ...
+    frequency_parameters.amplifier_sample_rate * 1000;
 for i=1:(length(spike_samples))
     plot(t, spike_samples(:,i));
     hold on
@@ -68,7 +73,9 @@ xlabel('mseg')
 xlim([0 1.6])
 ylim([1.5*minimo 1.5*maximo])
 if limite < length(spike_times)
-    title({strcat('umbral :', num2str(thr),'uV'); strcat('subset de :', num2str(limite),' spikes de un total de :',num2str(length(spike_times)))})
+    title({strcat('umbral :', num2str(thr),'uV'); strcat('subset de :',...
+        num2str(limite),' spikes de un total de :',...
+        num2str(length(spike_times)))})
 else 
      title(strcat('umbral', num2str(thr),'uV'))
 end
