@@ -224,7 +224,7 @@ end
 % Ploteo %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 plot_some_sabana(score_total, mat_avg, ejeX_fila, ejeY_col);
 
-if no_diag == 1
+if no_diag == 1 % agrego rayas para que se vea la diagonal extendida
     figure(1)
     hold on
     for i = (1:1:length(score_total))  

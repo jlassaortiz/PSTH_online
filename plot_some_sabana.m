@@ -21,6 +21,16 @@ Z_all(:,i) = Z1;
 plot3(X,Y,Z1,'.', 'MarkerSize',18,'LineWidth',2)
 hold on
 
+% % Ploteo con distintos marcadores
+% if i <= 9
+%     plot3(X,Y,Z1,'.', 'MarkerSize',18,'LineWidth',2)
+%     hold on
+% else
+%     plot3(X,Y,Z1,'o', 'MarkerSize',25,'LineWidth',2)
+%     hold on
+% end
+
+% % Ploteo con distintos marcadores
 % if i <= 14
 %     plot3(X,Y,Z1,'.r', 'MarkerSize',18,'LineWidth',2)
 %     hold on
