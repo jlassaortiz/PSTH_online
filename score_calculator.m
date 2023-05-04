@@ -24,7 +24,8 @@ t_window = 0.015; % 15 ms
 step = 0.001; % 1 ms
 
 % Calculo la sw del BOS para poder hacer correlaciones con el resto
-[sw_data_BOS, sw_times_BOS] = sliding_window(rasters(id_BOS).spikes_norm, frequency_parameters.amplifier_sample_rate, ...
+[sw_data_BOS, sw_times_BOS] = sliding_window(rasters(id_BOS).spikes_norm, ...
+    frequency_parameters.amplifier_sample_rate, ...
         t_window, step, tiempo_file);
     
 % Conservo solo la seccion donde se presenta el estimulo auditivo
@@ -34,11 +35,16 @@ sw_data_BOS_norm = sw_data_BOS / max(sw_data_BOS);
 
 % Calculo integracion de spikes normalizada del BOS para poder estandarizar
 % el resto
-integral = sum(rasters(id_BOS).spikes_norm < duracion_BOS * frequency_parameters.amplifier_sample_rate);
+integral = sum(rasters(id_BOS).spikes_norm < duracion_BOS * ...
+    frequency_parameters.amplifier_sample_rate);
 
 % RUIDO = determinado desde la ACTIVIDAD ESPONTANEA (primemos 60 seg.)
 ruido = sum(spike_times < 60*frequency_parameters.amplifier_sample_rate);
-ruido = (ntrials*ruido) * duracion_BOS/60 ;
+ruido = (ntrials*ruido) * duracion_BOS/60;
+
+round(ruido)
+round(integral)
+round(integral / ruido, 2)
 
 integral = integral - ruido;
 
@@ -51,13 +57,15 @@ for i = (1:1:length(rasters)) % para cada estímulo
 %     song_len = length(rasters(i).song) / song_freq; % unidades: seg
     
     % Integracion de spikes normalizada
-    integral = sum(rasters(i).spikes_norm < duracion_BOS * frequency_parameters.amplifier_sample_rate);
+    integral = sum(rasters(i).spikes_norm < duracion_BOS * ...
+        frequency_parameters.amplifier_sample_rate);
     integral = integral - ruido;
     
     integral_norm = (integral)/integral_norm_BOS;
     
     % Calculo sliding window
-    [sw_data, sw_times] = sliding_window(rasters(i).spikes_norm, frequency_parameters.amplifier_sample_rate, ...
+    [sw_data, sw_times] = sliding_window(rasters(i).spikes_norm, ...
+        frequency_parameters.amplifier_sample_rate, ...
         t_window, step, tiempo_file);
     
     % Calculo correlación de sw normalizada con la sw normalizada del BOS
@@ -68,6 +76,7 @@ for i = (1:1:length(rasters)) % para cada estímulo
     % Guardo resultados
     rasters(i).int_norm = integral_norm;
     rasters(i).corr = correlacion_pearson(1,2);
+    rasters(i).act_esp = ruido;
 end 
 
 end
