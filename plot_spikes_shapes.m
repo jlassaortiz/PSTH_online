@@ -34,7 +34,14 @@ end
 % FIGURA %
 %%%%%%%%%%
 
+
 figure();
+x0=20;
+y0=20;
+width=1100;
+height=800;
+set(gcf,'position',[x0,y0,width,height])
+
 time_scale = (1/frequency_parameters.amplifier_sample_rate)* ...
              (0:1:(length(raw_filtered)-1));
 
@@ -89,5 +96,8 @@ xlim([-5 105])
 
 % sgtitle({datestr(now, 'yyyy-mm-dd'); ...
 %     string(directorio) }, 'Interpreter','None')
+
+suptitle({datestr(now, 'yyyy-mm-dd'); ...
+    string(directorio)})
 
 end

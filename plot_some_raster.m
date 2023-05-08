@@ -9,9 +9,11 @@ t_window = 0.015; % 15 ms
 step = 0.001; % 1 ms
 
 % Busco el maximo de los psth para saber que valor poner de ylim
-hist_aux = histcounts(rasters(id_BOS).spikes_norm * 1000/frequency_parameters.amplifier_sample_rate , ...
+hist_aux = histcounts(rasters(id_BOS).spikes_norm * ...
+    1000/frequency_parameters.amplifier_sample_rate , ...
         (1000/frequency_parameters.amplifier_sample_rate) * (-1000:(0.015* ... 
-        frequency_parameters.amplifier_sample_rate):(tiempo_file*frequency_parameters.amplifier_sample_rate)) );
+        frequency_parameters.amplifier_sample_rate):(tiempo_file* ...
+        frequency_parameters.amplifier_sample_rate)) );
 psth_max = max(hist_aux) * 1.2; % ylim de los psth es un 20% mas que el maximo del BOS
 
 % Inicializo figura
@@ -40,7 +42,8 @@ dict_score = score_calculator(id_BOS, rasters, frequency_parameters, ...
     spike_times, ntrials, tiempo_file);
 
 % Calculo la sw del BOS para poder hacer correlaciones con el resto
-[sw_data_BOS, sw_times_BOS] = sliding_window(rasters(id_BOS).spikes_norm, frequency_parameters.amplifier_sample_rate, ...
+[sw_data_BOS, sw_times_BOS] = sliding_window(rasters(id_BOS).spikes_norm, ...
+    frequency_parameters.amplifier_sample_rate, ...
         t_window, step, tiempo_file);
     
 % Conservo solo la seccion donde se presenta el estimulo auditivo
@@ -65,20 +68,23 @@ for i = id_estimulos % para cada estímulo
     % SONIDO
     j = j + 1;
     h(j) = subplot(n, m , p);
-    plot(1000/estimulos(i).freq * (0:1:(length(estimulos(i).song) -1)), estimulos(i).song,'black')
+    plot(1000/estimulos(i).freq * (0:1:(length(estimulos(i).song) -1)), ...
+        estimulos(i).song,'black')
     hold on;
     line([0 tiempo_file*1000],[0 0],'color',[0 0 0]);
     xlim([0 limite_eje_x])
     xticks([])
     
-    title(strcat(string(i), " - ",estimulos(i).name), 'Interpreter','None', 'FontSize', 6)
+    title(strcat(string(i), " - ",estimulos(i).name), ...
+        'Interpreter','None', 'FontSize', 6)
 
     % PSTH
     j = j + 1;
     h(j) = subplot(n, m, [p + 3, p + 6]);
     histogram(rasters(i).spikes_norm * 1000/frequency_parameters.amplifier_sample_rate , ...
         (1000/frequency_parameters.amplifier_sample_rate) * (-1000:(0.015* ... 
-        frequency_parameters.amplifier_sample_rate):(tiempo_file*frequency_parameters.amplifier_sample_rate)) );
+        frequency_parameters.amplifier_sample_rate):(tiempo_file*...
+        frequency_parameters.amplifier_sample_rate)) );
     ylim([0 psth_max]);
     xlim([0 limite_eje_x]);
     hold on;
@@ -87,7 +93,8 @@ for i = id_estimulos % para cada estímulo
     integral_text = strcat('Integral_norm : ', string(dict_score(i).int_norm));
     
     % Calculo sliding window para cada estimulo
-    [sw_data, sw_times] = sliding_window(rasters(i).spikes_norm, frequency_parameters.amplifier_sample_rate, ...
+    [sw_data, sw_times] = sliding_window(rasters(i).spikes_norm, ...
+        frequency_parameters.amplifier_sample_rate, ...
         t_window, step, tiempo_file);
     plot(sw_times * 1000, sw_data, '-b');
     plot(sw_times_BOS * 1000 , sw_data_BOS, '-r');
@@ -102,7 +109,8 @@ for i = id_estimulos % para cada estímulo
     % RASTER
     j = j + 1;
     h(j) = subplot(n, m, [p + 9, p + 12]);
-    plot((1000/frequency_parameters.amplifier_sample_rate) * rasters(i).spikes_norm, rasters(i).trials_id, '.')  
+    plot((1000/frequency_parameters.amplifier_sample_rate) * ...
+        rasters(i).spikes_norm, rasters(i).trials_id, '.')  
     xlim([0 limite_eje_x])
     ylim([0 ntrials + 1])
     xticks([])
@@ -111,11 +119,15 @@ end
 % Linkeo eje x (no se pueden hacer varios links independientes juntos)
 linkaxes(h, 'x');
 
-% Titulo general
-sgtitle({datestr(now, 'yyyy-mm-dd'); ...
+% sgtitle({datestr(now, 'yyyy-mm-dd'); ...
+%      string(directorio) ; ...
+%      strcat(string(puerto_canal), "  " , string(thr), "uV", "  ntrials:", string(ntrials),  ...
+%      "  t_inter_estimulo:", string(tiempo_file)) }, 'Interpreter','None')
+
+suptitle({datestr(now, 'yyyy-mm-dd'); ...
     string(directorio) ; ...
     strcat(string(puerto_canal), "  " , string(thr), "uV", "  ntrials:", string(ntrials),  ...
-    "  t_inter_estimulo:", string(tiempo_file)) }, 'Interpreter','None')
+    "  t_inter_estimulo:", string(tiempo_file)) })
 
 end
 
