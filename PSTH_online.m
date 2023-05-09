@@ -62,6 +62,8 @@ ejeY_col  = char(params.Var2(9))
 
 % Genero songs.mat a partir de las canciones
 estimulos = carga_songs(directorio);
+duracion_BOS = length(estimulos(id_BOS).song) / estimulos(id_BOS).freq;
+BOS_times = (0:1:length(estimulos(1).song)-1) / estimulos(1).freq; 
 
 % Leer info INTAN
 read_Intan_RHD2000_file(horzcat(directorio, 'info.rhd'));
@@ -101,9 +103,40 @@ spike_times = find_spike_times(raw_filtered, thr, frequency_parameters);
 rasters = generate_raster(spike_times, t0s_dictionary, tiempo_file, ntrials, ...
     frequency_parameters);
 
+% para cada estimulo acumulo los spikes por motivo
+motif_ti = [1.4509, 2.2344, 3.0151];  
+motif_dur = 0.61;
+for e = (1:1:length(rasters))
+    [spikes_norm_motif, motif] = group_by_motif(rasters(e).spikes_norm,...
+        motif_ti, motif_dur, frequency_parameters.amplifier_sample_rate, ...
+        rasters(e).song, rasters(e).freq);
+    
+    rasters(e).spikes_norm_motif = spikes_norm_motif;
+    rasters(e).motif = motif;
+end
+
 % Evaluo desempleño de los distintos estimulos
 dict_score = score_calculator(id_BOS, rasters, frequency_parameters, ...
     spike_times, ntrials, tiempo_file);
+
+% Evaluo desempeño de los distintos estímulos luego de acumular los spikes
+% por motivo
+for e = (1:1:length(rasters))
+    [int_norm_motif, corr_motif, sw_motif] = score_calculator_motif(rasters(e).spikes_norm_motif, ...
+        rasters(1).spikes_norm_motif, ...
+        duracion_BOS, ...
+        frequency_parameters.amplifier_sample_rate, ...
+        spike_times, ntrials, tiempo_file);
+    
+    dict_score(e).int_norm_motif = int_norm_motif;
+    dict_score(e).corr_motif = corr_motif;
+    dict_score(e).sw_motif = sw_motif;
+    
+    clear int_norm_motif corr_motif sw_motif
+end
+
+
+
 
 % Transformo alguno de los resultados en grillas (si quiero graficar sabanas)
 if sabana == 1

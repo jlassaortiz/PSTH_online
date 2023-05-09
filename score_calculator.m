@@ -77,6 +77,7 @@ for i = (1:1:length(rasters)) % para cada estímulo
     rasters(i).int_norm = integral_norm;
     rasters(i).corr = correlacion_pearson(1,2);
     rasters(i).act_esp = ruido;
+    rasters(i).sw = horzcat(sw_times, sw_data);
 end 
 
 end
