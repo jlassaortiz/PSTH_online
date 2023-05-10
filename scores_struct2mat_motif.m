@@ -43,8 +43,8 @@ for x = (1:1:n_x)
 
         % Agrego valores Z de la sabana
         id_estimulo = grilla(x,y);
-        mat_scores(fila, 3) = dict_score(id_estimulo).int_norm;
-        mat_scores(fila, 4) = dict_score(id_estimulo).corr;
+        mat_scores(fila, 3) = dict_score(id_estimulo).int_norm_motif;
+        mat_scores(fila, 4) = dict_score(id_estimulo).corr_motif;
 
         % Guardo el nombre del estimulo (responsable de los scores de
         % arriba) en la misma posicion X  e Y que los scores

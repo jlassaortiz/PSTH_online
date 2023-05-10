@@ -41,7 +41,7 @@ integral = sum(spikes_norm_BOS < duracion_BOS * sr_spikes);
 
 % RUIDO = determinado desde la ACTIVIDAD ESPONTANEA (primemos 60 seg.)
 ruido = sum(spike_times < 60 * sr_spikes);
-ruido = (ntrials*ruido) * duracion_BOS/60;
+ruido = (ntrials*ruido*3) * duracion_BOS/60; %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% HARCODEO !
 
 % Resto ruido a la integral del BOS
 integral_norm_BOS = integral - ruido;
@@ -64,6 +64,7 @@ correlacion_pearson = corrcoef(sw_data_norm, sw_data_BOS_norm);
 int_norm = integral_norm;
 corr = correlacion_pearson(1,2);
 sw_motif = horzcat(sw_times, sw_data);
+sw_motif = sw_motif(sw_times < duracion_BOS,:);
 
 % act_esp = ruido;
  

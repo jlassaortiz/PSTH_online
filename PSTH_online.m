@@ -23,6 +23,8 @@ if sabana == 1
     no_diag = input('\n¿Ploteo diag ext? (1 = SI / 0 = NO) : ');
 end
 
+acumulo_motivo = input('\n¿Acumulo spikes por motivo? (1 = SI / 0 = NO): ');
+
 % Carga vector con parametros del analisis de datos
 params_info = dir(horzcat(directorio, 'parametros.txt'));
 params = readtable(horzcat(directorio,params_info.name),'Delimiter','\t',...
@@ -124,7 +126,7 @@ dict_score = score_calculator(id_BOS, rasters, frequency_parameters, ...
 for e = (1:1:length(rasters))
     [int_norm_motif, corr_motif, sw_motif] = score_calculator_motif(rasters(e).spikes_norm_motif, ...
         rasters(1).spikes_norm_motif, ...
-        duracion_BOS, ...
+        motif_dur, ...
         frequency_parameters.amplifier_sample_rate, ...
         spike_times, ntrials, tiempo_file);
     
@@ -139,8 +141,10 @@ end
 
 
 % Transformo alguno de los resultados en grillas (si quiero graficar sabanas)
-if sabana == 1
+if sabana == 1 && acumulo_motivo == 0
     [mat_scores, cell_estimulos] = scores_struct2mat(grilla_sabana,dict_score);
+elseif sabana == 1 && acumulo_motivo == 1
+    [mat_scores, cell_estimulos] = scores_struct2mat_motif(grilla_sabana,dict_score);
 end 
 
 % Machete algunos ploteos
@@ -151,7 +155,7 @@ plot_spikes_shapes(raw_filtered, spike_times, thr, frequency_parameters, directo
 % Grafica raster de todos los estimulos
 plot_some_raster_v2(grilla_psth, id_BOS, estimulos, dict_score, ...
     frequency_parameters, tiempo_file, ntrials, puerto_canal, thr, ...
-    directorio, spike_times)
+    directorio, spike_times, acumulo_motivo, motif_ti(1), motif_dur)
 
 % Ploteo sabana (x4 plots)
 if sabana == 1
@@ -178,10 +182,9 @@ if sabana == 1
     print_pdf(4, directorio, strcat('_sabana_CORR_', string(round(thr)), 'uV.pdf'))
     print_pdf(5, directorio, strcat('_CORTE_sabana_INT_', string(round(thr)), 'uV.pdf'))
     print_pdf(6, directorio, strcat('_CORTE_sabana_CORR_', string(round(thr)), 'uV.pdf'))
-    
+
     if no_diag == 1
     print_pdf(7, directorio, strcat('_INT_vs_lambda', string(round(thr)), 'uV.pdf'))
     end
-
 end
 
