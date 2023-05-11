@@ -1,7 +1,7 @@
 function [int_norm, corr, sw_motif] = score_calculator_motif(...
     spikes_norm, ...
     spikes_norm_BOS, ...
-    duracion_BOS, ...
+    duracion_motif, ...
     sr_spikes, ...
     spike_times, ntrials, tiempo_file)
 % Calcula la int_normalizada y la correlacion del protocolo experimental
@@ -32,22 +32,22 @@ step = 0.001; % 1 ms
     
 % Conservo solo la seccion donde se presenta el estimulo auditivo
 % duracion_BOS = length(rasters(id_BOS).song) / rasters(id_BOS).freq; % en seg
-sw_data_BOS = sw_data_BOS(sw_times_BOS < duracion_BOS);
+sw_data_BOS = sw_data_BOS(sw_times_BOS < duracion_motif);
 sw_data_BOS_norm = sw_data_BOS / max(sw_data_BOS);
 
 % Calculo integracion de spikes normalizada del BOS para poder estandarizar
 % el resto
-integral = sum(spikes_norm_BOS < duracion_BOS * sr_spikes);
+integral = sum(spikes_norm_BOS < duracion_motif * sr_spikes);
 
 % RUIDO = determinado desde la ACTIVIDAD ESPONTANEA (primemos 60 seg.)
 ruido = sum(spike_times < 60 * sr_spikes);
-ruido = (ntrials*ruido*3) * duracion_BOS/60; %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% HARCODEO !
+ruido = (ntrials*ruido*3) * duracion_motif/60; %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% HARCODEO !
 
 % Resto ruido a la integral del BOS
 integral_norm_BOS = integral - ruido;
     
 % Integracion de spikes normalizada
-integral = sum(spikes_norm < duracion_BOS * sr_spikes);
+integral = sum(spikes_norm < duracion_motif * sr_spikes);
 integral = integral - ruido;
 integral_norm = (integral)/integral_norm_BOS;
 
@@ -57,14 +57,14 @@ integral_norm = (integral)/integral_norm_BOS;
 
 % Calculo correlación de sw normalizada con la sw normalizada del BOS
 sw_data_norm = sw_data / max(sw_data);
-sw_data_norm = sw_data_norm(sw_times < duracion_BOS);
+sw_data_norm = sw_data_norm(sw_times < duracion_motif);
 correlacion_pearson = corrcoef(sw_data_norm, sw_data_BOS_norm);
 
 % Guardo resultados
 int_norm = integral_norm;
 corr = correlacion_pearson(1,2);
 sw_motif = horzcat(sw_times, sw_data);
-sw_motif = sw_motif(sw_times < duracion_BOS,:);
+sw_motif = sw_motif(sw_times < duracion_motif,:);
 
 % act_esp = ruido;
  

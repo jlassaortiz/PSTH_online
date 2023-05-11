@@ -170,6 +170,7 @@ if sabana == 1
     ylabel('INT')
     title('INT vs id lambda')
     ylim([-0.2, 1.2])
+    set(gca, 'FontSize', 36)
     end
 end
 
