@@ -17,13 +17,23 @@ end
 
 % Plot sabana?
 sabana = input('\n¿Ploteo sabanas? (1 = SI / 0 = NO) : ');
-
 if sabana == 1
     % NO hay sabana entonces no hay diag?
     no_diag = input('\n¿Ploteo diag ext? (1 = SI / 0 = NO) : ');
 end
 
+% Acumulo por motivo ?
 acumulo_motivo = input('\n¿Acumulo spikes por motivo? (1 = SI / 0 = NO): ');
+
+% Analizo por bandas?
+bandas = input('\nFiltro banda particular? (1 = SI / 0 = NO) : ');
+    if bandas == 1
+        b_inf = input('\nLimite inferior (Hz): ');
+        b_sup = input('\nLimite superior (Hz): ');
+    else 
+        b_inf = 0;
+        b_sup = 400;
+    end 
 
 % Carga vector con parametros del analisis de datos
 params_info = dir(horzcat(directorio, 'parametros.txt'));
@@ -46,7 +56,6 @@ tiempo_file = str2num(char(params.Var2(4)))
 trials = (1:ntrials);
 % trials = (1:10)
 % trials = (11:20)
-
 
 % Especifico numero de id del BOS
 id_BOS = str2num(char(params.Var2(5)))
@@ -74,12 +83,18 @@ clear notes spike_triggers supply_voltage_channels aux_input_channels
 % Levanto el canal de interes
 raw = read_INTAN_channel(directorio, puerto_canal, amplifier_channels);
 
-% Define el filtro
-filt_spikes = designfilt('highpassiir','DesignMethod','butter','FilterOrder',...
-    4,'HalfPowerFrequency',500,'SampleRate',frequency_parameters.amplifier_sample_rate);
+% Define el filtro para SPIKES
+filt_spikes = designfilt('highpassiir','DesignMethod','butter',...
+    'FilterOrder', 4,'HalfPowerFrequency',500,...
+    'SampleRate',frequency_parameters.amplifier_sample_rate);
 
-% Aplica filtro
+% Aplica filtros
+downsample_sr = 10000; % Hz
 raw_filtered = filtfilt(filt_spikes, raw);
+LFP = LFP_1channel(raw, frequency_parameters, ...
+    downsample_sr, bandas, b_inf, b_sup);
+
+sr_lfp = downsample_sr;
 clear puerto canal filt_spikes raw
 
 % Genero diccionario con nombre de los estimulos y el momento de presentacion
@@ -116,6 +131,12 @@ for e = (1:1:length(rasters))
     rasters(e).spikes_norm_motif = spikes_norm_motif;
     rasters(e).motif = motif;
 end
+
+% Calculo LFP promediado por estimulo todos los trials 
+rasters = trialAverage_LFP(LFP, rasters, tiempo_file, ntrials, ...
+    frequency_parameters, sr_lfp);
+
+%%%%%%% Hasta acá todo en orden, ver como plot LFP %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 % Evaluo desempleño de los distintos estimulos
 dict_score = score_calculator(id_BOS, rasters, frequency_parameters, ...
