@@ -14,6 +14,16 @@ guardar_graf_protocolos_ind = ...
 % Grafico sabana o diag extendida?
 no_diag = input('\n¿Ploteo diag ext? (1 = SI / 0 = NO) : ');
 
+% Analizo por bandas?
+bandas = input('\nFiltro banda particular? (1 = SI / 0 = NO) : ');
+    if bandas == 1
+        b_inf = input('\nLimite inferior (Hz): ');
+        b_sup = input('\nLimite superior (Hz): ');
+    else 
+        b_inf = 0;
+        b_sup = 400;
+    end    
+
 % Carga vector con parametros del analisis de datos
 params_info = dir(horzcat(directorio_params, 'parametros.txt'));
 params = readtable(horzcat(directorio_params,params_info.name),'Delimiter','\t', ...
@@ -86,8 +96,13 @@ for j = (1:1:height(directorios))
         4,'HalfPowerFrequency',500,'SampleRate',frequency_parameters.amplifier_sample_rate);
 
     % Aplica filtro
+    downsample_sr = 10000; % Hz
     raw_filtered = filtfilt(filt_spikes, raw);
-    clear filt_spikes
+    LFP = LFP_1channel(raw, frequency_parameters, ...
+        downsample_sr, bandas, b_inf, b_sup);
+    
+    sr_lfp = downsample_sr;
+    clear puerto canal filt_spikes raw
 
     % Genero diccionario con nombre de los estimulos y el momento de presentacion
     t0s_dictionary = find_t0s(estimulos, ntrials, tiempo_file, board_adc_channels, ...
@@ -102,13 +117,17 @@ for j = (1:1:height(directorios))
     % Genero objeto con raster de todos los estimulos
     rasters = generate_raster(spike_times, t0s_dictionary, tiempo_file, ntrials, ...
         frequency_parameters);
+    
+    % Calculo LFP promediado por estimulo todos los trials 
+    rasters = trialAverage_LFP(LFP, rasters, tiempo_file, ntrials, ...
+    frequency_parameters, sr_lfp);
 
     % Evaluo desempleño de los distintos estimulos
     dict_score = score_calculator(id_BOS, rasters, frequency_parameters, ...
     spike_times, ntrials, tiempo_file);
     
     % Selecciono scores con los que me quedo y hago matriz para graficar
-    [mat_scores, cell_estimulos] = scores_struct2mat(grilla_sabana,dict_score);
+    [mat_scores, cell_estimulos] = scores_struct2mat_motif(grilla_sabana,dict_score, 1);
     
     % Agrego estos valores a la struct score_total que recopila todo
     score_total(j).id  = char(directorios.Var1(j)); % nombre corto protocolo
@@ -224,6 +243,7 @@ end
 % Ploteo %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 plot_some_sabana(score_total, mat_avg, ejeX_fila, ejeY_col);
 
+% PLOTEO INT %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 if no_diag == 1 % agrego rayas para que se vea la diagonal extendida
     figure(1)
     hold on
@@ -261,7 +281,6 @@ if no_diag == 1 % agrego rayas para que se vea la diagonal extendida
     plot3(X,Y,Z_mean, 'k.', 'MarkerSize',20 );
     plot3(X,Y,Z_mean, 'k-', 'LineWidth', 5 );
     plot3([X(:),X(:)]', [Y(:),Y(:)]', [errl(:),errh(:)]', '-r','LineWidth',5) 
-    
     xticks([1 2 3 4 5])
     xticklabels({'0.5', '1.0', '1.5', '2.0', '2.5'})
     xlabel('Lambda')
@@ -270,6 +289,57 @@ if no_diag == 1 % agrego rayas para que se vea la diagonal extendida
     view(0,0)
  
 end
+
+
+% PLOTEO LFP dif-corr %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+if no_diag == 1 % agrego rayas para que se vea la diagonal extendida
+    figure(2)
+    hold on
+    for i = (1:1:length(score_total))  
+        X  = score_total(i).grilla_scores(:,1);
+        Y  = score_total(i).grilla_scores(:,2);
+        Z1 = score_total(i).grilla_scores(:,4);
+        Z_all(:,i) = Z1;
+
+        plot3(X,Y,Z1,'-')
+        
+        % if i < 11
+        %     plot3(X,Y,Z1,'-r', 'MarkerSize',18,'LineWidth',2)
+        %     hold on
+        % elseif (i > 10 && i < 18)
+        %     plot3(X,Y,Z1,'-g', 'MarkerSize',18,'LineWidth',2)
+        %     hold on
+        % else
+        %     plot3(X,Y,Z1,'-b', 'MarkerSize',25,'LineWidth',2)
+        %     hold on
+        % end
+        hold on
+    end
+    
+    % Calculo error
+    Z_std = zeros(size(Z_all, 1), 1);
+    Z_mean = zeros(size(Z_all, 1), 1);
+    for fila = (1:1:size(Z_all, 1))
+        Z_std(fila,1) = std(Z_all(fila, :))/sqrt(length(Z_all));
+        Z_mean(fila,1) = mean(Z_all(fila, :));
+    end 
+    errl = Z_mean - Z_std;
+    errh = Z_mean + Z_std;
+
+    plot3(X,Y,Z_mean, 'k.', 'MarkerSize',20 );
+    plot3(X,Y,Z_mean, 'k-', 'LineWidth', 5 );
+    plot3([X(:),X(:)]', [Y(:),Y(:)]', [errl(:),errh(:)]', '-r','LineWidth',5)    
+    xticks([1 2 3 4 5])
+    xticklabels({'0.5', '1.0', '1.5', '2.0', '2.5'})
+    xlabel('Lambda')
+    ylabel('LFP dif-corr')
+    title(strcat('LFP dif-corr vs lambda | banda: ', ...
+        num2str(b_inf), ' - ', num2str(b_sup), ' Hz'))
+    view(0,0)
+end
+
+ 
+
 
 
 plot_sabana(mat_avg, directorio_params, ejeY_col, ejeX_fila);
