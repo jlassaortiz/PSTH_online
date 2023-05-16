@@ -59,5 +59,6 @@ for i = (1:1:length(t0s_dict))
     LFP_promedio = mean(allTrials_LFP, 2);
     
     % Guardo los LFP promedio de este canal para este estimulo
-    t0s_dict(i).LFP_promedio = LFP_promedio;    
+    t0s_dict(i).LFP_promedio = LFP_promedio;
+    t0s_dict(i).sr_lfp = sr_lfp;
 end

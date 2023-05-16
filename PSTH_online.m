@@ -25,15 +25,20 @@ end
 % Acumulo por motivo ?
 acumulo_motivo = input('\n¿Acumulo spikes por motivo? (1 = SI / 0 = NO): ');
 
+% Analizo LFP ?
+analisis_LFP = input('\nAnalizo LFP? (1 = SI / 0 = NO) : ');
+
+
 % Analizo por bandas?
 bandas = input('\nFiltro banda particular? (1 = SI / 0 = NO) : ');
-    if bandas == 1
+    if bandas == 1 && analisis_LFP == 1
         b_inf = input('\nLimite inferior (Hz): ');
         b_sup = input('\nLimite superior (Hz): ');
     else 
         b_inf = 0;
         b_sup = 400;
-    end 
+    end      
+
 
 % Carga vector con parametros del analisis de datos
 params_info = dir(horzcat(directorio, 'parametros.txt'));
@@ -136,8 +141,6 @@ end
 rasters = trialAverage_LFP(LFP, rasters, tiempo_file, ntrials, ...
     frequency_parameters, sr_lfp);
 
-%%%%%%% Hasta acá todo en orden, ver como plot LFP %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
 % Evaluo desempleño de los distintos estimulos
 dict_score = score_calculator(id_BOS, rasters, frequency_parameters, ...
     spike_times, ntrials, tiempo_file);
@@ -158,17 +161,17 @@ for e = (1:1:length(rasters))
     clear int_norm_motif corr_motif sw_motif
 end
 
-
-
-
 % Transformo alguno de los resultados en grillas (si quiero graficar sabanas)
-if sabana == 1 && acumulo_motivo == 0
+if sabana == 1 && acumulo_motivo == 0 && analisis_LFP == 0
     [mat_scores, cell_estimulos] = scores_struct2mat(grilla_sabana,dict_score);
 elseif sabana == 1 && acumulo_motivo == 1
-    [mat_scores, cell_estimulos] = scores_struct2mat_motif(grilla_sabana,dict_score);
+    [mat_scores, cell_estimulos] = scores_struct2mat_motif(grilla_sabana,dict_score, analisis_LFP);
+elseif sabana == 1 && analisis_LFP == 1
+    [mat_scores, cell_estimulos] = scores_struct2mat_motif(grilla_sabana,dict_score, analisis_LFP); %%%%%%% ?????
 end 
 
-% Machete algunos ploteos
+
+%%%%%%% Hasta acá todo en orden, ver como plot LFP %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 % Carga datos filtrados y hace un threshold cutting
 plot_spikes_shapes(raw_filtered, spike_times, thr, frequency_parameters, directorio)
@@ -176,7 +179,8 @@ plot_spikes_shapes(raw_filtered, spike_times, thr, frequency_parameters, directo
 % Grafica raster de todos los estimulos
 plot_some_raster_v2(grilla_psth, id_BOS, estimulos, dict_score, ...
     frequency_parameters, tiempo_file, ntrials, puerto_canal, thr, ...
-    directorio, spike_times, acumulo_motivo, motif_ti(1), motif_dur)
+    directorio, spike_times, acumulo_motivo, motif_ti(1), motif_dur, ...
+    analisis_LFP, sr_lfp)
 
 % Ploteo sabana (x4 plots)
 if sabana == 1
@@ -193,6 +197,22 @@ if sabana == 1
     ylim([-0.2, 1.2])
     set(gca, 'FontSize', 36)
     end
+    
+    if analisis_LFP == 1
+    figure()
+    plot(mat_scores(:,1), mat_scores(:,4))
+    hold on
+    plot([0, 5], [dict_score(id_BOS).LFP_score_dif dict_score(id_BOS).LFP_score_dif], '--r')
+    xticks([1 2 3 4 5])
+    xticklabels({'0.5', '1.0', '1.5', '2.0', '2.5'})
+    xlabel('Lambda')
+    ylabel('LFP dif-score')
+    title('LFP dif-score vs id lambda')
+    ylim([0.0, 2.0])
+    xlim([1 5])
+    set(gca, 'FontSize', 36)
+    legend('LFP', 'dif-score LFP BOS')
+    end
 end
 
 % Guardo
@@ -206,7 +226,11 @@ if sabana == 1
     print_pdf(6, directorio, strcat('_CORTE_sabana_CORR_', string(round(thr)), 'uV.pdf'))
 
     if no_diag == 1
-    print_pdf(7, directorio, strcat('_INT_vs_lambda', string(round(thr)), 'uV.pdf'))
+        print_pdf(7, directorio, strcat('_INT_vs_lambda', string(round(thr)), 'uV.pdf'))
+        if analisis_LFP == 1
+            print_pdf(8, directorio, strcat('_LFP-dif_vs_lambda', string(round(thr)), 'uV.pdf'))
+        end
+    
     end
 end
 

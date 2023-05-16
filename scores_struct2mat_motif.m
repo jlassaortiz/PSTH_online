@@ -1,4 +1,5 @@
-function [mat_scores, cell_estimulos] = scores_struct2mat_motif(grilla,dict_score)
+function [mat_scores, cell_estimulos] = scores_struct2mat_motif(grilla,...
+    dict_score, analisis_LFP)
 
 % Convierte salida de score_calculator en matriz para graficar facilmente.
 %   
@@ -42,9 +43,14 @@ for x = (1:1:n_x)
         mat_scores(fila, 2) = y;
 
         % Agrego valores Z de la sabana
-        id_estimulo = grilla(x,y);
-        mat_scores(fila, 3) = dict_score(id_estimulo).int_norm_motif;
-        mat_scores(fila, 4) = dict_score(id_estimulo).corr_motif;
+        if analisis_LFP == 0
+            id_estimulo = grilla(x,y);
+            mat_scores(fila, 3) = dict_score(id_estimulo).int_norm_motif;
+            mat_scores(fila, 4) = dict_score(id_estimulo).corr_motif;
+        else
+            id_estimulo = grilla(x,y);
+            mat_scores(fila, 3) = dict_score(id_estimulo).int_norm;
+            mat_scores(fila, 4) = dict_score(id_estimulo).LFP_score_dif;
 
         % Guardo el nombre del estimulo (responsable de los scores de
         % arriba) en la misma posicion X  e Y que los scores

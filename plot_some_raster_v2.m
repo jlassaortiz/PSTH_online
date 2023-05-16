@@ -1,6 +1,7 @@
 function plot_some_raster_v2(id_estimulos, id_BOS, estimulos, dict_score, ...
     frequency_parameters, tiempo_file, ntrials, puerto_canal, thr, directorio,...
-    spike_times, acumulo_motivo, motif_t1, motif_dur)
+    spike_times, acumulo_motivo, motif_t1, motif_dur, ...
+    analisis_LFP, sr_lfp)
 
 % plot_raster plotea el raster y psth del numero de estimulos indicados
 %   Detailed explanation goes here
@@ -122,6 +123,10 @@ for i = id_estimulos % para cada estímulo
         % Calculo correlación de sw normalizada con la sw normalizada del BOS
         R2_text = strcat(' Coef Pearson sw_BOS_norm : ' , ...
             string(round(dict_score(i).corr, 2)));
+        
+        % Genero texto con valor del LFP_score_dif
+        LFP_dif_score_text = strcat(' LFP dif-score : ' , ...
+            string(round(dict_score(i).LFP_score_dif, 2)));
     else
         % ploteo histograma del motivo
         histogram( (dict_score(i).spikes_norm_motif + motif_t1*sr_spikes)...
@@ -151,22 +156,39 @@ for i = id_estimulos % para cada estímulo
     
     % Escribo en el titulo los valores de integral y correlacion de sw
     % normalizadas
-    title(strcat(integral_text, ' / ' , R2_text) , 'Interpreter','None',...
-        'Fontsize', 14)
-
-    % RASTER
-    j = j + 1;
-    h(j) = subplot(n, m, [p + 9, p + 12]);
-    plot((1000/sr_spikes) * ...
-        dict_score(i).spikes_norm, dict_score(i).trials_id, '.')
-    if acumulo_motivo == 0
-        xlim([0 limite_eje_x])
+    if analisis_LFP == 0
+        title(strcat(integral_text, ' / ' , R2_text) , 'Interpreter','None', ...
+            'Fontsize', 14)
     else
-        xlim([motif_t1*1000 (motif_t1 + motif_dur)*1000]);
-    end
-    ylim([0 ntrials + 1])
-    xticks([])
-    set(gca, 'FontSize', fz)
+        title(strcat(integral_text, ' / ' , LFP_dif_score_text) , 'Interpreter','None', ...
+            'Fontsize', 14)
+    end 
+
+    if analisis_LFP == 0
+        % RASTER
+        j = j + 1;
+        h(j) = subplot(n, m, [p + 9, p + 12]);
+        plot((1000/sr_spikes) * ...
+            dict_score(i).spikes_norm, dict_score(i).trials_id, '.')
+        if acumulo_motivo == 0
+            xlim([0 limite_eje_x])
+        else
+            xlim([motif_t1*1000 (motif_t1 + motif_dur)*1000]);
+        end
+        ylim([0 ntrials + 1])
+        xticks([])
+        set(gca, 'FontSize', fz)
+    else
+        % LFP
+        j = j + 1;
+        h(j) = subplot(n, m, [p + 9, p + 12]);
+        plot((1:1:length(dict_score(i).LFP_env))*(1000/sr_lfp), ...
+           dict_score(i).LFP_env, '-b')
+       ylim([0 max(dict_score(id_BOS).LFP_env)*1.25])
+        xticks([])
+        set(gca, 'FontSize', fz)
+    end 
+    
 end 
 
 % Linkeo eje x (no se pueden hacer varios links independientes juntos)

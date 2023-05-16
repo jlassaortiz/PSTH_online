@@ -73,6 +73,22 @@ for i = (1:1:length(rasters)) % para cada estímulo
     sw_data_norm = sw_data_norm(sw_times < duracion_BOS);
     correlacion_pearson = corrcoef(sw_data_norm, sw_data_BOS_norm);
     
+    % Calculo scores del LFP
+    % Genero var aux para que quede mas prolijo el codigo
+    LFP_aux =  rasters(i).LFP_promedio;
+
+    % Calculo score de LFP con estimulo y post-estimulo
+    
+    t_sil = uint64(duracion_BOS * rasters(i).sr_lfp) ;
+    h = abs(hilbert(LFP_aux));
+    LFP_score_aud = mean(h(1:t_sil,1));
+    LFP_score_sil = mean(h(t_sil:t_sil*2,1));
+
+    rasters(i).LFP_score_aud = LFP_score_aud;
+    rasters(i).LFP_score_sil = LFP_score_sil;
+    rasters(i).LFP_score_dif = LFP_score_aud - LFP_score_sil;
+    rasters(i).LFP_env = h;
+    
     % Guardo resultados
     rasters(i).int_norm = integral_norm;
     rasters(i).corr = correlacion_pearson(1,2);
