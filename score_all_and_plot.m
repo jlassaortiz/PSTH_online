@@ -338,17 +338,17 @@ if no_diag == 1 % agrego rayas para que se vea la diagonal extendida
     view(0,0)
 end
 
- 
-
 
 
 plot_sabana(mat_avg, directorio_params, ejeY_col, ejeX_fila);
+set(gca, 'FontSize', 36)
+
 
 % Guardo
-print_pdf(1, directorio_params, strcat('_sabana_INT_', 'uV.pdf'))
-print_pdf(2, directorio_params, strcat('_sabana_CORR_', 'uV.pdf'))
-print_pdf(5, directorio_params, strcat('_CORTE_sabana_INT_', 'uV.pdf'))
-print_pdf(6, directorio_params, strcat('_CORTE_sabana_CORR_', 'uV.pdf'))
+print_pdf(1, directorio_params, strcat('_sabana_INT_', '.pdf'))
+print_pdf(2, directorio_params, strcat('_sabana_CORR_', '.pdf'))
+print_pdf(5, directorio_params, strcat('_CORTE_sabana_INT_', '.pdf'))
+print_pdf(6, directorio_params, strcat('_CORTE_sabana_CORR_', '.pdf'))
 
 clear ans params_info d directorio directorio_aux  puerto canal i j 
 clear mat_scores cell_estimulos rasters raw raw_filtered spike_times

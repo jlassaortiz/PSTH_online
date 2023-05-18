@@ -171,8 +171,6 @@ elseif sabana == 1 && analisis_LFP == 1
 end 
 
 
-%%%%%%% Hasta acá todo en orden, ver como plot LFP %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
 % Carga datos filtrados y hace un threshold cutting
 plot_spikes_shapes(raw_filtered, spike_times, thr, frequency_parameters, directorio)
 
