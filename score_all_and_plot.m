@@ -40,8 +40,18 @@ estimulos = carga_songs(directorio_aux);
 
 directorios = params(d:end, :);
 
+% for j = (1:1:height(directorios))
+%     % Defino el directorio del protocolo
+%     directorio = horzcat(char(directorios.Var2(j)), '/');
+%     writetable(estimulos_id, strcat(directorio, 'estimulos_id.txt'))
+% end 
+
 % Genero diccionario donde se va a guardar el score de todos
 score_total = struct;
+score_total_table = array2table(zeros(0,7));
+score_total_table.Properties.VariableNames = {'protocolo',...
+        'name', 'estimulos_id', 'LFP_score_dif','LFP_score_sil','LFP_score_aud',...
+        'int_norm'}
 
 % Para cada directorio (protocolo)
 for j = (1:1:height(directorios))
@@ -83,6 +93,13 @@ for j = (1:1:height(directorios))
     
     % Genero songs.mat a partir de las canciones
     estimulos = carga_songs(directorio);
+    
+    % Asigno codigo al nombre del estimulo
+    estimulos_id = readtable(horzcat(directorio,'estimulos_id.txt'),'Delimiter','\t',...
+    'ReadVariableNames',true);
+    for i = (1:length(estimulos))
+        estimulos(i).estimulos_id = char(estimulos_id.Var1(i));
+    end
 
     % Leer info INTAN
     read_Intan_RHD2000_file(horzcat(directorio, 'info.rhd'));
@@ -135,7 +152,17 @@ for j = (1:1:height(directorios))
     score_total(j).grilla_scores = mat_scores; % array con valores XYZ para graficar
     score_total(j).grilla_nombre_estimulos = cell_estimulos; 
     % nombre estimulos para no perderles rastro
-   
+    
+    for i = (1:length(dict_score))
+        dict_score(i).protocolo = char(directorios.Var1(j));
+        dict_score(i).dir_protocolo = char(directorios.Var2(j));
+    end 
+    
+    dict_aux = rmfield(dict_score, setdiff(fieldnames(dict_score), {'protocolo',...
+        'name', 'estimulos_id', 'LFP_score_dif','LFP_score_sil','LFP_score_aud',...
+        'int_norm'})); 
+    score_total_table = [score_total_table; struct2table(dict_aux)];
+    
     % Sabana x4: integral y correlacion
     plot_sabana(mat_scores, directorio, ejeY_col, ejeX_fila); % Hace 4 plots
 
@@ -167,79 +194,11 @@ end
 mat_avg = mat_avg / length(score_total);
 
 
-
-
-
 % Guardo todos los datos ! %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+writetable(score_total_table, strcat(directorio_params, ...
+        datestr(now, 'yyyy-mm-dd_HH_MM_SS'),'_tabla_all_datos_v2.csv'));
 
-if no_diag == 1  % guardo datos de Diagonal Extendida
-    score_total_toTable(score_total, directorio_params);
-
-else % guardo datos de Grilla/Sabana
-
-    sabana_INT_table = struct();
-
-    % Inicializo contador que va a determinar el numero de fila de mi tabla
-    % final 'sabana_INT_table'
-    fila = 0;
-
-    % para cada protocolo
-    for p = (1:1:length({score_total.id}))
-
-        % para cada estimulo
-        for e = (1:length(score_total(p).grilla_scores(:,1)))
-
-            x = score_total(p).grilla_scores(e,1);
-            y = score_total(p).grilla_scores(e,2);
-
-            % genero estimulo_id generico basado en tamaño cabeza y cuello
-            if x == 1
-                ca = 'caCh';
-            elseif x == 2
-                ca = 'caNo';
-            else
-                ca = 'caGr';
-            end
-            if y == 1
-                cu = 'cuCh';
-            elseif y == 2
-                cu = 'cuNo';
-            else 
-                cu = 'cuGr';
-            end
-
-            estimulo_id = strcat(ca, '_', cu);
-
-            % levanto valor del INT para estimulo e
-            INT = score_total(p).grilla_scores(e,3);
-
-            % actualizo numero fila y guardo la data
-            fila = fila + 1;
-
-            % guardo nombre protocolo
-            sabana_INT_table(fila).protocolo = score_total(p).id;
-
-            % guardo nombre del estimulo
-            sabana_INT_table(fila).estimulo_id = estimulo_id;
-
-            % guardo valor INT
-            sabana_INT_table(fila).INT = INT;
-
-            clear x y ca cu estimulo_id INT
-        end 
-    end 
-    clear p e fila
-
-    writetable(struct2table(sabana_INT_table), strcat(directorio_params, ...
-        datestr(now, 'yyyy-mm-dd_HH_MM_SS'),'_tabla_all_datos.csv'));
-end
-
-
-
-
-
-
-
+    
 % Ploteo %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 plot_some_sabana(score_total, mat_avg, ejeX_fila, ejeY_col);
 

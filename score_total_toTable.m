@@ -13,6 +13,7 @@ all_lambdas = [0.5, 1.0, 1.5, 2.0, 2.5];
 id = [];
 lambda = [];
 integral = [];
+lfp_dif = [];
 
 for p = protocolo
     count = 1;
@@ -22,13 +23,19 @@ for p = protocolo
         
         index_int = score_total(p).grilla_scores(:,1) == count;
         int = unique(score_total(p).grilla_scores(index_int, 3));
+        
+        index_lfp = score_total(p).grilla_scores(:,1) == count;
+        lfp_d = unique(score_total(p).grilla_scores(index_lfp, 4));
+        
         integral = vertcat(integral, int);
+        lfp_dif = vertcat(lfp_dif, lfp_d);
         count = count + 1;
     end   
 end 
 
-tabla_all_datos = table(id, lambda, integral);
+tabla_all_datos = table(id, lambda, integral, lfp_dif);
 tabla_all_datos.integral = round(tabla_all_datos.integral, 3);
+tabla_all_datos.lfp_dif = round(tabla_all_datos.lfp_dif, 3);
 
 time_stamp = convertCharsToStrings(datestr(now, "yyyy-mm-dd_HH_MM_SS"));
 
