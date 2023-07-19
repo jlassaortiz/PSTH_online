@@ -92,6 +92,7 @@ for i = id_estimulos % para cada estímulo
         xlim([motif_t1*1000 (motif_t1 + motif_dur)*1000]);
     end
     xticks([])
+    yticks([])
     set(gca, 'FontSize', fz)
     
     title(strcat(string(i), " - ",estimulos(i).name), ...
