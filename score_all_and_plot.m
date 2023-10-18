@@ -54,6 +54,11 @@ for j = (1:1:height(directorios))
     ntrials = params.Ntrials
     tiempo_file = params.tiempo_entre_estimulos
     
+    % Cargamos lista de trials que queremos analizar
+    trials = 1:ntrials
+    % trials = 1:10
+    % trials = 11:20
+
     % Especifico numero de id del BOS y REV
     id_BOS = params_analisis.id_bos(1)
     id_REV = params_analisis.id_rev(1)
@@ -89,8 +94,10 @@ for j = (1:1:height(directorios))
     clear filt_spikes
 
     % Genero diccionario con nombre de los estimulos y el momento de presentacion
-    estimulos = find_t0s(estimulos, ntrials, tiempo_file, board_adc_channels, frequency_parameters, directorio, false);
+    estimulos = find_t0s(estimulos, ntrials, tiempo_file, board_adc_channels, frequency_parameters, directorio, false, trials);
 
+    ntrials = length(trials)
+    
     % Definimos umbral de deteccion de spikes
     thr = find_thr(raw_filtered, estimulos, tiempo_file, frequency_parameters);
 
@@ -101,7 +108,7 @@ for j = (1:1:height(directorios))
     estimulos = generate_raster(spike_times, estimulos , tiempo_file, ntrials, frequency_parameters);
 
     % Calculo scores
-    estimulos = score_calculator(id_BOS, estimulos, frequency_parameters, spike_times, ntrials);
+    estimulos = score_calculator(id_BOS, estimulos, frequency_parameters, spike_times, ntrials, tiempo_file);
     
     % Selecciono sub-set de estimulos para guardar
     estimulos_resumen = rmfield(estimulos, {'song', 't0s','spikes_norm', 'trials_id', 'id'});
